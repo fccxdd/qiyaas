@@ -56,7 +56,7 @@ export const tutorialSteps = [
   {
     id: 9,
     title: "",
-    content: ""
+    content: "Now, the letters you got correct will be filled in"
   },
   {
     id: 10,
@@ -66,7 +66,7 @@ export const tutorialSteps = [
   {
     id: 11,
     title: "",
-    content: ""
+    content: `Try to guess the full word or another vowel/consonant (If you guess wrong, you will <span style="color:#CC00FF">lose</span> a life)`
   },
   {
     id: 12,

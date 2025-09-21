@@ -11,15 +11,9 @@ export default function TutorialSlideshow() {
 	 
 		<div className="container mx-auto py-8">
 			<TutorialContainer />
+			{/* TODO: Move the keyboard into the container */}
 			<MinimalistKeyboard/>
 		</div>
 
-	// Insert Word Container
-
-	// Insert Hint Container
-
-	// Insert Number Container
-
-	// Insert Keyboard Container
 )
 }

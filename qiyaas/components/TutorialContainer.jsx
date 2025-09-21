@@ -6,15 +6,18 @@ import { tutorialSteps } from '@/data/tutorialSteps';
 import LifeBar from "@/components/LifeBar";
 import CluePlaceholder from "@/components/CluePlaceholder";
 import DashPlaceholder from "@/components/DashPlaceholder";
+import LetterSelector from "@/components/LetterSelector";
+import TutorialAnswer from "@/data/tutorial_words.json";
 
 export default function TutorialContainer() {
   
   const [currentStep, setCurrentStep] = useState(0);
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
+  const [selectedLetters, setSelectedLetters] = useState([]);
 
   // Filter out empty steps
-  const validSteps = tutorialSteps.filter(step => step.content.trim() !== "");
+  const validSteps = tutorialSteps.filter(step => step.content.trim() !== ""); //=> step.content.trim() !== "");
   
   const nextStep = () => {
     setCurrentStep(prev => (prev + 1) % validSteps.length);
@@ -22,6 +25,16 @@ export default function TutorialContainer() {
 
   const prevStep = () => {
     setCurrentStep(prev => (prev - 1 + validSteps.length) % validSteps.length);
+  };
+
+  // Check if current step is the letter selection step
+  const isLetterSelectionStep = validSteps[currentStep]?.content.includes("select some letters") || 
+                               validSteps[currentStep]?.content.includes("3 consonants, 1 vowel");
+  
+
+  // Handle letters change from LetterSelector
+  const handleLettersChange = (letters) => {
+    setSelectedLetters(letters);
   };
 
   // Handle touch events for swipe
@@ -87,7 +100,7 @@ export default function TutorialContainer() {
     <div className="w-full max-w-6xl mx-auto bg-white dark:bg-black rounded-lg shadow-lg p-6">
       {/* LifeBar - Top Right */}
       <LifeBar/>
-      
+
       {/* Tutorial Container */}
       <div 
         className="relative min-h-[500px] flex items-center justify-center"
@@ -98,7 +111,7 @@ export default function TutorialContainer() {
         {/* Navigation Buttons */}
         <button
           onClick={prevStep}
-          className="absolute left-0 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors z-10"
+          className="absolute left-4 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors z-10"
           aria-label="Previous step"
         >
           <ChevronLeft className="w-6 h-6 text-gray-700 dark:text-gray-300" />
@@ -106,7 +119,7 @@ export default function TutorialContainer() {
 
         <button
           onClick={nextStep}
-          className="absolute right-0 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors z-10"
+          className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors z-10"
           aria-label="Next step"
         >
           <ChevronRight className="w-6 h-6 text-gray-700 dark:text-gray-300" />
@@ -118,8 +131,14 @@ export default function TutorialContainer() {
         {/* Center Section - Content Container */}
         <ContentContainer currentStepData={currentStepData} />
         
+        {/* Letter Selector Component */}
+        <LetterSelector 
+          isActive={isLetterSelectionStep} 
+          onLettersChange={handleLettersChange}
+        />
+
         {/* Right Section - Clue Placeholder */}
-        <CluePlaceholder numbers={[5, 1, 7]} />
+        <CluePlaceholder numbers={[5, 1, 7]} showHints={true} />
 
       </div>
 

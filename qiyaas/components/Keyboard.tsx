@@ -11,9 +11,9 @@ const MinimalistKeyboard = () => {
   const [pressedKeys, setPressedKeys] = useState(new Set());
 
   const keyRows = [
-    ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
-    ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'],
-    ['z', 'x', 'c', 'v', 'b', 'n', 'm']
+    ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
+    ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
+    ['Z', 'X', 'C', 'V', 'B', 'N', 'M']
   ];
 
   const handleKeyPress = (key: string) => {
@@ -39,22 +39,25 @@ const MinimalistKeyboard = () => {
         return; // Exit early, don't process space at all
       }
       
-      event.preventDefault(); // Prevent default browser behavior for other keys
-      
       // Add to pressed keys for visual feedback
       setPressedKeys(prev => new Set([...prev, key]));
       
       // Handle special keys
       if (key === 'BACKSPACE') {
+        event.preventDefault(); // Prevent default for special keys
         handleKeyPress('BACKSPACE');
       } else if (key === 'ENTER') {
+        event.preventDefault(); // Prevent default for special keys
         handleKeyPress('ENTER');
       } else if (key === 'ESCAPE') {
+        event.preventDefault(); // Prevent default for special keys
         handleKeyPress('CLEAR');
-      } else if (/^[a-z]$/.test(key)) {
+      } else if (/^[A-Z]$/.test(key)) {
+        event.preventDefault(); // Prevent default for letters
         // Only handle A-Z letters
         handleKeyPress(key);
       }
+      // Don't prevent default for other keys we don't handle
     };
 
     const handleKeyUp = (event: KeyboardEvent) => {
@@ -112,7 +115,6 @@ const MinimalistKeyboard = () => {
       <div className="bg-black rounded-2xl p-6 shadow-2xl border border-gray-800 max-w-4xl">
         {/* Header with collapse button */}
         <div className="flex justify-between items-center mb-4">
-          {/* <div className="text-white text-sm font-medium">Virtual Keyboard</div> */}
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
             className="text-white hover:text-gray-300 transition-colors"
@@ -124,12 +126,9 @@ const MinimalistKeyboard = () => {
         {/* Input display */}
         {!isCollapsed && (
           <div className="mb-6">
-            <div className="bg-gray-900 rounded-lg p-3 min-h-[50px] text-white font-mono text-lg border border-gray-700">
+            <div className="bg-gray-900 rounded-lg p-3 min-h-[50px] text-white font-mono text-lg border border-gray-700 whitespace-pre-wrap break-words">
               {inputValue || <span className="text-gray-500">Type with physical or virtual keyboard...</span>}
             </div>
-            {/* <div className="text-xs text-gray-400 mt-1 text-center">
-              Use physical keyboard: A-Z keys, Enter, Backspace, Esc (clear)
-            </div> */}
           </div>
         )}
 

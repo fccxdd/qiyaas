@@ -12,7 +12,7 @@ const DashPlaceholder: React.FC<DashPlaceholderProps> = ({
   numberOfClues = 3
 }) => {
   return (
-    <div className="w-1/4 flex flex-col justify-center items-start pl-8">
+    <div className="w-1/4 flex flex-col justify-center items-start pl-20">
       <div className="space-y-8">
         {[...Array(numberOfClues)].map((_, index) => (
           <div key={index} className="flex items-center">
