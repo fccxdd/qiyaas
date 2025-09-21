@@ -97,7 +97,9 @@ export default function TutorialContainer() {
   const currentStepData = validSteps[currentStep];
 
   return (
+    
     <div className="w-full max-w-6xl mx-auto bg-white dark:bg-black rounded-lg shadow-lg p-6">
+      
       {/* LifeBar - Top Right */}
       <LifeBar/>
 
@@ -150,7 +152,7 @@ export default function TutorialContainer() {
             onClick={() => setCurrentStep(index)}
             className={`w-3 h-3 rounded-full transition-all duration-200 ${
               index === currentStep 
-                ? 'bg-fuchsia-600 scale-125' 
+                ? 'bg-purple-600 dark:bg-white scale-125' 
                 : 'bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500'
             }`}
             aria-label={`Go to step ${index + 1}`}
@@ -166,6 +168,7 @@ export default function TutorialContainer() {
       {/* </div> */}
 
       {/* Custom Styles for Inknut Antiqua Font */}
+      
       <style jsx>{`
         .tutorial-title {
           font-family: var(--font-inknut-antiqua), serif;

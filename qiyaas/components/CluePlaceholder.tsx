@@ -20,13 +20,13 @@ const CluePlaceholder: React.FC<CluePlaceholderProps> = ({
 				
 				{numbers.map((number, index) => (
 					<div key={index} className="flex items-center justify-end space-x-3">
-						<div key={index} className="text-4xl font-bold text-black dark:text-white">
+						<div key={index} className="text-4xl text-black dark:text-white">
 						{number}
 						</div>
 
 						{/* Hint - only show if showHints is true */}
 						{showHints && (
-							<div className="text-lg text-purple-600 font-mono">
+							<div className="text-4xl text-green-600 font-mono">
 								{hintMap[number.toString() as keyof typeof hintMap] || ''}
 							</div>
 						)}

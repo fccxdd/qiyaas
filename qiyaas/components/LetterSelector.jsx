@@ -1,8 +1,16 @@
 // components/LetterSelector.jsx
 
+// components/LetterSelector.jsx
+
 import { useState, useEffect } from 'react';
 
-export default function LetterSelector({ isActive = false, onLettersChange = null, virtualKeyboardInput = null }) {
+export default function LetterSelector({ 
+  isActive = false, 
+  onLettersChange = null, 
+  virtualKeyboardInput = null,
+  persistedLetters = null,
+  onLettersLocked = null 
+}) {
   const [selectedLetters, setSelectedLetters] = useState([]);
   const [isLocked, setIsLocked] = useState(false);
   const [error, setError] = useState('');
@@ -10,6 +18,14 @@ export default function LetterSelector({ isActive = false, onLettersChange = nul
   // Vowels and consonants
   const vowels = ['A', 'E', 'I', 'O', 'U'];
   const consonants = ['B', 'C', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'X', 'Y', 'Z'];
+  
+  // Load persisted letters when component mounts
+  useEffect(() => {
+    if (persistedLetters && persistedLetters.length > 0) {
+      setSelectedLetters(persistedLetters);
+      setIsLocked(true);
+    }
+  }, [persistedLetters]);
   
   const validateLetters = (letters) => {
     if (letters.length === 0) return '';
@@ -97,6 +113,11 @@ export default function LetterSelector({ isActive = false, onLettersChange = nul
     
     setIsLocked(true);
     setError('');
+    
+    // Notify parent that letters are locked
+    if (onLettersLocked) {
+      onLettersLocked(selectedLetters);
+    }
   };
 
   // Handle virtual keyboard input
@@ -140,19 +161,7 @@ export default function LetterSelector({ isActive = false, onLettersChange = nul
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [isActive, selectedLetters, isLocked]);
 
-  // Reset when component becomes inactive
-  useEffect(() => {
-    if (!isActive) {
-      setSelectedLetters([]);
-      setIsLocked(false);
-      setError('');
-      if (onLettersChange) {
-        onLettersChange([]);
-      }
-    }
-  }, [isActive, onLettersChange]);
-
-  if (!isActive) return null;
+  if (!isActive && (!persistedLetters || persistedLetters.length === 0)) return null;
 
   return (
     <>
@@ -186,17 +195,23 @@ export default function LetterSelector({ isActive = false, onLettersChange = nul
         )}
         
         {/* Instructions */}
-        <div className="text-xs text-gray-600 dark:text-gray-400 max-w-48">
-          {isLocked ? (
-            <span className="text-green-600 font-semibold">
-              Letters locked! Ready to proceed.
-            </span>
-          ) : (
-            <>
-              Letters will appear here
-            </>
-          )}
-        </div>
+        {isActive && (
+          <div className="text-xs text-gray-600 dark:text-gray-400 max-w-48">
+            {isLocked ? (
+              <span className="text-green-600 font-semibold">
+                Letters locked! Ready to proceed.
+              </span>
+            ) : (
+              <>
+                Type letter (adds instantly)<br/>
+                Backspace: Remove last<br/>
+                Enter: Lock letters<br/>
+                Esc: Clear all<br/>
+                <span className="text-blue-500">Need: 3 consonants + 1 vowel</span>
+              </>
+            )}
+          </div>
+        )}
       </div>
     </>
   );

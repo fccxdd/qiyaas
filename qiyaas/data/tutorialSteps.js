@@ -66,7 +66,7 @@ export const tutorialSteps = [
   {
     id: 11,
     title: "",
-    content: `Try to guess the full word or another vowel/consonant (If you guess wrong, you will <span style="color:#CC00FF">lose</span> a life)`
+    content: `Try to guess the full word or guess 1 more vowel and 1 more consonant (If you guess wrong, you will <span style="color:#CC00FF">lose</span> a life)`
   },
   {
     id: 12,

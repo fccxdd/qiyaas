@@ -17,7 +17,7 @@ const DashPlaceholder: React.FC<DashPlaceholderProps> = ({
         {[...Array(numberOfClues)].map((_, index) => (
           <div key={index} className="flex items-center">
             {/* Single dash placeholder for each clue */}
-            <span className="text-black dark:text-white text-4xl font-indie-flower">
+            <span className="text-4xl font-indie-flower text-black dark:text-white">
                 _          
             </span>
             </div>
