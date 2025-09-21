@@ -9,7 +9,6 @@ export default function Home() {
              <ThemeToggle />
       </header>
       <main className="flex flex-col gap-[32px] row-start-2 items-center">
-        
         <Image
           className="hidden dark:block "
           src="/qiyaas_logo_darkmode.svg"

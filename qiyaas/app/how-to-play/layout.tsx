@@ -1,6 +1,7 @@
 // /app/how-to-play/layout.tsx
 
 import React from "react";
+import "@/app/globals.css";
 
 export default function HowToPlayLayout({ children }: { children: React.ReactNode }) {
   return (

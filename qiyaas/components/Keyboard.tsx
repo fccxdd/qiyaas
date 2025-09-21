@@ -1,8 +1,189 @@
-// qiyaas/components/Keyboard.tsx
+// components/Keyboard.tsx
+
 "use client"
 
 import React, { useState, useEffect } from 'react';
-import { Delete, CornerDownLeft } from 'lucide-react';
+import { ChevronDown, ChevronUp, Delete, CornerDownLeft } from 'lucide-react';
 
+const MinimalistKeyboard = () => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [inputValue, setInputValue] = useState('');
+  const [pressedKeys, setPressedKeys] = useState(new Set());
 
+  const keyRows = [
+    ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
+    ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'],
+    ['z', 'x', 'c', 'v', 'b', 'n', 'm']
+  ];
 
+  const handleKeyPress = (key: string) => {
+    if (key === 'ENTER') {
+      setInputValue(prev => prev + '\n');
+    } else if (key === 'BACKSPACE') {
+      setInputValue(prev => prev.slice(0, -1));
+    } else if (key === 'CLEAR') {
+      setInputValue('');
+    } else {
+      setInputValue(prev => prev + key.toLowerCase());
+    }
+  };
+
+  // Handle physical keyboard input
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const key: string = event.key.toUpperCase();
+      
+      // Prevent space key entirely - block it completely
+      if (key === ' ' || key === 'SPACE') {
+        event.preventDefault();
+        return; // Exit early, don't process space at all
+      }
+      
+      event.preventDefault(); // Prevent default browser behavior for other keys
+      
+      // Add to pressed keys for visual feedback
+      setPressedKeys(prev => new Set([...prev, key]));
+      
+      // Handle special keys
+      if (key === 'BACKSPACE') {
+        handleKeyPress('BACKSPACE');
+      } else if (key === 'ENTER') {
+        handleKeyPress('ENTER');
+      } else if (key === 'ESCAPE') {
+        handleKeyPress('CLEAR');
+      } else if (/^[a-z]$/.test(key)) {
+        // Only handle A-Z letters
+        handleKeyPress(key);
+      }
+    };
+
+    const handleKeyUp = (event: KeyboardEvent) => {
+      const key: string = event.key.toUpperCase();
+      // Remove from pressed keys
+      setPressedKeys(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(key);
+        return newSet;
+      });
+    };
+
+    // Add event listeners
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, []);
+
+  const KeyButton = ({ keyValue, isSpecial = false, width = 'w-12' }: {
+    keyValue: string;
+    isSpecial?: boolean;
+    width?: string;
+  }) => {
+    const isPressed = pressedKeys.has(keyValue) || 
+                     (keyValue === 'ENTER' && pressedKeys.has('ENTER')) ||
+                     (keyValue === 'BACKSPACE' && pressedKeys.has('BACKSPACE'));
+    
+    const isEnterKey = keyValue === 'ENTER';
+    
+    return (
+      <button
+        onClick={() => handleKeyPress(keyValue)}
+        className={`${width} h-12 rounded-full font-semibold text-lg transition-all duration-150 transform shadow-lg flex items-center justify-center ${
+          isPressed 
+            ? isEnterKey
+              ? 'bg-green-700 text-white scale-95'
+              : 'bg-gray-400 text-black scale-95'
+            : isEnterKey
+              ? 'bg-green-500 text-white hover:bg-green-600 active:bg-green-700 hover:scale-105 active:scale-95'
+              : 'bg-white text-black hover:bg-gray-200 active:bg-gray-300 hover:scale-105 active:scale-95'
+        }`}
+      >
+        {keyValue === 'ENTER' ? <CornerDownLeft size={20} /> : keyValue === 'BACKSPACE' ? <Delete size={20} /> : keyValue}
+      </button>
+    );
+  };
+
+  return (
+    <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50">
+      <div className="bg-black rounded-2xl p-6 shadow-2xl border border-gray-800 max-w-4xl">
+        {/* Header with collapse button */}
+        <div className="flex justify-between items-center mb-4">
+          {/* <div className="text-white text-sm font-medium">Virtual Keyboard</div> */}
+          <button
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="text-white hover:text-gray-300 transition-colors"
+          >
+            {isCollapsed ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+          </button>
+        </div>
+
+        {/* Input display */}
+        {!isCollapsed && (
+          <div className="mb-6">
+            <div className="bg-gray-900 rounded-lg p-3 min-h-[50px] text-white font-mono text-lg border border-gray-700">
+              {inputValue || <span className="text-gray-500">Type with physical or virtual keyboard...</span>}
+            </div>
+            {/* <div className="text-xs text-gray-400 mt-1 text-center">
+              Use physical keyboard: A-Z keys, Enter, Backspace, Esc (clear)
+            </div> */}
+          </div>
+        )}
+
+        {/* Keyboard */}
+        {!isCollapsed && (
+          <div className="space-y-3">
+            {/* First row - QWERTY */}
+            <div className="flex justify-center gap-2">
+              {keyRows[0].map((key) => (
+                <KeyButton key={key} keyValue={key} />
+              ))}
+            </div>
+
+            {/* Second row - ASDF */}
+            <div className="flex justify-center gap-2">
+              {keyRows[1].map((key) => (
+                <KeyButton key={key} keyValue={key} />
+              ))}
+            </div>
+
+            {/* Third row - ZXCV */}
+            <div className="flex justify-center gap-2">
+              {keyRows[2].map((key) => (
+                <KeyButton key={key} keyValue={key} />
+              ))}
+            </div>
+
+            {/* Bottom row - Enter and special keys */}
+            <div className="flex justify-center gap-2 mt-4">
+              <KeyButton keyValue="BACKSPACE" width="w-24" />
+              <KeyButton keyValue="ENTER" width="w-32" />
+              <button
+                onClick={() => handleKeyPress('CLEAR')}
+                className={`w-20 h-12 rounded-full font-semibold text-sm transition-all duration-150 transform shadow-lg ${
+                  pressedKeys.has('ESCAPE')
+                    ? 'bg-red-800 text-white scale-95'
+                    : 'bg-red-600 text-white hover:bg-red-700 active:bg-red-800 hover:scale-105 active:scale-95'
+                }`}
+              >
+                CLEAR
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Collapsed state */}
+        {isCollapsed && (
+          <div className="text-center text-gray-400 text-sm py-2">
+            Keyboard minimized - click to expand
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default MinimalistKeyboard;

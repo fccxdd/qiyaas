@@ -19,7 +19,7 @@
   --foreground: #171717;
 }
 
-/* Class-based dark mode - this will work with your toggle */
+/* Class-based dark mode - this will work with toggle */
 .dark {
   --background: #0a0a0a;
   --foreground: #ededed;
@@ -27,6 +27,10 @@
 
 body {
   @apply bg-white dark:bg-black text-gray-900 dark:text-gray-100;
-  font-family: Indie Flower;
+  font-family: var(--font-indie-flower); /* Body uses Indie Flower */
   transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+h1, h2, h3, h4, h5, h6, .title-text {
+  font-family: var(--font-inknut-antiqua); /* Titles use Inknut Antiqua */
 }
