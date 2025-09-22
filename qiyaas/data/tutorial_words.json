@@ -3,6 +3,8 @@
 
     "clue_2": "arrive",
 
-    "clue_3": "honey"
+    "clue_3": "honey",
+
+    "numbers_for_clue": [ 5, 1, 7 ]
 
 }
