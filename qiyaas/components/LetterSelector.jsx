@@ -1,7 +1,5 @@
 // components/LetterSelector.jsx
 
-// components/LetterSelector.jsx
-
 import { useState, useEffect } from 'react';
 
 export default function LetterSelector({ 
@@ -161,7 +159,8 @@ export default function LetterSelector({
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [isActive, selectedLetters, isLocked]);
 
-  if (!isActive && (!persistedLetters || persistedLetters.length === 0)) return null;
+  // Only show when active (letter selection step)
+  if (!isActive) return null;
 
   return (
     <>
@@ -169,22 +168,17 @@ export default function LetterSelector({
       <div className="absolute top-4 left-4 z-30">
         <div className="flex flex-wrap gap-2 mb-2">
           {selectedLetters.map((letter, index) => (
-            <span
+            <button
               key={index}
-              className={`inline-block px-3 py-1 rounded-md font-normal text-lg ${
+              className={`w-12 h-12 rounded-full font-semibold text-lg transition-all duration-150 transform shadow-lg flex items-center justify-center ${
                 isLocked 
                   ? 'bg-green-500 text-white' 
-                  : 'bg-blue-400 text-white'
+                  : 'bg-purple-500 text-white hover:bg-purple-600'
               }`}
             >
               {letter}
-            </span>
+            </button>
           ))}
-          {isLocked && (
-            <span className="inline-block px-2 py-1 bg-green-600 text-white rounded-md text-xs font-bold">
-              🔒 LOCKED
-            </span>
-          )}
         </div>
         
         {/* Error message */}
@@ -195,23 +189,21 @@ export default function LetterSelector({
         )}
         
         {/* Instructions */}
-        {isActive && (
-          <div className="text-xs text-gray-600 dark:text-gray-400 max-w-48">
-            {isLocked ? (
-              <span className="text-green-600 font-semibold">
-                Letters locked! Ready to proceed.
-              </span>
-            ) : (
-              <>
-                Type letter (adds instantly)<br/>
-                Backspace: Remove last<br/>
-                Enter: Lock letters<br/>
-                Esc: Clear all<br/>
-                <span className="text-blue-500">Need: 3 consonants + 1 vowel</span>
-              </>
-            )}
-          </div>
-        )}
+        <div className="text-xs text-gray-600 dark:text-gray-400 max-w-48">
+          {isLocked ? (
+            <span className="text-green-600 font-semibold">
+              Letters locked! Navigate to next slide.
+            </span>
+          ) : (
+            <>
+              Type letter (adds instantly)<br/>
+              Backspace: Remove last<br/>
+              Enter: Lock letters<br/>
+              Esc: Clear all<br/>
+              <span className="text-blue-500">Need: 3 consonants + 1 vowel</span>
+            </>
+          )}
+        </div>
       </div>
     </>
   );

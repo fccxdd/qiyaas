@@ -5,6 +5,17 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronDown, ChevronUp, Delete, CornerDownLeft } from 'lucide-react';
 
+// Extend Window interface for TypeScript
+declare global {
+  interface Window {
+    letterSelectorInput?: (type: string, value: string | null) => void;
+    gameState?: {
+      usedLetters: Set<string>;
+      availableLetters: Set<string>;
+    };
+  }
+}
+
 const MinimalistKeyboard = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [inputValue, setInputValue] = useState('');
@@ -15,6 +26,22 @@ const MinimalistKeyboard = () => {
     ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
     ['Z', 'X', 'C', 'V', 'B', 'N', 'M']
   ];
+
+  // Get keyboard color based on game state
+  const getKeyColor = (keyValue: string): string => {
+    // Check if there's game state available
+    if (window.gameState?.usedLetters && window.gameState?.availableLetters) {
+      const { usedLetters, availableLetters } = window.gameState;
+      
+      if (usedLetters.has(keyValue)) {
+        return 'grey'; // Used/correct or invalid
+      } else if (availableLetters.has(keyValue)) {
+        return 'yellow'; // Still available
+      }
+    }
+    
+    return 'default'; // Default color
+  };
 
   const handleKeyPress = (key: string) => {
     if (key === 'ENTER') {
@@ -91,19 +118,42 @@ const MinimalistKeyboard = () => {
                      (keyValue === 'BACKSPACE' && pressedKeys.has('BACKSPACE'));
     
     const isEnterKey = keyValue === 'ENTER';
+    const keyColor = getKeyColor(keyValue);
+    
+    // Determine button styling based on key color
+    let buttonStyles = '';
+    if (!isSpecial && /^[A-Z]$/.test(keyValue)) {
+      switch (keyColor) {
+        case 'grey':
+          buttonStyles = isPressed 
+            ? 'bg-gray-600 text-white scale-95'
+            : 'bg-gray-500 text-white hover:bg-gray-600 active:bg-gray-700 hover:scale-105 active:scale-95';
+          break;
+        case 'yellow':
+          buttonStyles = isPressed 
+            ? 'bg-yellow-600 text-black scale-95'
+            : 'bg-yellow-400 text-black hover:bg-yellow-500 active:bg-yellow-600 hover:scale-105 active:scale-95';
+          break;
+        default:
+          buttonStyles = isPressed 
+            ? 'bg-gray-400 text-black scale-95'
+            : 'bg-white text-black hover:bg-gray-200 active:bg-gray-300 hover:scale-105 active:scale-95';
+      }
+    } else {
+      // Special keys (Enter, Backspace, etc.)
+      buttonStyles = isPressed 
+        ? isEnterKey
+          ? 'bg-green-700 text-white scale-95'
+          : 'bg-gray-400 text-black scale-95'
+        : isEnterKey
+          ? 'bg-green-500 text-white hover:bg-green-600 active:bg-green-700 hover:scale-105 active:scale-95'
+          : 'bg-white text-black hover:bg-gray-200 active:bg-gray-300 hover:scale-105 active:scale-95';
+    }
     
     return (
       <button
         onClick={() => handleKeyPress(keyValue)}
-        className={`${width} h-12 rounded-full font-semibold text-lg transition-all duration-150 transform shadow-lg flex items-center justify-center ${
-          isPressed 
-            ? isEnterKey
-              ? 'bg-green-700 text-white scale-95'
-              : 'bg-gray-400 text-black scale-95'
-            : isEnterKey
-              ? 'bg-green-500 text-white hover:bg-green-600 active:bg-green-700 hover:scale-105 active:scale-95'
-              : 'bg-white text-black hover:bg-gray-200 active:bg-gray-300 hover:scale-105 active:scale-95'
-        }`}
+        className={`${width} h-12 rounded-full font-semibold text-lg transition-all duration-150 transform shadow-lg flex items-center justify-center ${buttonStyles}`}
       >
         {keyValue === 'ENTER' ? <CornerDownLeft size={20} /> : keyValue === 'BACKSPACE' ? <Delete size={20} /> : keyValue}
       </button>
