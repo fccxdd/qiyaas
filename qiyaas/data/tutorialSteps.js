@@ -64,7 +64,7 @@ export const tutorialSteps = [
   {
     id: 10,
     title: "",
-    content: `Try to guess the full word or you get to guess 1 more vowel and 1 more consonant.`
+    content: `You can either try to guess the full word or use 1 addition vowel & consonant to help you out.`
   },
 
   {
@@ -76,7 +76,9 @@ export const tutorialSteps = [
   {
     id: 12,
     title: "",
-    content: `The keyboard will higlight according to your guesses.`
+    content: `The keyboard will light up in different colors according to your guesses.
+              <span style="color:#898989">Grey</span> for letters not in the word or used up and 
+              <span style="color:#FAA70D">Yellow</span> for letters in the wrong clue.`
   },
 
   {
