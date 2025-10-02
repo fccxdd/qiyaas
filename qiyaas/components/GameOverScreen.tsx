@@ -5,7 +5,6 @@
 import React from 'react';
 import ReplayIcon from '@mui/icons-material/Replay';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
-import SentimentVeryDissatisfiedIcon from '@mui/icons-material/SentimentVeryDissatisfied';
 
 interface WinScreenProps {
   onPlayAgain?: () => void;
@@ -57,11 +56,6 @@ export const WinScreen: React.FC<WinScreenProps> = ({
           </button>
         </div>
         
-        {/* Sparkle Animation */}
-        {/* <div className="absolute -top-4 -left-4 text-yellow-400 text-2xl animate-ping">✨</div>
-        <div className="absolute -top-2 -right-6 text-yellow-400 text-3xl animate-pulse">⭐</div>
-        <div className="absolute -bottom-6 -left-2 text-yellow-400 text-xl animate-bounce">🌟</div>
-        <div className="absolute -bottom-4 -right-4 text-yellow-400 text-2xl animate-ping">✨</div> */}
       </div>
       
       <style jsx>{`
@@ -133,11 +127,6 @@ export const LoseScreen: React.FC<LoseScreenProps> = ({
           </button>
         </div>
         
-        {/* Sad Animation Elements */}
-        {/* <div className="absolute -top-4 -left-4 text-blue-400 text-2xl animate-ping">💧</div>
-        <div className="absolute -top-2 -right-6 text-blue-300 text-3xl animate-pulse">😢</div>
-        <div className="absolute -bottom-6 -left-2 text-gray-400 text-xl animate-bounce">☁️</div>
-        <div className="absolute -bottom-4 -right-4 text-blue-400 text-2xl animate-ping">💧</div> */}
       </div>
       
       <style jsx>{`
