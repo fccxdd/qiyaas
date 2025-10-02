@@ -1,13 +1,17 @@
 // components/TutorialContainer.jsx
 
-import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState } from 'react';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { tutorialSteps } from '@/data/tutorialSteps';
-import LifeBar from "@/components/LifeBar";
+import tutorialWords from '@/data/tutorial_words.json';
 import CluePlaceholder from "@/components/CluePlaceholder";
 import DashPlaceholder from "@/components/DashPlaceholder";
 import LetterSelector from "@/components/LetterSelector";
-import WordGameManager from "@/components/WordGameManager";
+import Keyboard from "@/components/Keyboard";
+import LifeBar from "@/components/LifeBar";
+import { WinScreen, LoseScreen } from "@/components/GameOverScreen";
+import MessageBox from "@/components/MessageBox";
 
 export default function TutorialContainer() {
   
@@ -19,18 +23,36 @@ export default function TutorialContainer() {
   const [lockedLetters, setLockedLetters] = useState([]);
   const [gameState, setGameState] = useState(null);
   const [lives, setLives] = useState(5);
+  const [letterStates, setLetterStates] = useState({});
+  const [showWinScreen, setShowWinScreen] = useState(false);
+  const [showLoseScreen, setShowLoseScreen] = useState(false);
+
+  // Message state - moved from DashPlaceholder to here
+  const [currentMessage, setCurrentMessage] = useState('');
+  const [messageType, setMessageType] = useState('');
+
+  // Message handling function
+  const showMessage = (message, type) => {
+    setCurrentMessage(message);
+    setMessageType(type);
+  };
+
+  const clearMessage = () => {
+    setCurrentMessage('');
+    setMessageType('');
+  };
 
   // Filter out empty steps
   const validSteps = tutorialSteps.filter(step => step.content.trim() !== "");
   
   // Check if current step is the letter selection step
-  const isLetterSelectionStep = validSteps[currentStep]?.content.includes("select some letters") || 
-                               validSteps[currentStep]?.content.includes("3 consonants, 1 vowel");
-  
-  // Check if current step is a game step (after letter selection)
-  const isGameStep = lockedLetters.length === 4 && currentStep >= validSteps.findIndex(step => 
-    step.content.includes("select some letters") || step.content.includes("3 consonants, 1 vowel")
+  const isLetterSelectionStep = Boolean(
+    validSteps[currentStep]?.content?.includes("select some letters") || 
+    validSteps[currentStep]?.content?.includes("3 consonants, 1 vowel")
   );
+
+  // Check if current step is a game step (after letter selection)
+  const isGameStep = lockedLetters.length === 4; // Simplified - if we have 4 locked letters, activate game
 
   // Handle letters change from LetterSelector
   const handleLettersChange = (letters) => {
@@ -51,26 +73,77 @@ export default function TutorialContainer() {
     }
   };
 
-  // Handle virtual keyboard input
-  const handleVirtualKeyboardInput = (type, value) => {
-    if (isLetterSelectionStep || isGameStep) {
-      setVirtualKeyboardInput({ type, value, timestamp: Date.now() });
+  const handleLetterStatesChange = (newLetterStates) => {
+    setLetterStates(newLetterStates);
+  };
+
+  const handleLifeLost = () => {
+    console.log('Life lost triggered!'); // Debug log
+    setLives(prev => {
+      const newLives = Math.max(0, prev - 1);
+      console.log('Lives updated from', prev, 'to', newLives); // Debug log
+      
+      // Check if game is lost (no lives remaining)
+      if (newLives === 0) {
+        console.log('💀 GAME LOST - No lives remaining!');
+        setTimeout(() => {
+          setShowLoseScreen(true);
+        }, 1500); // Delay to show final life loss animation
+      }
+      
+      return newLives;
+    });
+  };
+
+  const handleGameWon = () => {
+    console.log('🎉 Game won!');
+    setShowWinScreen(true);
+  };
+
+  const handleGameLost = () => {
+    console.log('💀 Game lost!');
+    setShowLoseScreen(true);
+  };
+
+  // Reset the game to initial state
+  const resetGame = () => {
+    console.log('🔄 Resetting game...');
+    setSelectedLetters([]);
+    setLockedLetters([]);
+    setGameState(null);
+    setLives(5);
+    setShowWinScreen(false);
+    setShowLoseScreen(false);
+    setVirtualKeyboardInput(null);
+    clearMessage(); // Clear any messages
+
+    // Reset to the letter selection step
+    const letterSelectionStepIndex = validSteps.findIndex(step => 
+      step.content.includes("select some letters") || step.content.includes("3 consonants, 1 vowel")
+    );
+    if (letterSelectionStepIndex !== -1) {
+      setCurrentStep(letterSelectionStepIndex);
     }
   };
 
-  // Expose virtual keyboard handler globally so MinimalistKeyboard can use it
-  useEffect(() => {
-    window.letterSelectorInput = handleVirtualKeyboardInput;
-    return () => {
-      delete window.letterSelectorInput;
-    };
-  }, [isLetterSelectionStep, isGameStep]);
-  
+  // Go Back to Main Game
+  const goToMainGame = () => {
+    // Simple navigation (current - works immediately)
+    window.location.href = '/play';
+  };
+
+  // Handle virtual keyboard input
+  const handleVirtualKeyboardInput = (input) => {
+    setVirtualKeyboardInput(input);
+  };
+
   const nextStep = () => {
+    if (showWinScreen || showLoseScreen) return; // Don't advance if game over screens are showing
     setCurrentStep(prev => (prev + 1) % validSteps.length);
   };
 
   const prevStep = () => {
+    if (showWinScreen || showLoseScreen) return; // Don't go back if game over screens are showing
     setCurrentStep(prev => (prev - 1 + validSteps.length) % validSteps.length);
   };
 
@@ -88,148 +161,155 @@ export default function TutorialContainer() {
 
   const onTouchEnd = () => {
     if (!touchStart || !touchEnd) return;
-    
     const distance = touchStart - touchEnd;
     const isLeftSwipe = distance > minSwipeDistance;
     const isRightSwipe = distance < -minSwipeDistance;
 
-    if (isLeftSwipe) {
+    if (isLeftSwipe && currentStep < validSteps.length - 1) {
       nextStep();
-    } else if (isRightSwipe) {
+    }
+    if (isRightSwipe && currentStep > 0) {
       prevStep();
     }
   };
 
-  const ContentContainer = ({ currentStepData }) => {
   return (
-    <div className="w-1/2 flex flex-col justify-center text-center px-8">
-      {currentStepData.title && (
-        <h2 
-          className="tutorial-title mb-6"
-          dangerouslySetInnerHTML={{ __html: currentStepData.title }}
+    <div className="relative h-screen bg-gray-50 dark:bg-gray-900 overflow-hidden">
+      
+      {/* Message Box - Rendered at top level */}
+      <MessageBox 
+        message={currentMessage}
+        type={messageType}
+        onClose={clearMessage}
+        duration={3000}
+      />
+
+      <div 
+        className="w-full max-w-6xl mx-auto bg-white dark:bg-black rounded-lg shadow-lg p-6 h-full title-text"
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+      >
+
+        {/* Keyboard */}
+        <Keyboard 
+          selectedLetters={lockedLetters}
+          letterStates={letterStates}
         />
-      )}
-      
-      <h3 
-        className="tutorial-content leading-relaxed"
-        dangerouslySetInnerHTML={{ __html: currentStepData.content }}
-      />
-    </div>
-  );
-  };
-  // Handle keyboard navigation
-  useEffect(() => {
-    const handleKeyPress = (e) => {
-      // Only handle navigation if not in letter selection mode or game mode
-      if (!isLetterSelectionStep && !isGameStep) {
-        if (e.key === 'ArrowLeft') {
-          prevStep();
-        } else if (e.key === 'ArrowRight') {
-          nextStep();
-        }
-      }
-    };
 
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [isLetterSelectionStep, isGameStep]);
+        {/* Main Content Container */}
+        <div className="relative h-full flex items-center">
+          
+          {/* LifeBar */}
+          <LifeBar 
+            lives={lives} 
+            maxLives={5}
+            onLifeLost={() => console.log('Life lost!')}
+          />
 
-  const currentStepData = validSteps[currentStep];
+          {/* Left Section - Start of Dash */}
+          <DashPlaceholder 
+            startingLetters={lockedLetters}
+            isGameActive={isGameStep}
+            onLetterStatesChange={handleLetterStatesChange}
+            onLifeLost={handleLifeLost}
+            onGameWon={handleGameWon}
+            onGameLost={handleGameLost}
+            onShowMessage={showMessage}
+          />
 
-  return (
-    <div className="w-full max-w-7xl mx-auto bg-white dark:bg-black rounded-lg shadow-lg p-2 sm:p-4 md:p-6 min-h-screen sm:min-h-0">
-      {/* LifeBar - Top Right */}
-      <LifeBar lives={lives} maxLives={5} />
-      
-      {/* Letter Selector Component - Only shows during letter selection */}
-      <LetterSelector 
-        isActive={isLetterSelectionStep} 
-        onLettersChange={handleLettersChange}
-        virtualKeyboardInput={virtualKeyboardInput}
-        persistedLetters={lockedLetters}
-        onLettersLocked={handleLettersLocked}
-      />
+          {/* Center Section - Tutorial Content */}
+          <div className="w-1/2 flex flex-col justify-center items-center text-center px-8">
+            <div className="min-h-[200px] flex flex-col justify-center">
+              {validSteps[currentStep]?.title && (
+                <div 
+                  className="text-lg title-text leading-relaxed text-gray-800 dark:text-gray-200"
+                  dangerouslySetInnerHTML={{ 
+                    __html: validSteps[currentStep].title 
+                  }} 
+                />
+              )}
+              {validSteps[currentStep]?.content && (
+                <div 
+                  className="text-sm title-text leading-relaxed text-gray-800 dark:text-gray-200 mt-2"
+                  dangerouslySetInnerHTML={{ 
+                    __html: validSteps[currentStep].content 
+                  }} 
+                />
+              )}
+            </div>
 
-      {/* Word Game Manager - Only shows during game */}
-      <WordGameManager
-        isActive={isGameStep}
-        startingLetters={lockedLetters}
-        onGameStateChange={handleGameStateChange}
-        virtualKeyboardInput={virtualKeyboardInput}
-      />
-      
-      {/* Tutorial Container with Navigation */}
-      <div className="relative">
-        {/* Main Content Area */}
-        <div 
-          className="min-h-[500px] flex items-center justify-center"
-          onTouchStart={onTouchStart}
-          onTouchMove={onTouchMove}
-          onTouchEnd={onTouchEnd}
-        >
-          {/* Left Section - Dash Placeholder */}
-          <DashPlaceholder/>
+            {/* Letter Selector */}
+            {isLetterSelectionStep && (
+              <div className="mt-8 w-full">
+                <LetterSelector 
+                  onLettersChange={handleLettersChange}
+                  onLettersLocked={handleLettersLocked}
+                  isActive={Boolean(isLetterSelectionStep)}
+                  onShowMessage={showMessage}
+                />
+              </div>
+            )}
+          </div>
 
-          {/* Left Navigation Button */}
+          {/* Right Section - Clue Placeholder with Toggleable Hints */}
+          <CluePlaceholder 
+            numbers={tutorialWords?.numbers_for_clue}
+            showHints={false}
+            gameState={isGameStep && gameState ? gameState : null}
+            isGameActive={true}
+          />
+          
+          {/* Navigation Chevrons - positioned to not overlap */}
           <button
             onClick={prevStep}
-            className="mx-4 p-2 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+            className="absolute left-6 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors z-10"
             aria-label="Previous step"
           >
-            <ChevronLeft className="w-6 h-6 text-gray-700 dark:text-gray-300" />
+            <ChevronLeftIcon size={24} className="text-gray-600 dark:text-gray-300" />
           </button>
 
-          {/* Center Section - Content Container */}
-          <ContentContainer currentStepData={currentStepData} />
-          
-          {/* Right Navigation Button */}
           <button
             onClick={nextStep}
-            className="mx-4 p-2 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+            className="absolute right-6 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors z-10"
             aria-label="Next step"
           >
-            <ChevronRight className="w-6 h-6 text-gray-700 dark:text-gray-300" />
+            <ChevronRightIcon size={24} className="text-gray-600 dark:text-gray-300" />
           </button>
 
-          {/* Right Section - Clue Placeholder */}
-          <CluePlaceholder numbers={[5, 1, 7]} />
+          {/* Tutorial Progress Step indicator */}
+          <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2">
+            {validSteps.map((_, index) => (
+              <div
+                key={index}
+                className={`w-2 h-2 rounded-full ${
+                  index === currentStep 
+                    ? 'bg-purple-600'
+                    : 'bg-gray-300 dark:bg-gray-600'
+                }`}
+              />
+            ))}
+          </div>
         </div>
+
       </div>
 
-      {/* Progress Indicators */}
-      <div className="flex justify-center space-x-2 mt-6">
-        {validSteps.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => setCurrentStep(index)}
-            className={`w-3 h-3 rounded-full transition-all duration-200 ${
-              index === currentStep 
-                ? 'bg-fuchsia-600 scale-125' 
-                : 'bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500'
-            }`}
-            aria-label={`Go to step ${index + 1}`}
-          />
-        ))}
-      </div>
+      {/* Game Over Screens */}
+      {showWinScreen && (
+        <WinScreen
+          onPlayAgain={resetGame}
+          onGoToMainGame={goToMainGame}
+          onClose={() => setShowWinScreen(false)}
+        />
+      )}
 
-      {/* Custom Styles for Inknut Antiqua Font */}
-      <style jsx>{`
-        .tutorial-title {
-          font-family: var(--font-inknut-antiqua), serif;
-          font-weight: bold;
-          text-decoration: underline;
-          font-size: 1.5rem;
-          line-height: 1.4;
-        }
-        
-        .tutorial-content {
-          font-family: var(--font-inknut-antiqua), serif;
-          font-weight: normal;
-          text-decoration: none;
-          font-size: 1.125rem;
-          line-height: 1.6;
-        }
-      `}</style>
+      {showLoseScreen && (
+        <LoseScreen
+          onRetryTutorial={resetGame}
+          onGoToMainGame={goToMainGame}
+          onClose={() => setShowLoseScreen(false)}
+        />
+      )}
     </div>
   );
 }

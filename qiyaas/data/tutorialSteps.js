@@ -1,3 +1,5 @@
+// TODO: Import wink emoji
+
 export const tutorialSteps = [
   {
     id: 1,
@@ -44,44 +46,43 @@ export const tutorialSteps = [
   {
     id: 7,
     title: "", 
-    content: `Each <span style="text-decoration: underline; color:#12B503">clue</span> will only appear once`
+    content: `Each <span style="text-decoration: underline; color:#12B503">clue</span> will only appear once and can be in a random order`
+  },
+  
+  {
+    id: 8,
+    title: "",
+    content: `Click on the number to get a <span style="color:#12B503">hint</span>.`
   },
 
   {
-    id: 8,
+    id: 9,
     title: "", 
     content: `To start, select some <span style="color:#12B503">letters</span> (3 consonants, 1 vowel) based on the number clues provided.`
   },
 
   {
-    id: 9,
-    title: "",
-    content: "Now, the letters you got correct will be filled in"
-  },
-  {
     id: 10,
     title: "",
-    content: ""
+    content: `Try to guess the full word or you get to guess 1 more vowel and 1 more consonant.`
   },
+
   {
     id: 11,
     title: "",
-    content: `Try to guess the full word or guess 1 more vowel and 1 more consonant (If you guess wrong, you will <span style="color:#CC00FF">lose</span> a life)`
+    content: `If you guess the word wrong, you will <span style="color:#CC00FF">lose</span> a life.`
   },
+
   {
     id: 12,
     title: "",
-    content: ""
+    content: `The keyboard will higlight according to your guesses.`
   },
+
   {
     id: 13,
     title: "",
-    content: ""
+    content: `If a clue is 9 does that mean its nine letters, or does that mean the 9th letter of the alphabet, or does it start with N? Good luck ;)`
   },
-  {
-    id: 14,
-    title: "",
-    content: ""
-  }
 
 ];

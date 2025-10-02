@@ -7,11 +7,11 @@ export default function LetterSelector({
   onLettersChange = null, 
   virtualKeyboardInput = null,
   persistedLetters = null,
-  onLettersLocked = null 
+  onLettersLocked = null,
+  onShowMessage = null  // Message handling
 }) {
   const [selectedLetters, setSelectedLetters] = useState([]);
   const [isLocked, setIsLocked] = useState(false);
-  const [error, setError] = useState('');
 
   // Vowels and consonants
   const vowels = ['A', 'E', 'I', 'O', 'U'];
@@ -24,48 +24,54 @@ export default function LetterSelector({
       setIsLocked(true);
     }
   }, [persistedLetters]);
-  
-  const validateLetters = (letters) => {
-    if (letters.length === 0) return '';
+
+  const showMessage = (message, type = 'error') => {
+  if (onShowMessage) {
+    onShowMessage(message, type);
+  }
+};
+
+  const validateAndShowMessage = (letters) => {
+    if (letters.length === 0) return true;
     
-    const currentVowels = letters.filter(l => vowels.includes(l)).length;
-    const currentConsonants = letters.filter(l => consonants.includes(l)).length;
+  const currentVowels = letters.filter(l => vowels.includes(l)).length;
+  const currentConsonants = letters.filter(l => consonants.includes(l)).length;
     
     if (currentVowels > 1) {
-      return 'Only 1 vowel allowed!';
+      showMessage('Only 1 vowel allowed!', 'error');
+      return false; 
     }
     if (currentConsonants > 3) {
-      return 'Only 3 consonants allowed!';
+      showMessage('Only 3 consonants allowed!', 'error');
+      return false; 
     }
     if (letters.length > 4) {
-      return 'Maximum 4 letters allowed!';
+      showMessage('Maximum 4 letters allowed!', 'error');
+      return false;
     }
     
-    return '';
+    return true;
   };
 
   const addLetter = (letter) => {
     if (isLocked) return;
     
-    const upperLetter = letter.toUpperCase();
+  const upperLetter = letter.toUpperCase();
     
-    // Check if letter is already selected
-    if (selectedLetters.includes(upperLetter)) {
-      setError('Letter already selected!');
-      return;
-    }
-    
-    const newLetters = [...selectedLetters, upperLetter];
-    const validationError = validateLetters(newLetters);
-    
-    if (validationError) {
-      setError(validationError);
-      return;
-    }
+  // Check if letter is already selected
+  if (selectedLetters.includes(upperLetter)) {
+    showMessage('Letter already selected!', 'error');
+    return;
+  }
+  
+  const newLetters = [...selectedLetters, upperLetter];
+  
+  if (!validateAndShowMessage(newLetters)) {
+    return;
+  }
     
     // Add letter immediately
     setSelectedLetters(newLetters);
-    setError('');
     
     // Callback to parent component
     if (onLettersChange) {
@@ -78,7 +84,6 @@ export default function LetterSelector({
     
     const newLetters = selectedLetters.slice(0, -1);
     setSelectedLetters(newLetters);
-    setError('');
     if (onLettersChange) {
       onLettersChange(newLetters);
     }
@@ -88,7 +93,6 @@ export default function LetterSelector({
     if (isLocked) return;
     
     setSelectedLetters([]);
-    setError('');
     if (onLettersChange) {
       onLettersChange([]);
     }
@@ -96,7 +100,7 @@ export default function LetterSelector({
 
   const lockLetters = () => {
     if (selectedLetters.length === 0) {
-      setError('No letters to lock!');
+      showMessage('No letters to lock!', 'error');
       return;
     }
     
@@ -105,12 +109,14 @@ export default function LetterSelector({
     const currentConsonants = selectedLetters.filter(l => consonants.includes(l)).length;
     
     if (currentVowels !== 1 || currentConsonants !== 3) {
-      setError('Must have exactly 3 consonants and 1 vowel to lock!');
+      showMessage('Must have exactly 3 consonants and 1 vowel to lock!', 'error');
       return;
     }
     
     setIsLocked(true);
-    setError('');
+    
+    // Show success message
+    showMessage('Starting Letters Selected!', 'success');
     
     // Notify parent that letters are locked
     if (onLettersLocked) {
@@ -170,7 +176,7 @@ export default function LetterSelector({
           {selectedLetters.map((letter, index) => (
             <button
               key={index}
-              className={`w-12 h-12 rounded-full font-semibold text-lg transition-all duration-150 transform shadow-lg flex items-center justify-center ${
+              className={`w-12 h-12 rounded-full font-semibold body-text text-lg transition-all duration-150 transform shadow-lg flex items-center justify-center ${
                 isLocked 
                   ? 'bg-green-500 text-white' 
                   : 'bg-purple-500 text-white hover:bg-purple-600'
@@ -181,14 +187,7 @@ export default function LetterSelector({
           ))}
         </div>
         
-        {/* Error message */}
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded-md text-sm mb-2 max-w-64">
-            {error}
-          </div>
-        )}
-        
-        {/* Instructions */}
+        {/* Instructions - Error message removed, now handled by MessageBox */}
         <div className="text-xs text-gray-600 dark:text-gray-400 max-w-48">
           {isLocked ? (
             <span className="text-green-600 font-semibold">
@@ -196,14 +195,11 @@ export default function LetterSelector({
             </span>
           ) : (
             <>
-              Type letter (adds instantly)<br/>
-              Backspace: Remove last<br/>
-              Enter: Lock letters<br/>
-              Esc: Clear all<br/>
-              <span className="text-blue-500">Need: 3 consonants + 1 vowel</span>
+              <span className="text-green-500 title-text">Enter 3 consonants + 1 vowel</span>
             </>
           )}
         </div>
+                
       </div>
     </>
   );

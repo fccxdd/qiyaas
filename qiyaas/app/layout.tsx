@@ -1,24 +1,32 @@
-import type { Metadata } from "next";
 import { Indie_Flower, Inknut_Antiqua } from "next/font/google";
 import "@/app/globals.css";
 import OrientationLock from "@/components/OrientationLock";
 
+// Indie Flower for playful accent text
 const indieFlower = Indie_Flower({ 
   weight: '400',
   subsets: ['latin'],
   variable: '--font-indie-flower', // Creates CSS variable
 })
 
+// Inknut Antiqua for headings and general text
 const inknutAntiqua = Inknut_Antiqua({ 
   weight: ['300', '400', '500', '600', '700'],
   subsets: ['latin'],
   variable: '--font-inknut-antiqua', // Creates CSS variable
 })
 
-export const metadata: Metadata = {
+// Metadata Definition
+export const metadata = {
   title: "Qiyaas",
-  description: "Wordle meets Hangman",
-  viewport: 'width=device-width, initial-scale=1, orientation=portrait'
+  description: "Wordle meets Hangman"
+};
+
+// Viewport Definition
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1.0,
+  orientation: 'portrait'
 };
 
 export default function RootLayout({

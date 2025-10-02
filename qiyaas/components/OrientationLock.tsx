@@ -3,7 +3,7 @@
 "use client"
 
 import React, { useState, useEffect } from 'react';
-import { RotateCcw } from 'lucide-react';
+import ScreenRotationIcon from '@mui/icons-material/ScreenRotation';
 
 const OrientationLock = ({ children }: { children: React.ReactNode }) => {
   const [isLandscape, setIsLandscape] = useState(false);
@@ -47,7 +47,7 @@ const OrientationLock = ({ children }: { children: React.ReactNode }) => {
         <div className="text-center max-w-sm">
           {/* Rotating phone icon */}
           <div className="mb-8 animate-bounce">
-            <RotateCcw size={80} className="text-white mx-auto animate-spin" style={{ animationDuration: '3s' }} />
+            <ScreenRotationIcon className="text-white mx-auto animate-spin" style={{ animationDuration: '3s' }} />
           </div>
           
           {/* Main message */}
@@ -80,7 +80,7 @@ const OrientationLock = ({ children }: { children: React.ReactNode }) => {
           </div>
           
           <p className="text-gray-400 text-sm">
-            Rotate your device to portrait mode to use the app
+            Rotate your device to portrait mode to play Qiyaas.
           </p>
         </div>
       </div>

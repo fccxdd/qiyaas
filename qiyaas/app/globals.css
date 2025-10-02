@@ -25,7 +25,7 @@
   --foreground: #ededed;
 }
 
-body {
+body, .body-text {
   @apply bg-white dark:bg-black text-gray-900 dark:text-gray-100;
   font-family: var(--font-indie-flower); /* Body uses Indie Flower */
   transition: background-color 0.2s ease, color 0.2s ease;

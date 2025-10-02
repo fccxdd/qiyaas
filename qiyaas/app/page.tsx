@@ -12,7 +12,7 @@ export default async function Home() {
       <header className="row-start-1 self-start w-full flex justify-end">
              <ThemeToggle />
       </header>
-      <main className="flex flex-col gap-[32px] row-start-2 items-center">
+      <main className="flex flex-col gap-[30px] row-start-2 items-center">
         <Image
           className="hidden dark:block "
           src="/qiyaas_logo_darkmode.svg"
