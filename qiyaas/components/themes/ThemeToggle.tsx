@@ -1,4 +1,4 @@
-// components/ThemeToggle.tsx
+// components/themes/ThemeToggle.tsx
 
 // Toggle to Enable Light Mode and Dark Mode
 'use client'
@@ -8,20 +8,27 @@ import { MdLightMode, MdDarkMode } from 'react-icons/md'
 
 export default function DarkModeToggle() {
   const [darkMode, setDarkMode] = useState(false)
+  const [mounted, setMounted] = useState(false)
 
-  // Check for saved theme preference or default to light mode
+  // Check for saved theme preference or default to DARK mode
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme')
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
     
-    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
-      setDarkMode(true)
-      document.documentElement.classList.add('dark')
-    } else {
+    // If there's a saved preference, use it. Otherwise, default to dark mode
+    if (savedTheme === 'light') {
       setDarkMode(false)
-      document.documentElement.classList.remove('dark')
+    } else {
+      setDarkMode(true)
     }
+    setMounted(true)
   }, [])
+
+    // Don't render until mounted to prevent hydration mismatch
+    if (!mounted) {
+      return (
+        <div className="w-11 h-6 bg-gray-300 dark:bg-gray-600 rounded-full" />
+      )
+    }
 
   // Toggle dark mode
   const toggleDarkMode = () => {
@@ -29,12 +36,10 @@ export default function DarkModeToggle() {
       document.documentElement.classList.remove('dark')
       localStorage.setItem('theme', 'light')
       setDarkMode(false)
-    //   console.log('Switched to light mode', document.documentElement.classList.contains('dark'))
     } else {
       document.documentElement.classList.add('dark')
       localStorage.setItem('theme', 'dark')
       setDarkMode(true)
-    //   console.log('Switched to dark mode', document.documentElement.classList.contains('dark'))
     }
   }
 

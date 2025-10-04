@@ -1,6 +1,7 @@
-// components/MessageBox.jsx
+// components/messages/MessageBox.jsx
 
 import React, { useState, useEffect } from 'react';
+import CloseIcon from '@mui/icons-material/Close';
 
 const MessageBox = ({ message, type, onClose, duration = 3000 }) => {
     
@@ -25,7 +26,8 @@ const MessageBox = ({ message, type, onClose, duration = 3000 }) => {
       }, duration);
 
       return () => clearTimeout(timer);
-    } else {
+    } 
+    else {
       setIsVisible(false);
       setTimeout(() => setShouldRender(false), 300);
     }
@@ -33,18 +35,15 @@ const MessageBox = ({ message, type, onClose, duration = 3000 }) => {
 
   if (!shouldRender) return null;
 
-  const getMessageStyles = () => {
+    // Style of the Messages
+    const getMessageStyles = () => {
     const baseStyles = "px-6 py-3 rounded-lg font-medium title-text text-center shadow-lg transition-all duration-300 transform max-w-md mx-auto";
     
     switch (type) {
       case 'error':
-        return `${baseStyles} bg-red-100 text-red-700 border border-red-200`;
+        return `${baseStyles} text-red-700 dark:text-red-400`;
       case 'success':
-        return `${baseStyles} bg-green-100 text-green-700 border border-green-200`;
-      case 'warning':
-        return `${baseStyles} bg-yellow-100 text-yellow-700 border border-yellow-200`;
-      default:
-        return `${baseStyles} bg-blue-100 text-blue-700 border border-blue-200`;
+        return `${baseStyles} text-green-700 dark:text-green-400`;
     }
   };
 
@@ -55,6 +54,7 @@ const MessageBox = ({ message, type, onClose, duration = 3000 }) => {
       <div className={getMessageStyles()}>
         <div className="flex items-center justify-between">
           <span className="flex-1">{message}</span>
+          {/* Button to close the message */}
           {onClose && (
             <button
               onClick={() => {
@@ -66,13 +66,13 @@ const MessageBox = ({ message, type, onClose, duration = 3000 }) => {
               }}
               className="ml-3 text-gray-500 hover:text-gray-700 focus:outline-none"
             >
-              ×
+              <CloseIcon/>
             </button>
           )}
         </div>
       </div>
     </div>
   );
-};
+mat};
 
 export default MessageBox;
