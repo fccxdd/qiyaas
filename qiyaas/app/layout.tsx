@@ -35,7 +35,24 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${indieFlower.variable} ${inknutAntiqua.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${indieFlower.variable} ${inknutAntiqua.variable}`}>
+      
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                const savedTheme = localStorage.getItem('theme');
+                if (savedTheme === 'light') {
+                  document.documentElement.classList.remove('dark');
+                } else {
+                  document.documentElement.classList.add('dark');
+                }
+              })();
+            `,
+          }}
+        />
+      </head>
       {/* ↑ Both variables added to make them available everywhere */}
       <body className={indieFlower.className}>
         <OrientationLock>

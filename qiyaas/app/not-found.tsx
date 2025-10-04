@@ -1,7 +1,7 @@
 // /not-found.tsx
 
 import Image from "next/image";
-import ThemeToggle from "@/components/ThemeToggle";
+import ThemeToggle from "@/components/themes/ThemeToggle";
 
 export default function Custom404() {
   return (
@@ -11,21 +11,14 @@ export default function Custom404() {
 		<ThemeToggle />
 	</header>
 	
-	<main className="flex flex-col gap-[32px] row-start-2 items-center">
+	<main className="flex flex-col gap-[30px] row-start-2 items-center">
 	
 		<Image
-			className="hidden dark:block "
-			src="/qiyaas_404_logo.svg"
-			alt="dark-mode-image"
-			width={400}
-			height={400}
-		/>
-		<Image
-			className="mb-4 block dark:hidden "
-			src="/qiyaas_404_logo.svg"
-			alt="light-mode-image"
-			width={400}
-			height={400}
+		  className="block"
+		  src="/qiyaas_404.png"
+		  alt="qiyaas-404"
+		  width={178}
+		  height={151}
 		/>
 	
 		<div className="flex align-center items-center">
