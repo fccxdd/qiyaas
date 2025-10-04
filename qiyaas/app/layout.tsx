@@ -1,6 +1,6 @@
 import { Indie_Flower, Inknut_Antiqua } from "next/font/google";
 import "@/app/globals.css";
-import OrientationLock from "@/components/OrientationLock";
+import OrientationLock from "@/components/ux/OrientationLock";
 
 // Indie Flower for playful accent text
 const indieFlower = Indie_Flower({ 
