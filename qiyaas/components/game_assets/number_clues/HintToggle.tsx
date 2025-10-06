@@ -4,14 +4,14 @@
 
 import React, { useState } from 'react';
 import hintMap from '@/data/hint_map.json';
+import { getNumbersForClue } from '@/components/game_assets/word_clues/ExtractAnswer';
 
 interface HintToggleProps {
   numbers?: number[];
 }
 
-const HintToggle: React.FC<HintToggleProps> = ({ 
-  numbers = []
-}) => {
+const HintToggle: React.FC<HintToggleProps> = () => { 
+
   const [hintsVisible, setHintsVisible] = useState<boolean[]>([]);
 
   const toggleHint = (index: number) => {
@@ -22,15 +22,17 @@ const HintToggle: React.FC<HintToggleProps> = ({
     });
   };
 
+  const { numbersForClue } = getNumbersForClue();
+
   return (
     <div className="w-1/4 flex flex-col justify-center items-end pr-4 sm:pr-8 md:pr-20">
       <div className="space-y-4 sm:space-y-6 md:space-y-8 text-right">
-        {numbers.map((number, index) => (
+        {numbersForClue.map((number, index) => (
           <div key={index} className="flex items-center justify-end space-x-3">
             <button
               onClick={() => toggleHint(index)}
               className="text-2xl sm:text-3xl md:text-4xl font-bold text-black dark:text-white cursor-pointer hover:text-green-600 dark:hover:text-green-400 hover:scale-110 active:scale-95 transition-all duration-200"
-              style={{ fontFamily: 'Indie Flower, cursive' }}
+              style={{ fontFamily: 'Indie Flower ' }}
             >
               {number}
             </button>
