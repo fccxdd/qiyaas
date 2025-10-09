@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import ThemeToggle from "@/components/themes/ThemeToggle";
+import EmailIcon from '@mui/icons-material/Email';
 
 export default async function Home() {
 
@@ -8,7 +9,7 @@ export default async function Home() {
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
+    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 relative">
       
         <header className="row-start-1 self-start w-full flex justify-end">
               <ThemeToggle />
@@ -40,6 +41,14 @@ export default async function Home() {
             </Link>
         </div>
       </main>
+
+      <Link
+        className="fixed bottom-8 right-8 rounded-full shadow-xl border border-solid border-transparent transition-all flex items-center justify-center bg-foreground text-background hover:bg-[#383838] dark:hover:bg-[#ccc] hover:-translate-y-1 hover:shadow-2xl h-12 w-12 sm:h-14 sm:w-14 z-50"
+        href="mailto:qiyaasgame@gmail.com"
+        aria-label="Contact"
+      >
+        <EmailIcon/>
+      </Link>
     </div>
   );
 }
