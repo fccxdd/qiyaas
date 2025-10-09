@@ -10,7 +10,7 @@ export const metadata = {
 
 export default function HowToPlayLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex-center">
+    <div className="flex-center overflow-hidden">
       {children}
     </div>
   );

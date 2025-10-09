@@ -1,9 +1,27 @@
 {
-    "clue_1": "",
+    "2025-10-XX": {
+            "clue_1": "",
 
-    "clue_2": "",
+            "clue_2": "",
 
-    "clue_3": "",
+            "clue_3": "",
 
-    "numbers_for_clue": [ 0, 0, 0]
+            "numbers_for_clue": [ 0, 0, 0]
+        },
+    
+    "2025-10-YY": {
+            "clue_1": "",
+
+            "clue_2": "",
+
+            "clue_3": "",
+
+            "numbers_for_clue": [ 0, 0, 0]
+        }
+
+
+
+
+
+
 }

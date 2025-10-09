@@ -1,24 +1,28 @@
-// TODO: Import wink emoji
-
 export const tutorialSteps = [
   {
+    id: 0,
+    title: `Hello. Welcome to <span style="color:#CC00FF">Qiyaas</span>.`, 
+    content: `This is a word game based on numbers`
+  },
+
+  {
     id: 1,
+    title: "", 
+    content: `Each puzzle has one <span style="color:#12B503">noun</span>,\
+              one <span style="color:#12B503">verb</span>, and \
+              one  <span style="color:#12B503">adjective</span>`
+  },
+
+  {
+    id: 2,
     title: "", 
     content: `The numbers on the right represent the different <span style="color:#12B503">clues</span>`
   },
 
   {
-    id: 2,
+    id: 3,
     title: "",
     content: `Number clues range from <span style="color:#12B503">1-9</span>`
-  },
-
-  {
-    id: 3,
-    title: "", 
-    content: `Each puzzle has one <span style="color:#12B503">noun</span>,\
-              one <span style="color:#12B503">verb</span>, and \
-              one  <span style="color:#12B503">adjective</span>`
   },
 
   {
@@ -46,25 +50,26 @@ export const tutorialSteps = [
   {
     id: 7,
     title: "", 
-    content: `Each <span style="text-decoration: underline; color:#12B503">clue</span> will only appear once and can be in a random order`
+    content: `Each <span style="text-decoration: underline; color:#12B503">clue</span> will only appear once`
   },
   
+
   {
     id: 8,
-    title: "",
-    content: `Click on the number to get a <span style="color:#12B503">hint</span>.`
+    title: "", 
+    content: `You will start by selecting some <span style="color:#12B503">letters</span> (3 consonants, 1 vowel) based on the number clues provided.`
   },
 
   {
     id: 9,
-    title: "", 
-    content: `To start, select some <span style="color:#12B503">letters</span> (3 consonants, 1 vowel) based on the number clues provided.`
+    title: "",
+    content: `At this point you can attempt to guess the words.`
   },
 
   {
     id: 10,
     title: "",
-    content: `You can either try to guess the full word or use 1 addition vowel & consonant to help you out.`
+    content: `You will have one more chance to select 2 additional letters (1 consonant, 1 vowel).`
   },
 
   {
@@ -76,15 +81,20 @@ export const tutorialSteps = [
   {
     id: 12,
     title: "",
-    content: `The keyboard will light up in different colors according to your guesses.
-              <span style="color:#898989">Grey</span> for letters not in the word or used up and 
-              <span style="color:#FAA70D">Yellow</span> for letters in the wrong clue.`
+    content: `The keyboard will light up in different colors. <br/>
+              <span style="color:#898989">Grey</span> for letters not in the word or used up and <br/>
+              <span style="color:#FAA70D">Yellow</span> for letter is present but in the wrong spot.`
   },
 
   {
     id: 13,
     title: "",
-    content: `If a clue is 9 does that mean its nine letters, or does that mean the 9th letter of the alphabet, or does it start with N? Good luck ;)`
-  },
+    content: `If a clue is <span style="color:#12B503">9</span> is it: <br/>
+              9 letters long, <br/>
+              the 9th letter of the alphabet (I), <br/>
+              or begins with N? <br/>
+              Good luck 💭`
+  }
+
 
 ];

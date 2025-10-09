@@ -1,4 +1,4 @@
-// components/LifeBar.tsx
+// components/game_assets/lives/LifeBar.tsx
 
 "use client"
 
@@ -33,21 +33,22 @@ const LifeBar: React.FC<LifeBarProps> = ({
   }, [lives, previousLives, onLifeLost]);
 
   return (
-    <div className="absolute top-4 right-4 z-20">
-      <div className={`flex space-x-2 ${isShaking ? 'animate-shake' : ''}`}>
+
+    	<div className="flex justify-end top-4 right-4 z-20">
+      <div className={`flex gap-2 ${isShaking ? 'animate-shake' : ''}`}>
         {Array.from({ length: maxLives }, (_, index) => (
           <div
             key={index}
             className={`w-4 h-4 rounded-full transition-all duration-300 ${
               index < (maxLives - lives)
-                ? 'bg-gray-300 dark:bg-gray-600 scale-75 opacity-50'
-                : 'bg-purple-600 shadow-lg scale-100'
+                ? 'bg-gray-700 scale-75 opacity-30'
+                : 'bg-purple-500 dark:shadow-lg dark:shadow-purple-500/50'
             }`}
           />
         ))}
       </div>
-      
-      {/* Custom shake animation */}
+
+      {/* Custom animations */}
       <style jsx>{`
         .animate-shake {
           animation: shake 0.6s ease-in-out;
