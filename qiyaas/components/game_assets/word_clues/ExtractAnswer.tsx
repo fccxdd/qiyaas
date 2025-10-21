@@ -31,6 +31,15 @@ export function getClueAnswers(): { clueAnswers: string[] }
     }
 
 /**
+ * Gets all clues in the format needed for ClueWords component
+ * @returns Clue data object with clue_1, clue_2, clue_3
+ */
+export function getCluesData(): TutorialWords {
+    return tutorialWords as TutorialWords;
+}
+
+/**
+ * 
  * Gets the numbers for the clues
  * @returns {numbersForClue: number[]} - Array of numbers corresponding to each clue
  */
