@@ -1,5 +1,7 @@
 // components/game_assets/game_walkthrough/GameWalkthrough.tsx
 
+'use client';
+
 import { tutorialSteps } from '@/data/tutorialSteps';
 import { useState, useEffect } from 'react';
 
