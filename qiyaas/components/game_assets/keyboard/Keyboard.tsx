@@ -4,7 +4,7 @@
 
 import BackspaceIcon from '@mui/icons-material/Backspace';
 import KeyboardReturnIcon from '@mui/icons-material/KeyboardReturn';
-import { useKeyPress } from '@/hooks/useKeyPress';
+import { useKeyPress } from '@/hooks/keyboard/useKeyPress';
 
 interface KeyboardProps {
   onKeyPress?: (key: string) => void;
