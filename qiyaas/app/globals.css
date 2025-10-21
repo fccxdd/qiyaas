@@ -53,25 +53,25 @@ h1, h2, h3, h4, h5, h6, .title-text {
   z-index: 9999;
 }
 
-/* Fade-in effect */
+/* Tutorial Page: Fade-in effect */
 .fade-in {
   opacity: 1;
 }
 
-/* Fade-out effect */
+/* Tutorial Page: Fade-out effect */
 .fade-out {
   opacity: 0;
   pointer-events: none;
 }
 
-/* Spinner icon animation */
+/* Loading Page: Spinner icon animation */
 .spinner-icon {
-  font-size: 3rem;        /* Adjust size */
-  color: white;           /* Spinner color */
+  font-size: 3rem; /* Adjust size */
+  color: white; /* Spinner color */
   animation: spin 1s linear infinite;
 }
 
-/* Spinning animation */
+/* Loading Page: Spinning animation */
 @keyframes spin {
   from {
     transform: rotate(0deg);
