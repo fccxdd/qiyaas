@@ -29,9 +29,17 @@ export const WinScreen: React.FC<WinScreenProps> = ({
         <div className="flex flex-col gap-[30px] row-start-2 items-center">
           
           <Image
-            className="block animate-bounce linear"
-            src="/qiyaas_logo.svg"
-            alt="qiyaas-logo"
+            className="block dark:hidden"
+            src="qiyaas_logo_66_percent.svg"
+            alt="qiyaas-logo-light"
+            width={178}
+            height={151}
+          />
+
+          <Image
+            className="hidden dark:block"
+            src="qiyaas_logo.svg"
+            alt="qiyaas-logo-dark"
             width={178}
             height={151}
           />

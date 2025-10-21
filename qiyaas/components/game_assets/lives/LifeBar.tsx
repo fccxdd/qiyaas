@@ -39,9 +39,9 @@ const LifeBar: React.FC<LifeBarProps> = ({
         {Array.from({ length: maxLives }, (_, index) => (
           <div
             key={index}
-            className={`w-4 h-4 rounded-full transition-all duration-300 ${
+            className={`w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 rounded-full transition-all duration-300 ${
               index < (maxLives - lives)
-                ? 'bg-gray-700 scale-75 opacity-30'
+                ? 'bg-gray-700 dark:bg-gray-300 scale-75 opacity-30'
                 : 'bg-purple-500 dark:shadow-lg dark:shadow-purple-500/50'
             }`}
           />

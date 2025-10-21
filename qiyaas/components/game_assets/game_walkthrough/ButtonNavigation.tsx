@@ -1,5 +1,7 @@
 // components/game_assets/game_walkthrough/ButtonNavigation.tsx
 
+'use client';
+
 import { useEffect, useRef } from 'react';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';

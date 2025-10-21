@@ -1,22 +1,39 @@
 // components/messages/MessageBox.jsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import CloseIcon from '@mui/icons-material/Close';
 
 const MessageBox = ({ message, type, onClose, duration = 3000 }) => {
     
   const [isVisible, setIsVisible] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
+  const [displayMessage, setDisplayMessage] = useState('');
+  const timerRef = useRef(null);
 
   useEffect(() => {
     
     if (message) {
-      setShouldRender(true);
-      // Small delay for animation
-      setTimeout(() => setIsVisible(true), 10);
+      // Clear any existing timer
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+
+      // If already showing a message, briefly hide it then show new one
+      if (shouldRender && displayMessage !== message) {
+        setIsVisible(false);
+        setTimeout(() => {
+          setDisplayMessage(message);
+          setIsVisible(true);
+        }, 150);
+      } else {
+        // First message or same message
+        setDisplayMessage(message);
+        setShouldRender(true);
+        setTimeout(() => setIsVisible(true), 10);
+      }
       
       // Auto-hide after duration
-      const timer = setTimeout(() => {
+      timerRef.current = setTimeout(() => {
         setIsVisible(false);
         // Remove from DOM after animation
         setTimeout(() => {
@@ -25,7 +42,11 @@ const MessageBox = ({ message, type, onClose, duration = 3000 }) => {
         }, 300);
       }, duration);
 
-      return () => clearTimeout(timer);
+      return () => {
+        if (timerRef.current) {
+          clearTimeout(timerRef.current);
+        }
+      };
     } 
     else {
       setIsVisible(false);
@@ -37,7 +58,7 @@ const MessageBox = ({ message, type, onClose, duration = 3000 }) => {
 
     // Style of the Messages
     const getMessageStyles = () => {
-    const baseStyles = "px-6 py-3 rounded-lg font-medium title-text text-center shadow-lg transition-all duration-300 transform max-w-md mx-auto";
+    const baseStyles = "px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-medium title-text text-center shadow-lg transition-all duration-300 transform w-[90vw] sm:max-w-md mx-auto text-xs sm:text-base";
     
     switch (type) {
       case 'error':
@@ -48,7 +69,7 @@ const MessageBox = ({ message, type, onClose, duration = 3000 }) => {
   };
 
   return (
-    <div className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-300 ${
+    <div className={`fixed top-16 sm:top-20 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-300 ${
       isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'
     }`}>
       <div className={getMessageStyles()}>
@@ -73,6 +94,6 @@ const MessageBox = ({ message, type, onClose, duration = 3000 }) => {
       </div>
     </div>
   );
-mat};
+};
 
 export default MessageBox;
