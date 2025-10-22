@@ -5,29 +5,29 @@
 import BackspaceIcon from '@mui/icons-material/Backspace';
 import KeyboardReturnIcon from '@mui/icons-material/KeyboardReturn';
 import { useKeyPress } from '@/hooks/keyboard/useKeyPress';
+import { GameConfig } from '@/lib/gameConfig';
 
 interface KeyboardProps {
   onKeyPress?: (key: string) => void;
   onBackspace?: () => void;
   onEnter?: () => void;
+  disabled?: boolean;
 }
 
 export default function Keyboard({ 
   onKeyPress, 
   onBackspace, 
-  onEnter
+  onEnter,
+  disabled = false
 }: KeyboardProps) {
   const { pressedKey, handleKeyClick, handleBackspaceClick, handleEnterClick } = useKeyPress({
     onKeyPress,
     onBackspace,
-    onEnter
+    onEnter,
+    disabled
   });
 
-  const rows = [
-    ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
-    ["A", "S", "D", "F", "G", "H", "J", "K", "L"],
-    ["ENTER", "Z", "X", "C", "V", "B", "N", "M", "BACKSPACE"]
-  ];
+  const rows = GameConfig.keyboardLayout;
 
   const renderKey = (key: string) => {
     const isSpecial = key === "ENTER" || key === "BACKSPACE";
@@ -37,15 +37,18 @@ export default function Keyboard({
       <button
         key={key}
         onClick={() => {
+          if (disabled) return; // Block clicks when disabled
           if (key === "ENTER") handleEnterClick();
           else if (key === "BACKSPACE") handleBackspaceClick();
           else handleKeyClick(key);
         }}
+        disabled={disabled} // Add HTML disabled attribute
         className={`flex items-center justify-center font-bold uppercase rounded-md select-none
           bg-gray-300 dark:bg-gray-700 text-black dark:text-white 
           active:scale-95 transition-transform
           ${pressedKey === key ? 'scale-95 bg-gray-400 dark:bg-gray-600' : ''}
           ${isSpecial ? 'flex-[1.3]' : 'flex-1'}
+          ${disabled ? 'opacity-50 cursor-not-allowed' : ''} 
         `}
         style={{
           minHeight: '3rem',
