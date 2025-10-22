@@ -1,36 +1,23 @@
 // components/messages/MessageBox.jsx
 
 import React, { useState, useEffect, useRef } from 'react';
-import CloseIcon from '@mui/icons-material/Close';
+import { GameConfig } from '@/lib/gameConfig';
 
-const MessageBox = ({ message, type, onClose, duration = 3000 }) => {
-    
+const MessageBox = ({ message, type, onClose, duration = GameConfig.messages.messageDelay }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
-  const [displayMessage, setDisplayMessage] = useState('');
   const timerRef = useRef(null);
 
   useEffect(() => {
-    
     if (message) {
       // Clear any existing timer
       if (timerRef.current) {
         clearTimeout(timerRef.current);
       }
 
-      // If already showing a message, briefly hide it then show new one
-      if (shouldRender && displayMessage !== message) {
-        setIsVisible(false);
-        setTimeout(() => {
-          setDisplayMessage(message);
-          setIsVisible(true);
-        }, 150);
-      } else {
-        // First message or same message
-        setDisplayMessage(message);
-        setShouldRender(true);
-        setTimeout(() => setIsVisible(true), 10);
-      }
+      // Show the message
+      setShouldRender(true);
+      setTimeout(() => setIsVisible(true), 10);
       
       // Auto-hide after duration
       timerRef.current = setTimeout(() => {
@@ -47,8 +34,7 @@ const MessageBox = ({ message, type, onClose, duration = 3000 }) => {
           clearTimeout(timerRef.current);
         }
       };
-    } 
-    else {
+    } else {
       setIsVisible(false);
       setTimeout(() => setShouldRender(false), 300);
     }
@@ -56,8 +42,8 @@ const MessageBox = ({ message, type, onClose, duration = 3000 }) => {
 
   if (!shouldRender) return null;
 
-    // Style of the Messages
-    const getMessageStyles = () => {
+  // Style of the Messages
+  const getMessageStyles = () => {
     const baseStyles = "px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-medium title-text text-center shadow-lg transition-all duration-300 transform w-[90vw] sm:max-w-md mx-auto text-xs sm:text-base";
     
     switch (type) {
@@ -65,6 +51,9 @@ const MessageBox = ({ message, type, onClose, duration = 3000 }) => {
         return `${baseStyles} text-red-700 dark:text-red-400`;
       case 'success':
         return `${baseStyles} text-green-700 dark:text-green-400`;
+      case 'info':
+      default:
+        return `${baseStyles} text-black dark:text-white`;  
     }
   };
 
@@ -73,24 +62,7 @@ const MessageBox = ({ message, type, onClose, duration = 3000 }) => {
       isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'
     }`}>
       <div className={getMessageStyles()}>
-        <div className="flex items-center justify-between">
-          <span className="flex-1">{message}</span>
-          {/* Button to close the message */}
-          {onClose && (
-            <button
-              onClick={() => {
-                setIsVisible(false);
-                setTimeout(() => {
-                  setShouldRender(false);
-                  onClose();
-                }, 300);
-              }}
-              className="ml-3 text-gray-500 hover:text-gray-700 focus:outline-none"
-            >
-              <CloseIcon/>
-            </button>
-          )}
-        </div>
+        {message}
       </div>
     </div>
   );
