@@ -25,7 +25,7 @@ export const WinScreen: React.FC<WinScreenProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
-      <div className="relative text-center px-8 py-12 bg-white dark:bg-black rounded-3xl shadow-2xl max-w-md mx-4 animate-scale-in">
+      <div className="relative text-center px-4 py-8 sm:px-8 sm:py-12 bg-white dark:bg-black rounded-3xl shadow-2xl max-w-[280px] sm:max-w-md mx-4 animate-scale-in">
         
         {/* Close Button */}
         {onClose && (
@@ -39,24 +39,24 @@ export const WinScreen: React.FC<WinScreenProps> = ({
         )}
 
         {/* Celebration Icon */}
-        <div className="flex flex-col gap-[30px] row-start-2 items-center">
+        <div className="flex flex-col gap-[20px] sm:gap-[30px] row-start-2 items-center">
           
           <Image
             className="block animate-bounce linear"
             src="/qiyaas_logo.svg"
             alt="qiyaas-logo"
-            width={178}
-            height={151}
+            width={140}
+            height={119}
           />
          
         </div>
         
         {/* Win Message */}
-        <h1 className="text-4xl font-bold text-green-600 dark:text-green-400 mb-4 ">
+        <h1 className="text-2xl sm:text-4xl font-bold text-green-600 dark:text-green-400 mb-3 sm:mb-4">
           GREAT JOB!
         </h1>
         
-        <p className="text-xl text-gray-700 dark:text-gray-300 mb-8">
+        <p className="text-base sm:text-xl text-gray-700 dark:text-gray-300 mb-6 sm:mb-8">
           You have completed todays game!<br/>
           Come back tomorrow for another chance to win!
         </p>
@@ -106,7 +106,7 @@ export const LoseScreen: React.FC<LoseScreenProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
-      <div className="relative text-center px-8 py-12 bg-white dark:bg-black rounded-3xl shadow-2xl max-w-md mx-4 animate-scale-in">
+      <div className="relative text-center px-4 py-8 sm:px-8 sm:py-12 bg-white dark:bg-black rounded-3xl shadow-2xl max-w-[280px] sm:max-w-md mx-4 animate-scale-in">
 
         {/* Close Button */}
         {onClose && (
@@ -120,31 +120,31 @@ export const LoseScreen: React.FC<LoseScreenProps> = ({
         )}
 
         {/* Game Over Icon */}
-        <div className="flex flex-col gap-[30px] row-start-2 items-center">
+        <div className="flex flex-col gap-[20px] sm:gap-[30px] row-start-2 items-center">
           
           <Image
             className="dark:hidden block animate-pulse linear"
             src="/qiyaas_grey_light.svg"
             alt="qiyaas-greyed-out-light"
-            width={178}
-            height={151}
+            width={140}
+            height={119}
           />
 
            <Image
             className="not-dark:hidden block animate-pulse linear"
             src="/qiyaas_grey_dark.svg"
             alt="qiyaas-greyed-out-dark"
-            width={178}
-            height={151}
+            width={140}
+            height={119}
           />        
         </div>
         
         {/* Lose Message */}
-        <h1 className="text-4xl font-bold text-red-600 dark:text-red-400 mb-4">
+        <h1 className="text-2xl sm:text-4xl font-bold text-red-600 dark:text-red-400 mb-3 sm:mb-4">
           GAME OVER!
         </h1>
 
-        <p className="text-xl text-gray-700 dark:text-gray-300 mb-8">
+        <p className="text-base sm:text-xl text-gray-700 dark:text-gray-300 mb-6 sm:mb-8">
           You didnt get it this time.<br/>
           Come back tomorrow for another chance to win!
         </p>
