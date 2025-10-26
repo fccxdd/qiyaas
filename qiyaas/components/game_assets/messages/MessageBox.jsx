@@ -48,19 +48,25 @@ const MessageBox = ({ message, type, onClose, duration = GameConfig.messages.mes
     
     switch (type) {
       case 'error':
-        return `${baseStyles} text-red-700 dark:text-red-400`;
+        return `${baseStyles} ${GameConfig.messageColors.error}`;
       case 'success':
-        return `${baseStyles} text-green-700 dark:text-green-400`;
+        return `${baseStyles} ${GameConfig.messageColors.success}`;
       case 'info':
+        return `${baseStyles} ${GameConfig.messageColors.info}`;
       default:
-        return `${baseStyles} text-black dark:text-white`;  
+        return `${baseStyles} ${GameConfig.messageColors.error}`;  
     }
   };
 
   return (
-    <div className={`fixed top-16 sm:top-20 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-300 ${
-      isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'
-    }`}>
+    <div 
+      className={`fixed left-1/2 transform -translate-x-1/2 z-[9999] transition-all duration-300 ${
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'
+      }`}
+      style={{
+        top: 'clamp(10rem, 20vh, 8rem)'
+      }}
+    >
       <div className={getMessageStyles()}>
         {message}
       </div>

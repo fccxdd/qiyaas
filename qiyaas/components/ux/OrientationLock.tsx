@@ -1,4 +1,4 @@
-// components/OrientationLock.tsx
+// components/ux/OrientationLock.tsx
 
 "use client"
 
