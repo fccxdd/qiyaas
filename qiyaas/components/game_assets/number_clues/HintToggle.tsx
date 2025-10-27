@@ -94,8 +94,9 @@ const HintToggle: React.FC<HintToggleProps> = ({ hintsEnabled = true }) => {
             {number}
           </button>
           
+          {/* FIXED: Added max-width and text truncation for mobile to prevent overlap */}
           {hintsVisible[index] && hintsEnabled && (
-            <div className={`text-xl md:text-2xl text-green-700 dark:text-green-400 font-mono px-2 py-1 rounded backdrop-blur-sm z-50 whitespace-nowrap ml-3 transition-all duration-500 ease-in-out ${
+            <div className={`text-base sm:text-xl md:text-2xl text-green-700 dark:text-green-400 font-mono px-2 py-1 rounded backdrop-blur-sm z-50 whitespace-nowrap ml-2 sm:ml-3 transition-all duration-500 ease-in-out max-w-[120px] sm:max-w-none overflow-hidden text-ellipsis ${
               hintsOpacity[index] ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'
             }`}>
               {hintMap[number.toString() as keyof typeof hintMap] || ''}
