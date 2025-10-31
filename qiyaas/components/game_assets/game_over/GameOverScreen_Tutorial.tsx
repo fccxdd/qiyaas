@@ -30,7 +30,7 @@ export const WinScreen: React.FC<WinScreenProps> = ({
           
           <Image
             className="block dark:hidden animate-bounce linear"
-            src="qiyaas_logo_66_percent.svg"
+            src="qiyaas_logo_66_percent_light.svg"
             alt="qiyaas-logo-light"
             width={140}
             height={119}
@@ -38,7 +38,7 @@ export const WinScreen: React.FC<WinScreenProps> = ({
 
           <Image
             className="hidden dark:block animate-bounce linear"
-            src="qiyaas_logo.svg"
+            src="qiyaas_logo_dark.svg"
             alt="qiyaas-logo-dark"
             width={140}
             height={119}
