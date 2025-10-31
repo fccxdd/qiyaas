@@ -1,4 +1,4 @@
-// hooks/useKeyboard.tsx
+// hooks/keyboard/useKeyboard.tsx
 
 import { useEffect } from 'react';
 
