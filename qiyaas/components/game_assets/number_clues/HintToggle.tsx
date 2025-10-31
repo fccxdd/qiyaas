@@ -15,14 +15,14 @@ const HintToggle: React.FC<HintToggleProps> = ({ hintsEnabled = true }) => {
 
   const [hintsVisible, setHintsVisible] = useState<boolean[]>([]);
   const [hintsOpacity, setHintsOpacity] = useState<boolean[]>([]);
-  const [shouldShake, setShouldShake] = useState(false);
+  const [shouldPulse, setShouldPulse] = useState(false);
   const [hasBeenClicked, setHasBeenClicked] = useState(false);
 
   const toggleHint = (index: number) => {
     if (!hintsEnabled) return;
     
     setHasBeenClicked(true);
-    setShouldShake(false);
+    setShouldPulse(false);
     
     if (hintsVisible[index]) {
       // Closing: fade out hint
@@ -60,20 +60,20 @@ const HintToggle: React.FC<HintToggleProps> = ({ hintsEnabled = true }) => {
 
   const { numbersForClue } = getNumbersForClue();
 
-  // Trigger shake animation only when hints become enabled (game starts)
+  // Trigger pulse animation only when hints become enabled (game starts)
   useEffect(() => {
     if (hintsEnabled && !hasBeenClicked) {
-      const shakeTimer = setTimeout(() => {
-        setShouldShake(true);
-        // Stop shaking after animation completes
+      const pulseTimer = setTimeout(() => {
+        setShouldPulse(true);
+        // Stop pulsing after animation completes
         setTimeout(() => {
-          setShouldShake(false);
-        }, 600); // Duration of shake animation
-      }, 5000); // Wait 5s before starting shake
+          setShouldPulse(false);
+        }, 2000); // Duration of one pulse cycle
+      }, 3000); // Wait 3s before starting pulse
 
-      return () => clearTimeout(shakeTimer);
+      return () => clearTimeout(pulseTimer);
     }
-  }, [hintsEnabled, hasBeenClicked, shouldShake]); // Added shouldShake to dependencies to retrigger
+  }, [hintsEnabled, hasBeenClicked, shouldPulse]); // Added shouldPulse to dependencies to retrigger
 
   return (
     <div className="flex flex-col justify-center items-start space-y-6 sm:space-y-8 relative">
@@ -83,7 +83,7 @@ const HintToggle: React.FC<HintToggleProps> = ({ hintsEnabled = true }) => {
             onClick={() => toggleHint(index)}
             disabled={!hintsEnabled}
             className={`text-3xl md:text-5xl font-bold text-black dark:text-white min-w-[20px] sm:min-w-[32px] text-left relative z-10 transition-all duration-500 ease-in-out ${
-              shouldShake ? 'animate-shake' : ''
+              shouldPulse ? 'animate-pulse-glow' : ''
             } ${
               hintsEnabled 
                 ? 'hover:text-green-700 dark:hover:text-green-400 hover:scale-110 active:scale-95 cursor-pointer' 
@@ -117,13 +117,34 @@ const styles = `
     animation: fadeIn 0.3s ease-in-out;
   }
   
-  @keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
-    20%, 40%, 60%, 80% { transform: translateX(4px); }
+  @keyframes pulseGlow {
+    0%, 100% { 
+      color: inherit;
+      text-shadow: none;
+    }
+    50% { 
+      color: rgb(20, 83, 45);
+      text-shadow: 0 0 8px rgba(22, 101, 52, 0.3),
+                   0 0 12px rgba(22, 101, 52, 0.15);
+    }
   }
-  .animate-shake {
-    animation: shake 0.6s ease-in-out;
+  
+  @media (prefers-color-scheme: dark) {
+    @keyframes pulseGlow {
+      0%, 100% { 
+        color: inherit;
+        text-shadow: none;
+      }
+      50% { 
+        color: rgb(74, 222, 128);
+        text-shadow: 0 0 8px rgba(74, 222, 128, 0.3),
+                     0 0 12px rgba(74, 222, 128, 0.15);
+      }
+    }
+  }
+  
+  .animate-pulse-glow {
+    animation: pulseGlow 2s ease-in-out;
   }
   
   .smooth-scale {
