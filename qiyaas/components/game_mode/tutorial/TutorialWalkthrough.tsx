@@ -5,15 +5,12 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import GameWalkthrough, { getTotalSteps } from "@/components/game_assets/game_walkthrough/GameWalkthrough";
-import { getNumbersForClue } from '@/components/game_assets/word_clues/ExtractAnswer';
 import { NextButton, BackButton, StartButton } from '@/components/game_assets/game_walkthrough/ButtonNavigation';
 import ProgressIndicator from '@/components/game_assets/game_walkthrough/ProgressIndicator';
-import HintToggle from "@/components/game_assets/number_clues/HintToggle";
 
 export default function TutorialWalkthrough() {
   const [currentStep, setCurrentStep] = useState(0);
   const router = useRouter();
-  const { numbersForClue } = getNumbersForClue();
   const totalSteps = getTotalSteps();
 
   const handleStart = () => {
@@ -26,24 +23,11 @@ export default function TutorialWalkthrough() {
  
       <div className="absolute inset-0 flex flex-col justify-center items-center">
 
-        {/* Left side - Clue numbers/dashes */}
-        <div className="absolute left-0.5 sm:left-4 md:left-12 lg:left-16 top-1/2 -translate-y-1/2 flex flex-col justify-center space-y-6 sm:space-y-8 md:space-y-10">
-          {numbersForClue.map((_, index) => (
-            <div key={index} className="text-black dark:text-white text-3xl md:text-5xl font-bold">
-              _
-            </div>
-          ))}
-        </div>
-
         {/* Center Section - Tutorial Content */}
-        <div className="w-[78%] sm:w-[50%] md:max-w-md text-center z-10">
+        <div className="w-[78%] sm:w-[50%] md:max-w-md text-center z-10 md:text-xl lg:text-2xl">
           <GameWalkthrough currentStep={currentStep} />
         </div>
         
-        {/* Right side - Hint Numbers */}
-        <div className="absolute right-0.5 sm:right-[15%] top-1/2 -translate-y-1/2 z-30">
-          <HintToggle hintsEnabled={false} />
-        </div>
       </div>
 
       {/* Progress Indicator */}
