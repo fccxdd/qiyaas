@@ -120,12 +120,11 @@ const styles = `
   @keyframes pulseGlow {
     0%, 100% { 
       color: inherit;
-      text-shadow: none;
+      filter: none;
     }
     50% { 
-      color: rgb(20, 83, 45);
-      text-shadow: 0 0 8px rgba(22, 101, 52, 0.3),
-                   0 0 12px rgba(22, 101, 52, 0.15);
+      color: rgb(34, 197, 94);
+      filter: drop-shadow(0 0 8px rgba(34, 197, 94, 0.5));
     }
   }
   
@@ -133,12 +132,11 @@ const styles = `
     @keyframes pulseGlow {
       0%, 100% { 
         color: inherit;
-        text-shadow: none;
+        filter: none;
       }
       50% { 
-        color: rgb(74, 222, 128);
-        text-shadow: 0 0 8px rgba(74, 222, 128, 0.3),
-                     0 0 12px rgba(74, 222, 128, 0.15);
+        color: rgb(134, 239, 172);
+        filter: drop-shadow(0 0 8px rgba(134, 239, 172, 0.5));
       }
     }
   }
