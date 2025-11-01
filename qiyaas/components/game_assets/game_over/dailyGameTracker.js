@@ -44,14 +44,3 @@ export function markTodayAsPlayed() {
     console.error('Error marking today as played:', error);
   }
 }
-
-/**
- * TODO: DELETE -- Reset game data (for testing)
- */
-export function resetGameData() {
-  try {
-    localStorage.removeItem(STORAGE_KEY);
-  } catch (error) {
-    console.error('Error resetting game data:', error);
-  }
-}

@@ -1,27 +1,204 @@
 {
-    "2025-10-XX": {
-            "clue_1": "",
-
-            "clue_2": "",
-
-            "clue_3": "",
-
-            "numbers_for_clue": [ 0, 0, 0]
+    "2025-11-01": {
+        "round_1": {
+            "clue_1": "TECH",
+            "clue_2": "DOWN",
+            "clue_3": "MOUNT",
+            "numbers_for_clue": [
+                2,
+                4,
+                5
+            ]
         },
-    
-    "2025-10-YY": {
-            "clue_1": "",
-
-            "clue_2": "",
-
-            "clue_3": "",
-
-            "numbers_for_clue": [ 0, 0, 0]
+        "round_2": {
+            "clue_1": "SHARE",
+            "clue_2": "SOLAR",
+            "clue_3": "DEADLINE",
+            "numbers_for_clue": [
+                6,
+                5,
+                4
+            ]
+        },
+        "round_3": {
+            "clue_1": "TURN",
+            "clue_2": "FOUL",
+            "clue_3": "OWNERSHIP",
+            "numbers_for_clue": [
+                2,
+                6,
+                9
+            ]
+        },
+        "round_4": {
+            "clue_1": "TAX",
+            "clue_2": "SPARE",
+            "clue_3": "ANTI",
+            "numbers_for_clue": [
+                3,
+                6,
+                1
+            ]
+        },
+        "round_5": {
+            "clue_1": "SEXY",
+            "clue_2": "CALL",
+            "clue_3": "ARENA",
+            "numbers_for_clue": [
+                6,
+                3,
+                5
+            ]
+        },
+        "round_6": {
+            "clue_1": "AWARENESS",
+            "clue_2": "EXPAND",
+            "clue_3": "SUDDEN",
+            "numbers_for_clue": [
+                9,
+                5,
+                6
+            ]
+        },
+        "round_7": {
+            "clue_1": "ASSESS",
+            "clue_2": "EAGER",
+            "clue_3": "AWARE",
+            "numbers_for_clue": [
+                6,
+                8,
+                1
+            ]
+        },
+        "round_8": {
+            "clue_1": "ETHICAL",
+            "clue_2": "COMMENT",
+            "clue_3": "DIG",
+            "numbers_for_clue": [
+                8,
+                7,
+                4
+            ]
+        },
+        "round_9": {
+            "clue_1": "FISCAL",
+            "clue_2": "AVOID",
+            "clue_3": "ARROW",
+            "numbers_for_clue": [
+                4,
+                5,
+                1
+            ]
+        },
+        "round_10": {
+            "clue_1": "NATURE",
+            "clue_2": "ACID",
+            "clue_3": "FENCE",
+            "numbers_for_clue": [
+                9,
+                4,
+                6
+            ]
+        },
+        "round_11": {
+            "clue_1": "SHOW",
+            "clue_2": "EFFORT",
+            "clue_3": "BLUE",
+            "numbers_for_clue": [
+                4,
+                8,
+                2
+            ]
+        },
+        "round_12": {
+            "clue_1": "NATION",
+            "clue_2": "UNLIKELY",
+            "clue_3": "EXPOSE",
+            "numbers_for_clue": [
+                9,
+                8,
+                5
+            ]
+        },
+        "round_13": {
+            "clue_1": "EARTH",
+            "clue_2": "CURIOUS",
+            "clue_3": "EDIT",
+            "numbers_for_clue": [
+                5,
+                3,
+                8
+            ]
+        },
+        "round_14": {
+            "clue_1": "EYE",
+            "clue_2": "ILLEGAL",
+            "clue_3": "SUGGEST",
+            "numbers_for_clue": [
+                5,
+                7,
+                6
+            ]
+        },
+        "round_15": {
+            "clue_1": "GAUGE",
+            "clue_2": "TOGETHER",
+            "clue_3": "ARABIC",
+            "numbers_for_clue": [
+                5,
+                2,
+                1
+            ]
+        },
+        "round_16": {
+            "clue_1": "CALM",
+            "clue_2": "INNER",
+            "clue_3": "EGO",
+            "numbers_for_clue": [
+                3,
+                5,
+                8
+            ]
+        },
+        "round_17": {
+            "clue_1": "SPORT",
+            "clue_2": "FRESH",
+            "clue_3": "ABUSE",
+            "numbers_for_clue": [
+                5,
+                4,
+                1
+            ]
+        },
+        "round_18": {
+            "clue_1": "MUST",
+            "clue_2": "TIP",
+            "clue_3": "FISCAL",
+            "numbers_for_clue": [
+                4,
+                2,
+                6
+            ]
+        },
+        "round_19": {
+            "clue_1": "INDICATE",
+            "clue_2": "CAPABLE",
+            "clue_3": "NIGHT",
+            "numbers_for_clue": [
+                8,
+                3,
+                9
+            ]
+        },
+        "round_20": {
+            "clue_1": "FILL",
+            "clue_2": "GROCERY",
+            "clue_3": "OTHER",
+            "numbers_for_clue": [
+                6,
+                7,
+                1
+            ]
         }
-
-
-
-
-
-
+    }
 }

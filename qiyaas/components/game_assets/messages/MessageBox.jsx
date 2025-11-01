@@ -64,9 +64,17 @@ const MessageBox = ({ message, type, onClose, duration = GameConfig.messages.mes
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'
       }`}
       style={{
-        top: 'clamp(10rem, 20vh, 8rem)'
+        top: 'clamp(10rem, 20vh, 8rem)',
+        // Override for desktop - much lower position
       }}
     >
+      <style jsx>{`
+        @media (min-width: 768px) {
+          div {
+            top: 30vh !important;
+          }
+        }
+      `}</style>
       <div className={getMessageStyles()}>
         {message}
       </div>
