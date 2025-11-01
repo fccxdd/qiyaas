@@ -11,12 +11,16 @@ export default function TutorialPlayPage() {
     <div>
       <GameHeader
         leftContent={
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 sm:gap-4">
             <GoHome />
-            <QuitTutorial/>
+            <QuitTutorial/>           
           </div>
         }
-        rightContent={<ThemeToggle/>}
+        rightContent={
+          <div className="flex items-center gap-5 sm:gap-6">
+            <ThemeToggle/>
+          </div>
+        }
       />
       <TutorialPlayMode/>
     </div>
