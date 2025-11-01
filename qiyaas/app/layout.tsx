@@ -17,9 +17,33 @@ const inknutAntiqua = Inknut_Antiqua({
 })
 
 // Metadata Definition
+// TODO: Fix metadata images URLs when deploying
 export const metadata = {
   title: "Qiyaas",
-  description: "Wordle meets Hangman"
+  description: "Qiyaas is a word game based on numbers. It’s similar to ‘hangman’ with a little detective work. Every puzzle has one noun, one verb, and one adjective.",
+  openGraph: {
+    title: "Qiyaas",
+    description: "Qiyaas is a word game based on numbers. It’s similar to ‘hangman’ with a little detective work. Every puzzle has one noun, one verb, and one adjective.",
+    url: "https://qiyaasgame.com",
+    siteName: "Qiyaas",
+    images: [
+                {
+                url: 'https://qiyaasgame.com/logo-image.png',
+                width: 0,
+                height: 0,
+                alt: 'Qiyaas Game Logo',
+                }
+            ],
+    locale: 'en_US',
+    type: 'website',
+},
+
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Qiyaas',
+    description: "Qiyaas is a word game based on numbers. It’s similar to ‘hangman’ with a little detective work. Every puzzle has one noun, one verb, and one adjective.",
+    images: ['https://qiyaasgame.com/logo-image.png'],
+  },
 };
 
 // Viewport Definition

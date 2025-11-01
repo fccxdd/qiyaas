@@ -32,7 +32,10 @@ body, .body-text {
 }
 
 h1, h2, h3, h4, h5, h6, .title-text {
-  font-family: var(--font-inknut-antiqua); /* Titles use Inknut Antiqua */
+  font-family: var(--font-inknut-antiqua);  
+  /* Titles use Inknut Antiqua */
+  font-feature-settings: "lnum", "tnum";
+  -webkit-font-feature-settings: "lnum", "tnum";
 }
 
 /* Black Loading Screen */
@@ -42,15 +45,20 @@ h1, h2, h3, h4, h5, h6, .title-text {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: black;
+  background-color: white;
   display: flex;
   justify-content: center;
   align-items: center;
-  color: white;
+  color: black;
   font-size: 2rem;
   opacity: 0;
   transition: opacity 0.6s ease-in-out;
   z-index: 9999;
+}
+
+.dark .loading-screen {
+  background-color: black;
+  color: white;
 }
 
 /* Tutorial Page: Fade-in effect */
@@ -67,8 +75,12 @@ h1, h2, h3, h4, h5, h6, .title-text {
 /* Loading Page: Spinner icon animation */
 .spinner-icon {
   font-size: 3rem; /* Adjust size */
-  color: white; /* Spinner color */
+  color: black; /* Spinner color */
   animation: spin 1s linear infinite;
+}
+
+.dark .spinner-icon {
+  color: white;
 }
 
 /* Loading Page: Spinning animation */

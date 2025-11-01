@@ -15,7 +15,7 @@ export default async function Home() {
         
           <Image
             className="block dark:hidden"
-            src="qiyaas_logo_66_percent.svg"
+            src="qiyaas_logo_66_percent_light.svg"
             alt="qiyaas-logo-light"
             width={178}
             height={151}
@@ -23,7 +23,7 @@ export default async function Home() {
 
           <Image
             className="hidden dark:block"
-            src="qiyaas_logo.svg"
+            src="qiyaas_logo_dark.svg"
             alt="qiyaas-logo-dark"
             width={178}
             height={151}
