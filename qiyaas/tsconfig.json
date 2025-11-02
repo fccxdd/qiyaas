@@ -22,6 +22,6 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "components/game_mode/tutorial/TutorialContainer.jsx"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "components/game_mode/tutorial/TutorialContainer.jsx", "middleware.js"],
   "exclude": ["node_modules"]
 }
