@@ -10,18 +10,12 @@ import { useWordValidation } from '@/hooks/clues/useWordValidation';
 import { isWordComplete, findNextEmptyPosition } from '@/hooks/clues/clueHelpers';
 import { useWinCondition } from '@/hooks/game_wins/useWinCondition';
 import { GameConfig } from '@/lib/gameConfig';
-
-interface TutorialWords {
-  clue_1: string;
-  clue_2: string;
-  clue_3: string;
-  numbers_for_clue: number[];
-}
+import { BaseCluesData, normalizeCluesData } from '@/hooks/clues/clueTypes';
 
 interface ClueWordsProps {
-  clues: TutorialWords;
+  clues: BaseCluesData;
   selectedStartingLetters: string;
-  additionalLetters?: { vowel?: string; consonant?: string };
+  additionalLetters?: { vowel?: string; consonants?: string[] };
   onLifeLost: () => void;
   onWin: () => void;
   onShowMessage: (msg: string, type?: 'error' | 'success' | 'info') => void;
@@ -45,27 +39,45 @@ export default function ClueWords({
   onVerifiedPositionsChange,
   bothAdditionalLettersConfirmed = false
 }: ClueWordsProps) {
+
   // Add shake state
   const [shakeWord, setShakeWord] = useState<string | null>(null);
   
   // Track ALL letters that have ever been guessed (for keyboard tracking)
   const [allGuessedLetters, setAllGuessedLetters] = useState<Set<string>>(new Set());
 
+  // Extract word strings from clues for internal use
+  const clueWords = useMemo(() => normalizeCluesData(clues), [clues]);
+
   // Combine starting letters with additional letters for validation
-  const allAvailableLetters = selectedStartingLetters + 
-    (additionalLetters.vowel || '') + 
-    (additionalLetters.consonant || '');
+  const allAvailableLetters = useMemo(() => {
+    let letters = selectedStartingLetters;
+    if (additionalLetters.vowel) {
+      letters += additionalLetters.vowel;
+    }
+    if (additionalLetters.consonants && additionalLetters.consonants.length > 0) {
+      letters += additionalLetters.consonants.join('');
+    }
+    return letters;
+  }, [selectedStartingLetters, additionalLetters]);
 
   // Check if user has used any additional letters
-  const hasUsedAdditionalLetters = !!(additionalLetters.vowel || additionalLetters.consonant);
+  const hasUsedAdditionalLetters = !!(
+    additionalLetters.vowel || 
+    (additionalLetters.consonants && additionalLetters.consonants.length > 0)
+  );
   
-  // Check if BOTH additional letters have been guessed (not just selected)
-  const bothAdditionalLettersGuessed = !!(additionalLetters.vowel && additionalLetters.consonant);
+  // Check if BOTH additional letters have been guessed (for GamePlay mode with multiple consonants)
+  const bothAdditionalLettersGuessed = useMemo(() => {
+    const hasVowel = !!additionalLetters.vowel;
+    const hasConsonants = additionalLetters.consonants && additionalLetters.consonants.length > 0;
+    return hasVowel && hasConsonants;
+  }, [additionalLetters]);
   
   // bothAdditionalLettersConfirmed is now "hasAnyCorrectAdditionalLetter" from parent
   const hasAnyCorrectAdditionalLetter = bothAdditionalLettersConfirmed;
 
-  // Manage clues state
+  // Manage clues state - now using extracted word strings
   const {
     activeClues,
     userInputs,
@@ -75,7 +87,7 @@ export default function ClueWords({
     completedWords,
     setCompletedWords,
     startingLettersSet
-  } = useClueManagement(clues, allAvailableLetters);
+  } = useClueManagement(clueWords, allAvailableLetters);
 
   // Track verified positions (letters that were confirmed correct after Enter)
   const [verifiedPositions, setVerifiedPositions] = useState<Map<string, Set<number>>>(new Map());
@@ -127,19 +139,15 @@ export default function ClueWords({
     }
   });
 
-  // Use win condition hook
+  // Use win condition hook - now using extracted word strings
   useWinCondition({
-    cluesData: {
-      clue_1: clues.clue_1,
-      clue_2: clues.clue_2,
-      clue_3: clues.clue_3
-    },
+    cluesData: clueWords,
     solvedClues,
     onWin,
     isGameOver: false
   });
 
-  // Manage cursor navigation - NOW PASSING hasAnyCorrectAdditionalLetter
+  // Manage cursor navigation
   const {
     cursorPosition,
     setCursorPosition,
@@ -173,6 +181,9 @@ export default function ClueWords({
     setShakeWord,
     setAllGuessedLetters
   );
+
+  // Extract word types
+  const wordTypes = [clues.clue_1.type, clues.clue_2.type, clues.clue_3.type];
 
   // Handle additional letters being auto-filled
   const handleAdditionalLettersFilled = useCallback((clue: string, clueIndex: number, filledPositions: Map<number, string>) => {
@@ -491,6 +502,7 @@ export default function ClueWords({
         <WordDash
           key={clue}
           word={clue}
+          wordType={wordTypes[index]}
           startingLetters={allAvailableLetters}
           additionalLetters={additionalLetters}
           cursorPosition={cursorPosition?.clueIndex === index ? cursorPosition.position : null}

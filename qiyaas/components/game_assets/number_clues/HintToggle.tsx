@@ -2,14 +2,23 @@
 
 import React, { useState, useEffect } from 'react';
 import hintMap from '@/data/hint_map.json';
+import { GameConfig } from '@/lib/gameConfig';
 
 interface HintToggleProps {
   numbers?: number[]; // optional static numbers
+  wordTypes?: string[]; // NEW: word types (NOUN, VERB, ADJECTIVE)
   hintsEnabled?: boolean;
+  onToggle?: (enabled: boolean) => void; // callback to update parent state
   getNumbers?: () => { numbersForClue: number[] }; // optional dynamic function
 }
 
-const HintToggle: React.FC<HintToggleProps> = ({ hintsEnabled = true, numbers, getNumbers }) => { 
+const HintToggle: React.FC<HintToggleProps> = ({ 
+  hintsEnabled = true, 
+  onToggle, 
+  numbers, 
+  wordTypes, // NEW: Receive word types
+  getNumbers 
+}) => { 
   const [hintsVisible, setHintsVisible] = useState<boolean[]>([]);
   const [hintsOpacity, setHintsOpacity] = useState<boolean[]>([]);
   const [shouldPulse, setShouldPulse] = useState(false);
@@ -32,8 +41,46 @@ const HintToggle: React.FC<HintToggleProps> = ({ hintsEnabled = true, numbers, g
     }
   };
 
+  // NEW: Get color class based on word type
+  const getWordTypeColor = (type?: string) => {
+    if (!type) return 'text-black dark:text-white';
+    
+    switch (type.toUpperCase()) {
+      case 'NOUN':
+        return GameConfig.wordColors.noun;
+      case 'VERB':
+        return GameConfig.wordColors.verb;
+      case 'ADJECTIVE':
+        return GameConfig.wordColors.adjective;
+      default:
+        return 'text-black dark:text-white';
+    }
+  };
+
+  // NEW: Get hover color based on word type (lighter version)
+  const getHoverColor = (type?: string) => {
+    if (!type) return 'hover:text-green-700 dark:hover:text-green-400';
+    
+    switch (type.toUpperCase()) {
+      case 'NOUN':
+        return 'hover:opacity-80';
+      case 'VERB':
+        return 'hover:opacity-80';
+      case 'ADJECTIVE':
+        return 'hover:opacity-80';
+      default:
+        return 'hover:text-green-700 dark:hover:text-green-400';
+    }
+  };
+
   // --- dynamic numbersForClue: either prop, function, or empty array ---
   const numbersForClue = numbers ?? getNumbers?.()?.numbersForClue ?? [];
+
+  // Reset hints when the numbers change (new round)
+  useEffect(() => {
+    setHintsVisible([]);
+    setHintsOpacity([]);
+  }, [JSON.stringify(numbersForClue)]); // Reset when numbers change
 
   // Trigger pulse animation only when hints become enabled
   useEffect(() => {
@@ -46,34 +93,53 @@ const HintToggle: React.FC<HintToggleProps> = ({ hintsEnabled = true, numbers, g
     }
   }, [hintsEnabled, hasBeenClicked]);
 
+  // Reset hints visibility when hintsEnabled changes from parent
+  useEffect(() => {
+    if (!hintsEnabled) {
+      setHintsVisible([]);
+      setHintsOpacity([]);
+    }
+  }, [hintsEnabled]);
+
   return (
     <div className="flex flex-col justify-center items-start space-y-6 sm:space-y-8 relative">
-      {numbersForClue.map((number, index) => (
-        <div key={index} className="flex items-center relative">
-          <button
-            onClick={() => toggleHint(index)}
-            disabled={!hintsEnabled}
-            className={`text-3xl md:text-5xl font-bold text-black dark:text-white min-w-[20px] sm:min-w-[32px] text-left relative z-10 transition-all duration-500 ease-in-out ${
-              shouldPulse ? 'animate-pulse-glow' : ''
-            } ${
-              hintsEnabled 
-                ? 'hover:text-green-700 dark:hover:text-green-400 hover:scale-110 active:scale-95 cursor-pointer' 
-                : 'cursor-not-allowed'
-            }`}
-            style={{ fontFamily: 'Indie Flower' }}
-          >
-            {number}
-          </button>
+      {numbersForClue.map((number, index) => {
+        // Get the word type for this hint
+        const wordType = wordTypes?.[index];
+        const colorClass = getWordTypeColor(wordType);
+        const hoverClass = getHoverColor(wordType);
+        
+        return (
+          <div key={index} className="flex items-center relative">
+            <button
+              onClick={() => toggleHint(index)}
+              disabled={!hintsEnabled}
+              className={`text-3xl md:text-5xl font-bold min-w-[20px] sm:min-w-[32px] text-left relative z-10 transition-all duration-500 ease-in-out ${
+                colorClass
+              } ${
+                shouldPulse ? 'animate-pulse-glow' : ''
+              } ${
+                hintsEnabled 
+                  ? `${hoverClass} hover:scale-110 active:scale-95 cursor-pointer` 
+                  : 'cursor-not-allowed'
+              }`}
+              style={{ fontFamily: 'Indie Flower' }}
+            >
+              {number}
+            </button>
 
-          {hintsVisible[index] && hintsEnabled && (
-            <div className={`text-base sm:text-xl md:text-2xl text-green-700 dark:text-green-400 font-mono px-2 py-1 rounded backdrop-blur-sm z-50 whitespace-nowrap ml-2 sm:ml-3 transition-all duration-500 ease-in-out max-w-[120px] sm:max-w-none overflow-hidden text-ellipsis ${
-              hintsOpacity[index] ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'
-            }`}>
-              {hintMap[number.toString() as keyof typeof hintMap] || ''}
-            </div>
-          )}
-        </div>
-      ))}
+            {hintsVisible[index] && hintsEnabled && (
+              <div className={`text-base sm:text-xl md:text-2xl font-mono px-2 py-1 rounded backdrop-blur-sm z-50 whitespace-nowrap ml-2 sm:ml-3 transition-all duration-500 ease-in-out max-w-[120px] sm:max-w-none overflow-hidden text-ellipsis ${
+                colorClass
+              } ${
+                hintsOpacity[index] ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'
+              }`}>
+                {hintMap[number.toString() as keyof typeof hintMap] || ''}
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 };
@@ -90,25 +156,10 @@ const styles = `
 
   @keyframes pulseGlow {
     0%, 100% { 
-      color: inherit;
       filter: none;
     }
     50% { 
-      color: rgb(34, 197, 94);
-      filter: drop-shadow(0 0 8px rgba(34, 197, 94, 0.5));
-    }
-  }
-
-  @media (prefers-color-scheme: dark) {
-    @keyframes pulseGlow {
-      0%, 100% { 
-        color: inherit;
-        filter: none;
-      }
-      50% { 
-        color: rgb(134, 239, 172);
-        filter: drop-shadow(0 0 8px rgba(134, 239, 172, 0.5));
-      }
+      filter: drop-shadow(0 0 8px currentColor);
     }
   }
 

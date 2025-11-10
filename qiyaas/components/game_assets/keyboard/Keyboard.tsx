@@ -14,7 +14,7 @@ interface KeyboardProps {
   onEnter?: () => void;
   disabled?: boolean;
   gameStarted?: boolean;
-  letterStatus?: LetterStatus;
+  letterStatus?: LetterStatus | Record<string, 'correct' | 'partial' | 'incorrect' | 'unused'>; // Support both types
   awaitingLetterType?: 'vowel' | 'consonant' | null;
 }
 
@@ -43,7 +43,8 @@ export default function Keyboard({
     const Icon = key === "ENTER" ? KeyboardReturnIcon : key === "BACKSPACE" ? BackspaceIcon : null;
 
     // Get the appropriate background color class based on letter status
-    const bgColorClass = getKeyboardKeyClass(key, letterStatus);
+    // Cast to LetterStatus to ensure compatibility with both fresh calculation and localStorage restore
+    const bgColorClass = getKeyboardKeyClass(key, letterStatus as LetterStatus);
 
     // FIXED: Only disable if disabled=true AND not awaiting letter type
     const isKeyDisabled = disabled && !awaitingLetterType;
@@ -59,7 +60,7 @@ export default function Keyboard({
           else handleKeyClick(key);
         }}
         disabled={isKeyDisabled}
-        className={`flex items-center justify-center font-bold uppercase rounded-md select-none
+        className={`cursor-pointer flex items-center justify-center font-bold uppercase rounded-md select-none
           ${bgColorClass}
           active:scale-95 transition-transform
           ${pressedKey === key ? 'scale-95 opacity-80' : ''}

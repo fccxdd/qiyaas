@@ -34,7 +34,7 @@ const LifeBar: React.FC<LifeBarProps> = ({
 
   return (
 
-    	<div className="flex justify-end top-4 right-4 z-20">
+    	<div className="flex justify-center w-full mt-4 mb-2 z-20">
       <div className={`flex gap-2 ${isShaking ? 'animate-shake' : ''}`}>
         {Array.from({ length: maxLives }, (_, index) => (
           <div

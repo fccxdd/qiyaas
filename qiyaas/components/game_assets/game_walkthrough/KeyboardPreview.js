@@ -19,7 +19,7 @@ export default function KeyboardPreview() {
           S
         </div>
         <span className="text-base sm:text-lg title-text text-black dark:text-white text-left flex-1 min-w-0">
-          The letter is not in any words <span style={{color:"#12B503", fontWeight:"bold" }}>OR</span> used up
+          The letter is not in any words <span className="font-bold">OR</span> used up
         </span>
       </div>
 
@@ -36,7 +36,7 @@ export default function KeyboardPreview() {
           E
         </div>
         <span className="text-base sm:text-lg title-text text-black dark:text-white text-left flex-1 min-w-0">
-          Letter is in the wrong spot <span style={{color:"#12B503", fontWeight:"bold" }}>OR</span> in another word
+          Letter is in the wrong spot <span className="font-bold">OR</span> in another word
         </span>
       </div>
 

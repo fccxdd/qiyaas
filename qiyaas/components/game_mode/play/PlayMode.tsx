@@ -2,9 +2,9 @@
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import HintToggle from "@/components/game_assets/number_clues/HintToggle";
-import { getNumbersForClue, getCluesData } from '@/components/game_assets/word_clues/ExtractAnswer_GamePlay';
+import { getCluesData } from '@/components/game_assets/word_clues/ExtractAnswer_GamePlay';
 import Keyboard from "@/components/game_assets/keyboard/Keyboard";
 import LifeBar from "@/components/game_assets/lives/LifeBar";
 import StartingLetters from "@/components/game_assets/word_clues/StartingLetters";
@@ -13,25 +13,34 @@ import ClueWords from "@/components/game_assets/word_clues/ClueWords";
 import MessageBox from "@/components/game_assets/messages/MessageBox";
 import { WinScreen, LoseScreen } from '@/components/game_assets/game_over/GameOverScreen_Multiple_GamePlay';
 import { GameConfig } from "@/lib/gameConfig";
-import { usePreventRefresh, useAllowKeyboardShortcuts } from "@/hooks/keyboard/usePreventRefresh";
+import { useAllowKeyboardShortcuts } from "@/hooks/keyboard/usePreventRefresh";
 import { useKeyboardLetterStatus } from "@/hooks/keyboard/KeyboardLetterTracker";
+import { useGameStorage } from "@/hooks/clues/useGameStorage";
 
 // Only for Multiple Rounds Version of Game
-import { advanceToNextRound, DailyWordRound } from '@/components/game_assets/word_clues/ExtractAnswer_GamePlay';
+import { advanceToNextRound, DailyWordRound, getRoundByIndex, setCurrentRoundIndex } from '@/components/game_assets/word_clues/ExtractAnswer_GamePlay';
+
+// Import helper to get word from clue
+import { getWordFromClue, getTypeFromClue } from '@/hooks/clues/clueTypes';
 
 export default function PlayMode() {
 
+	const { loadGameState, saveGameState, clearGameState } = useGameStorage();
+	
 	const [isTransitioned, setIsTransitioned] = useState(false);
 	const [lives, setLives] = useState(GameConfig.maxLives);
 	const [selectedLetters, setSelectedLetters] = useState('');
+	
 	const [additionalLetters, setAdditionalLetters] = useState<{
 		vowel?: string;
 		consonant?: string;
 	}>({});
+	
 	const [validatedAdditionalLetters, setValidatedAdditionalLetters] = useState<{
 		vowel?: { letter: string; correct: boolean };
 		consonant?: { letter: string; correct: boolean };
 	}>({});
+	
 	const [hasAnyCorrectAdditionalLetter, setHasAnyCorrectAdditionalLetter] = useState(false);
 	const [awaitingLetterType, setAwaitingLetterType] = useState<'vowel' | 'consonant' | null>(null);
 	const [pendingLetter, setPendingLetter] = useState<{vowel?: string; consonant?: string}>({});
@@ -43,13 +52,22 @@ export default function PlayMode() {
 	const [hasWon, setHasWon] = useState(false);
 	const [wordInputs, setWordInputs] = useState<Map<string, string>>(new Map());
 	const [verifiedInputs, setVerifiedInputs] = useState<Map<string, string>>(new Map());
+	const [hasLoadedFromStorage, setHasLoadedFromStorage] = useState(false);
+	const [currentRound, setCurrentRound] = useState(1); // Track current round number
+	const [hintsEnabled, setHintsEnabled] = useState(true); // Track hint toggle state
 	    
-    // only for multiple rounds version of game
-    const [cluesData, setCluesData] = useState(getCluesData());
+	// Use lazy initialization to prevent calling getCluesData() before localStorage loads
+	const [cluesData, setCluesData] = useState<DailyWordRound>(() => {
+		// On first render, return a placeholder that will be overwritten by localStorage
+		// or by getCluesData() if no save exists
+		return {} as DailyWordRound;
+	});
+	const hasInitializedClues = useRef(false);
 
-    const numbersForClue = cluesData?.numbers_for_clue ?? [];
+	// Access numbers_for_clue from new structure
+	const numbersForClue = cluesData?.numbers_for_clue ?? [];
 	
-    // Track keyboard letter status based on VERIFIED inputs only
+	// Track keyboard letter status based on VERIFIED inputs only
 	const letterStatus = useKeyboardLetterStatus({
 		selectedStartingLetters: selectedLetters,
 		additionalLetters,
@@ -57,9 +75,131 @@ export default function PlayMode() {
 		wordInputs: verifiedInputs, // Use verified inputs, not all typed inputs
 		gameStarted
 	});
+	
+	// Debug: Log letterStatus and verifiedInputs
+	useEffect(() => {
+		if (hasLoadedFromStorage && gameStarted) {
+			console.log('🎨 Current letterStatus:', letterStatus);
+			console.log('✅ Current verifiedInputs:', Array.from(verifiedInputs.entries()));
+		}
+	}, [letterStatus, verifiedInputs, hasLoadedFromStorage, gameStarted]);
 
 	// RevealLetters animation
 	const [startRevealingClues, setStartRevealingClues] = useState(false);
+	
+	// Load game state from localStorage on mount - BEFORE any initialization
+	useEffect(() => {
+		const savedState = loadGameState();
+		if (savedState && savedState.cluesData) {
+			console.log('📂 Loading saved game state:', savedState);
+			
+			// Restore all state
+			setLives(savedState.lives);
+			setSelectedLetters(savedState.selectedLetters);
+			setAdditionalLetters(savedState.additionalLetters);
+			setValidatedAdditionalLetters(savedState.validatedAdditionalLetters);
+			setHasAnyCorrectAdditionalLetter(savedState.hasAnyCorrectAdditionalLetter);
+			setGameStarted(savedState.gameStarted);
+			setLettersInClues(new Set(savedState.lettersInClues || []));
+			
+			// Convert arrays back to Maps properly
+			setWordInputs(new Map(savedState.wordInputs || []));
+			setVerifiedInputs(new Map(savedState.verifiedInputs || []));
+			
+			// Restore round number and sync module-level index
+			if (savedState.currentRound) {
+				const roundIndex = savedState.currentRound - 1; // Convert 1-based to 0-based index
+				setCurrentRound(savedState.currentRound);
+				setCurrentRoundIndex(roundIndex); // Sync the module-level index
+				console.log('🔄 Synced round index to:', roundIndex);
+			}
+			
+			// Restore hints toggle state
+			if (typeof savedState.hintsEnabled !== 'undefined') {
+				setHintsEnabled(savedState.hintsEnabled);
+			}
+			
+			// CRITICAL: Restore the exact cluesData that was saved
+			setCluesData(savedState.cluesData);
+			hasInitializedClues.current = true;
+			
+			setIsGameOver(savedState.isGameOver || false);
+			setHasWon(savedState.hasWon || false);
+			
+			console.log('✅ Restored wordInputs:', new Map(savedState.wordInputs || []));
+			console.log('✅ Restored verifiedInputs:', new Map(savedState.verifiedInputs || []));
+			console.log('✅ Restored currentRound:', savedState.currentRound);
+			console.log('✅ Restored cluesData:', savedState.cluesData);
+		} else {
+			// No saved state, initialize with fresh clues
+			console.log('🆕 No saved state, starting fresh');
+			setCurrentRoundIndex(0); // Reset to first round
+			setCluesData(getCluesData());
+			hasInitializedClues.current = true;
+		}
+		setHasLoadedFromStorage(true);
+	}, [loadGameState]);
+
+	// Save game state to localStorage whenever key state changes
+	useEffect(() => {
+		// Don't save until we've loaded from storage first
+		if (!hasLoadedFromStorage) {
+			console.log('⏸️ Skipping save - waiting for storage load');
+			return;
+		}
+		
+		// Don't save if game is over (we'll clear storage instead)
+		if (isGameOver) {
+			console.log('⏸️ Skipping save - game is over');
+			return;
+		}
+		
+		const stateToSave = {
+			lives,
+			selectedLetters,
+			additionalLetters,
+			validatedAdditionalLetters,
+			hasAnyCorrectAdditionalLetter,
+			gameStarted,
+			lettersInClues: Array.from(lettersInClues),
+			wordInputs: Array.from(wordInputs.entries()),
+			verifiedInputs: Array.from(verifiedInputs.entries()),
+			cluesData,
+			isGameOver,
+			hasWon,
+			letterStatus: letterStatus as Record<string, 'correct' | 'partial' | 'incorrect' | 'unused'>, // Cast to explicit type
+			currentRound, // Save the current round number
+			hintsEnabled, // Save the hints toggle state
+			timestamp: Date.now()
+		};
+		
+		console.log('💾 Saving game state to localStorage');
+		console.log('   - wordInputs size:', wordInputs.size, 'entries:', Array.from(wordInputs.entries()));
+		console.log('   - verifiedInputs size:', verifiedInputs.size, 'entries:', Array.from(verifiedInputs.entries()));
+		console.log('   - letterStatus:', letterStatus);
+		console.log('   - currentRound:', currentRound);
+		console.log('   - hintsEnabled:', hintsEnabled);
+		console.log('   - cluesData round:', cluesData);
+		saveGameState(stateToSave);
+	}, [
+		lives,
+		selectedLetters,
+		additionalLetters,
+		validatedAdditionalLetters,
+		hasAnyCorrectAdditionalLetter,
+		gameStarted,
+		lettersInClues,
+		wordInputs,
+		verifiedInputs,
+		cluesData,
+		isGameOver,
+		hasWon,
+		letterStatus,
+		currentRound,
+		hintsEnabled,
+		hasLoadedFromStorage,
+		saveGameState
+	]);
 	
 	const handleLifeLost = useCallback(() => {
 		setLives(prev => Math.max(0, prev - 1));
@@ -70,11 +210,9 @@ export default function PlayMode() {
 		setTimeout(() => {
 			setIsGameOver(true);
 			setHasWon(true);
+			// Don't clear game state on win - we'll advance to next round in handlePlayAgain
 		}, GameConfig.gameOverScreenDelay);
 	}, []);
-
-	// Prevent accidental refresh with confirmation dialog
-	usePreventRefresh();
 	
 	// Allow keyboard shortcuts like Ctrl+C, Ctrl+V to work normally
 	useAllowKeyboardShortcuts();
@@ -92,9 +230,11 @@ export default function PlayMode() {
 			setTimeout(() => {
 				setIsGameOver(true);
 				setHasWon(false);
+				// Clear saved game when losing
+				clearGameState();
 			}, GameConfig.gameOverScreenDelay);
 		}
-	}, [lives, isGameOver]);
+	}, [lives, isGameOver, clearGameState]);
 
 	const showMessage = useCallback((msg: string, type: 'error' | 'success' | 'info' = 'error') => {
 		setMessage(msg);
@@ -105,58 +245,67 @@ export default function PlayMode() {
 		setMessage('');
 	}, []);
 
-	// Function to cancel additional letter selection
-	const cancelAdditionalLetterSelection = useCallback(() => {
-		console.log('🚫 Canceling additional letter selection');
-		setAwaitingLetterType(null);
-		setPendingLetter({});
-		setMessage('');
-	}, []);
-
-	// Handle request for additional letter
+	// Handle request for additional letter (no consonantIndex needed anymore)
 	const handleRequestAdditionalLetter = useCallback((type: 'vowel' | 'consonant') => {
+		console.log('📝 handleRequestAdditionalLetter:', type);
+		
 		// Check if already selected and confirmed
-		const validatedLetter = validatedAdditionalLetters[type];
-		if (validatedLetter) {
-			// Don't show error - just set awaiting state so they can change it if they want
-			setAwaitingLetterType(type);
-			// Keep the validated letter visible as pending so user can see it
-			setPendingLetter(prev => ({
-				...prev,
-				[type]: validatedLetter.letter
-			}));
-			showMessage(`Press Backspace to remove ${validatedLetter.letter}, or select a new letter`, 'info');
-			return;
+		if (type === 'vowel') {
+			const validatedLetter = validatedAdditionalLetters.vowel;
+			if (validatedLetter) {
+				setAwaitingLetterType(type);
+				setPendingLetter(prev => ({
+					...prev,
+					vowel: validatedLetter.letter
+				}));
+				showMessage(`Press Backspace to remove ${validatedLetter.letter}, or select a new letter`, 'info');
+				return;
+			}
+		} else {
+			// For consonant (singular)
+			const validatedLetter = validatedAdditionalLetters.consonant;
+			if (validatedLetter) {
+				setAwaitingLetterType(type);
+				setPendingLetter(prev => ({
+					...prev,
+					consonant: validatedLetter.letter
+				}));
+				showMessage(`Press Backspace to remove ${validatedLetter.letter}, or select a new letter`, 'info');
+				return;
+			}
 		}
 
 		// If clicking the same button that's already awaiting, cancel it
 		if (awaitingLetterType === type) {
 			setAwaitingLetterType(null);
-			// Clear only this type's pending letter
 			setPendingLetter(prev => {
 				const updated = {...prev};
-				delete updated[type];
+				delete updated[type === 'vowel' ? 'vowel' : 'consonant'];
 				return updated;
 			});
 			setMessage('');
 			return;
 		}
 
-		// Set awaiting state FIRST, then show message
-		// This ensures the keyboard knows to accept input before the message blocks anything
+		// Set awaiting state
 		setAwaitingLetterType(type);
 		console.log('✅ Set awaitingLetterType to:', type);
 		
 		// Clear pending letter for this type if it doesn't exist
-		if (!pendingLetter[type]) {
+		if (type === 'vowel' && !pendingLetter.vowel) {
 			setPendingLetter(prev => {
 				const updated = {...prev};
-				delete updated[type];
+				delete updated.vowel;
+				return updated;
+			});
+		} else if (type === 'consonant' && !pendingLetter.consonant) {
+			setPendingLetter(prev => {
+				const updated = {...prev};
+				delete updated.consonant;
 				return updated;
 			});
 		}
 		
-		// Use setTimeout to ensure state update is processed before message
 		setTimeout(() => {
 			showMessage(GameConfig.messages.selectAdditionalLetter?.replace('{type}', type), 'info');
 		}, 0);
@@ -167,18 +316,18 @@ export default function PlayMode() {
 		const lettersArray = letters.split('');
 		const inClues = new Set<string>();
 		
-		// Get all clue words
+		// Get all clue words using helper function
 		const clueWords = [
-			cluesData.clue_1?.toUpperCase(),
-			cluesData.clue_2?.toUpperCase(),
-			cluesData.clue_3?.toUpperCase()
+			getWordFromClue(cluesData.clue_1)?.toUpperCase(),
+			getWordFromClue(cluesData.clue_2)?.toUpperCase(),
+			getWordFromClue(cluesData.clue_3)?.toUpperCase()
 		].filter(Boolean);
 
 		// Check each letter
 		lettersArray.forEach(letter => {
 			const upperLetter = letter.toUpperCase();
 			// Check if letter appears in any clue word
-			if (clueWords.some(word => word.includes(upperLetter))) {
+			if (clueWords.some(word => word?.includes(upperLetter))) {
 				inClues.add(upperLetter);
 			}
 		});
@@ -215,7 +364,7 @@ export default function PlayMode() {
 				return;
 			}
 
-			// Check if letter is already used in starting letters or other additional letter
+			// Check if letter is already used in starting letters or other additional letters
 			const allUsedLetters = [
 				...selectedLetters.split(''),
 				validatedAdditionalLetters.vowel?.letter,
@@ -279,50 +428,75 @@ export default function PlayMode() {
 	}, [selectedLetters, showMessage, gameStarted, message, awaitingLetterType, validatedAdditionalLetters]);
 
 	const handleBackspace = useCallback(() => {
-		console.log('⌫ TutorialPlayMode handleBackspace:', { 
+		console.log('⌫ PlayMode handleBackspace:', { 
 			gameStarted, 
-			awaitingLetterType, 
+			awaitingLetterType,
 			hasPendingLetter: awaitingLetterType ? !!pendingLetter[awaitingLetterType] : false 
 		});
 		
 		// If awaiting additional letter, handle deletion of that specific type
 		if (awaitingLetterType) {
-			if (pendingLetter[awaitingLetterType]) {
-				// Clear only the pending letter for this specific type
-				console.log(`🗑️ Clearing pending ${awaitingLetterType} letter`);
-				setPendingLetter(prev => {
-					const updated = {...prev};
-					delete updated[awaitingLetterType];
-					return updated;
-				});
-				showMessage(GameConfig.messages.selectAdditionalLetter?.replace('{type}', awaitingLetterType), 'info');
-			} else if (validatedAdditionalLetters[awaitingLetterType]) {
-				// If there's a validated letter for this type, remove it
-				console.log(`🗑️ Removing validated ${awaitingLetterType} letter`);
-				setValidatedAdditionalLetters(prev => {
-					const updated = { ...prev };
-					delete updated[awaitingLetterType];
-					return updated;
-				});
-				setAdditionalLetters(prev => {
-					const updated = { ...prev };
-					delete updated[awaitingLetterType];
-					return updated;
-				});
-				// Check if we still have at least one correct additional letter
-				const remainingCorrect = Object.values({
-					...validatedAdditionalLetters,
-					[awaitingLetterType]: undefined
-				}).some(val => val?.correct);
-				setHasAnyCorrectAdditionalLetter(remainingCorrect);
-				// Cancel the awaiting state
-				setAwaitingLetterType(null);
-				setMessage('');
+			if (awaitingLetterType === 'vowel') {
+				if (pendingLetter.vowel) {
+					console.log('🗑️ Clearing pending vowel letter');
+					setPendingLetter(prev => {
+						const updated = {...prev};
+						delete updated.vowel;
+						return updated;
+					});
+					showMessage(GameConfig.messages.selectAdditionalLetter?.replace('{type}', 'vowel'), 'info');
+				} else if (validatedAdditionalLetters.vowel) {
+					console.log('🗑️ Removing validated vowel letter');
+					setValidatedAdditionalLetters(prev => {
+						const updated = { ...prev };
+						delete updated.vowel;
+						return updated;
+					});
+					setAdditionalLetters(prev => {
+						const updated = { ...prev };
+						delete updated.vowel;
+						return updated;
+					});
+					const remainingCorrect = validatedAdditionalLetters.consonant?.correct;
+					setHasAnyCorrectAdditionalLetter(!!remainingCorrect);
+					setAwaitingLetterType(null);
+					setMessage('');
+				} else {
+					console.log('🚫 No pending vowel letter, canceling awaiting state');
+					setAwaitingLetterType(null);
+					setMessage('');
+				}
 			} else {
-				// No pending or validated letter for this type, just cancel awaiting state
-				console.log('🚫 No pending letter, canceling awaiting state');
-				setAwaitingLetterType(null);
-				setMessage('');
+				// Handling consonant (singular)
+				if (pendingLetter.consonant) {
+					console.log('🗑️ Clearing pending consonant letter');
+					setPendingLetter(prev => {
+						const updated = {...prev};
+						delete updated.consonant;
+						return updated;
+					});
+					showMessage(GameConfig.messages.selectAdditionalLetter?.replace('{type}', 'consonant'), 'info');
+				} else if (validatedAdditionalLetters.consonant) {
+					console.log('🗑️ Removing validated consonant letter');
+					setValidatedAdditionalLetters(prev => {
+						const updated = { ...prev };
+						delete updated.consonant;
+						return updated;
+					});
+					setAdditionalLetters(prev => {
+						const updated = { ...prev };
+						delete updated.consonant;
+						return updated;
+					});
+					const remainingCorrect = validatedAdditionalLetters.vowel?.correct;
+					setHasAnyCorrectAdditionalLetter(!!remainingCorrect);
+					setAwaitingLetterType(null);
+					setMessage('');
+				} else {
+					console.log('🚫 No pending consonant letter, canceling awaiting state');
+					setAwaitingLetterType(null);
+					setMessage('');
+				}
 			}
 			return;
 		}
@@ -336,9 +510,9 @@ export default function PlayMode() {
 	}, [gameStarted, message, awaitingLetterType, pendingLetter, showMessage, validatedAdditionalLetters]);
 
 	const handleEnter = useCallback(() => {
-		console.log('⏎ TutorialPlayMode handleEnter:', { 
+		console.log('⏎ PlayMode handleEnter:', { 
 			gameStarted, 
-			awaitingLetterType, 
+			awaitingLetterType,
 			hasPendingVowel: !!pendingLetter.vowel,
 			hasPendingConsonant: !!pendingLetter.consonant
 		});
@@ -347,44 +521,71 @@ export default function PlayMode() {
 		if (awaitingLetterType && pendingLetter[awaitingLetterType]) {
 			// Check if the letter is in ANY of the clue words
 			const clueWords = [
-				cluesData.clue_1?.toUpperCase(),
-				cluesData.clue_2?.toUpperCase(),
-				cluesData.clue_3?.toUpperCase()
+				getWordFromClue(cluesData.clue_1)?.toUpperCase(),
+				getWordFromClue(cluesData.clue_2)?.toUpperCase(),
+				getWordFromClue(cluesData.clue_3)?.toUpperCase()
 			].filter(Boolean);
 
 			const letterToValidate = pendingLetter[awaitingLetterType];
 			const isCorrect = clueWords.some(word => word?.includes(letterToValidate));
 			
-			// Update the validated letter for this specific type
-			const updatedValidatedLetters = {
-				...validatedAdditionalLetters,
-				[awaitingLetterType]: { letter: letterToValidate, correct: isCorrect }
-			};
-			setValidatedAdditionalLetters(updatedValidatedLetters);
-			
-			setAdditionalLetters(prev => ({
-				...prev,
-				[awaitingLetterType]: letterToValidate
-			}));
+			if (awaitingLetterType === 'vowel') {
+				// Update validated vowel
+				const updatedValidatedLetters = {
+					...validatedAdditionalLetters,
+					vowel: { letter: letterToValidate!, correct: isCorrect }
+				};
+				setValidatedAdditionalLetters(updatedValidatedLetters);
+				
+				setAdditionalLetters(prev => ({
+					...prev,
+					vowel: letterToValidate
+				}));
 
-			// Check if we now have at least one correct additional letter
-			const hasCorrect = Object.values(updatedValidatedLetters).some(val => val?.correct);
-			setHasAnyCorrectAdditionalLetter(hasCorrect);
-			console.log('✅ Has any correct additional letter:', hasCorrect);
+				const hasCorrect = isCorrect || validatedAdditionalLetters.consonant?.correct;
+				setHasAnyCorrectAdditionalLetter(!!hasCorrect);
+				console.log('✅ Has any correct additional letter:', hasCorrect);
 
-			// Show appropriate message and lose life if incorrect
-			if (!isCorrect) {
-				handleLifeLost();	
+				if (!isCorrect) {
+					handleLifeLost();	
+				}
+
+				setPendingLetter(prev => {
+					const updated = {...prev};
+					delete updated.vowel;
+					return updated;
+				});
+				setAwaitingLetterType(null);
+				setMessage('');
+			} else {
+				// Update validated consonant (singular)
+				const updatedValidatedLetters = {
+					...validatedAdditionalLetters,
+					consonant: { letter: letterToValidate!, correct: isCorrect }
+				};
+				setValidatedAdditionalLetters(updatedValidatedLetters);
+				
+				setAdditionalLetters(prev => ({
+					...prev,
+					consonant: letterToValidate
+				}));
+
+				const hasCorrect = validatedAdditionalLetters.vowel?.correct || isCorrect;
+				setHasAnyCorrectAdditionalLetter(!!hasCorrect);
+				console.log('✅ Has any correct additional letter:', hasCorrect);
+
+				if (!isCorrect) {
+					handleLifeLost();	
+				}
+
+				setPendingLetter(prev => {
+					const updated = {...prev};
+					delete updated.consonant;
+					return updated;
+				});
+				setAwaitingLetterType(null);
+				setMessage('');
 			}
-
-			// Clear ONLY the current awaiting type and its pending letter
-			setPendingLetter(prev => {
-				const updated = {...prev};
-				delete updated[awaitingLetterType];
-				return updated;
-			});
-			setAwaitingLetterType(null);
-			setMessage('');
 			return;
 		}
 
@@ -411,10 +612,35 @@ export default function PlayMode() {
 		}
 
 		// During gameplay, ClueWords will handle Enter via its own keyboard listener
-	}, [gameStarted, selectedLetters, showMessage, checkLettersInClues, message, awaitingLetterType, pendingLetter, handleLifeLost, cluesData, validatedAdditionalLetters]);
+	}, [gameStarted, selectedLetters, showMessage, checkLettersInClues, message, awaitingLetterType, pendingLetter, handleLifeLost, cluesData, validatedAdditionalLetters, additionalLetters]);
 
 	// Handle Play Again button
 	const handlePlayAgain = useCallback(() => {
+		console.log('🔄 Play Again clicked. Current round:', currentRound, 'Has won:', hasWon);
+		
+		// Only advance to next round if player won, otherwise restart same round
+		let nextRoundData: DailyWordRound;
+		let nextRoundNumber: number;
+		let nextRoundIndex: number;
+		
+		if (hasWon) {
+			// Player won - advance to next round
+			nextRoundData = advanceToNextRound(); // This increments currentRoundIndex internally
+			nextRoundNumber = currentRound + 1;
+			nextRoundIndex = nextRoundNumber - 1; // 0-based index
+			console.log('🎉 Advancing to round:', nextRoundNumber, 'index:', nextRoundIndex);
+		} else {
+			// Player lost - restart same round
+			nextRoundIndex = currentRound - 1; // Convert to 0-based index
+			setCurrentRoundIndex(nextRoundIndex); // Sync the module
+			nextRoundData = getRoundByIndex(nextRoundIndex); // Get same round data
+			nextRoundNumber = currentRound; // Keep same round number
+			console.log('💔 Restarting round:', nextRoundNumber, 'index:', nextRoundIndex);
+		}
+		
+		// Clear localStorage when starting/restarting a round
+		clearGameState();
+		
 		// Reset all game state
 		setLives(GameConfig.maxLives);
 		setSelectedLetters('');
@@ -431,10 +657,20 @@ export default function PlayMode() {
 		setWordInputs(new Map());
 		setVerifiedInputs(new Map());
 
-        const nextRound: DailyWordRound = advanceToNextRound();
-        setCluesData(nextRound); // <-- Update the state holding current round
+		setCluesData(nextRoundData);
+		setCurrentRound(nextRoundNumber);
 
-	}, []);
+	}, [clearGameState, hasWon, currentRound]);
+
+	// Extract word types for hints
+	const wordTypes = useMemo(() => {
+	if (!cluesData) return [];
+	return [
+		getTypeFromClue(cluesData.clue_1),
+		getTypeFromClue(cluesData.clue_2),
+		getTypeFromClue(cluesData.clue_3)
+	].filter(Boolean) as string[];
+	}, [cluesData]);
 
 	return (
 		<div className="fixed inset-0 bg-white dark:bg-black overflow-hidden">
@@ -482,43 +718,44 @@ export default function PlayMode() {
 							<div className={`transition-all duration-700 ${
 								isTransitioned ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"
 							}`}>
-							{/* Update the StartingLetters component */}
-							<StartingLetters  
-							letters={selectedLetters} 
-							onLettersChange={setSelectedLetters}
-							onShowMessage={showMessage}
-							gameStarted={gameStarted}
-							lettersInClues={lettersInClues}
-							onRevealComplete={() => setStartRevealingClues(true)}
-							/>
+								<StartingLetters  
+									letters={selectedLetters} 
+									onLettersChange={setSelectedLetters}
+									onShowMessage={showMessage}
+									gameStarted={gameStarted}
+									lettersInClues={lettersInClues}
+									onRevealComplete={() => setStartRevealingClues(true)}
+								/>
 							</div>
 							
 							{/* Additional Letters directly underneath */}
 							<div className={`transition-all duration-700 mt-2 sm:mt-0 ${
-							isTransitioned ? "opacity-100" : "opacity-0"
+								isTransitioned ? "opacity-100" : "opacity-0"
 							}`}>
-							<AdditionalLetters
-								gameStarted={gameStarted}
-								additionalLetters={additionalLetters}
-								validatedLetters={validatedAdditionalLetters}
-								onRequestAdditionalLetter={handleRequestAdditionalLetter}
-								awaitingLetterType={awaitingLetterType}
-								pendingLetter={pendingLetter}
-								lettersInClues={lettersInClues}
-								onCancelSelection={() => {
-									console.log('🚫 Canceling selection via click-away');
-									setAwaitingLetterType(null);
-									setMessage('');
-								}}
-							/>
+								<AdditionalLetters
+									gameStarted={gameStarted}
+									additionalLetters={additionalLetters}
+									validatedLetters={validatedAdditionalLetters}
+									onRequestAdditionalLetter={handleRequestAdditionalLetter}
+									awaitingLetterType={awaitingLetterType}
+									pendingLetter={pendingLetter}
+									lettersInClues={lettersInClues}
+									onCancelSelection={() => {
+										console.log('🚫 Canceling selection via click-away');
+										setAwaitingLetterType(null);
+										setMessage('');
+									}}
+								/>
 							</div>
 						</div>
 						
-						{/* Lives */}
+						{/* Noun Verb Adjective Placement */}
 						<div className={`transition-all duration-700 ${
 							isTransitioned ? "opacity-100 translate-x-0" : "opacity-0 translate-x-4"
-						}`}>
-							<LifeBar lives={lives} maxLives={GameConfig.maxLives} />
+						} text-3xl sm:text-3xl md:text-3xl flex items-center gap-3`}>
+							<div className={GameConfig.wordColors.noun}> n </div>
+							<div className={GameConfig.wordColors.verb}> v </div>
+							<div className={GameConfig.wordColors.adjective}> a </div>
 						</div>
 					</div>
 				</div>
@@ -528,12 +765,11 @@ export default function PlayMode() {
 					{/* Wrapper to align with keyboard width on tablet+ */}
 					<div className="h-full w-full md:max-w-[680px] md:mx-auto flex items-center justify-between">
 						
-						{/* Left side - Clue dashes OR ClueWords component */}
+						{/* Left side - Clue Dashes */}
 						<div className={`transition-all duration-700 ${
 							isTransitioned ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"
 						}`}>
 							{!gameStarted ? (
-								
 								// Before game starts, show placeholder dashes
 								<div className="flex flex-col justify-center space-y-6 sm:space-y-8 md:space-y-10">
 									{numbersForClue.map((_, index) => (
@@ -545,17 +781,17 @@ export default function PlayMode() {
 							) : (
 								// After Enter is pressed, show ClueWords component
 								<ClueWords 
-								clues={cluesData}
-								selectedStartingLetters={selectedLetters}
-								additionalLetters={additionalLetters}
-								onLifeLost={handleLifeLost}
-								onWin={handleWin}
-								onShowMessage={showMessage}
-								isMessageActive={message !== ''}
-								awaitingAdditionalLetter={awaitingLetterType !== null}
-								onWordInputsChange={setWordInputs}
-								onVerifiedPositionsChange={setVerifiedInputs}
-								bothAdditionalLettersConfirmed={hasAnyCorrectAdditionalLetter}
+									clues={cluesData}
+									selectedStartingLetters={selectedLetters}
+									additionalLetters={additionalLetters}
+									onLifeLost={handleLifeLost}
+									onWin={handleWin}
+									onShowMessage={showMessage}
+									isMessageActive={message !== ''}
+									awaitingAdditionalLetter={awaitingLetterType !== null}
+									onWordInputsChange={setWordInputs}
+									onVerifiedPositionsChange={setVerifiedInputs}
+									bothAdditionalLettersConfirmed={hasAnyCorrectAdditionalLetter}
 								/>
 							)}
 						</div>
@@ -564,13 +800,26 @@ export default function PlayMode() {
 						<div className={`transition-all duration-700 ${
 							isTransitioned ? "opacity-100 translate-x-0" : "opacity-0 translate-x-4"
 						}`}>
-							<HintToggle hintsEnabled={true}
-                            getNumbers={getNumbersForClue}  />
+							<HintToggle 
+								hintsEnabled={hintsEnabled}
+								onToggle={setHintsEnabled}
+								numbers={numbersForClue}
+								wordTypes={wordTypes}
+							/>
 						</div>
 					</div>
 				</div>
 
-				{/* Bottom Section - Keyboard */}
+				{/* Bottom Section */}
+				{/* Lives */}
+				<div 
+					className={`w-full flex justify-center mt-8 mb-6 transition-all duration-700 ${
+						isTransitioned ? "opacity-100 translate-x-0" : "opacity-0 translate-x-4"
+					}`}>
+					<LifeBar lives={lives} maxLives={GameConfig.maxLives} />
+				</div>
+				
+				{/* Keyboard */}
 				<div 
 					className={`relative flex items-end justify-center transition-all duration-700 ${
 						isTransitioned ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"

@@ -1,0 +1,8 @@
+nohup: ignoring input
+[nltk_data] Downloading package wordnet to
+[nltk_data]     C:\Users\husseinf\AppData\Roaming\nltk_data...
+[nltk_data]   Package wordnet is already up-to-date!
+[nltk_data] Downloading package omw-1.4 to
+[nltk_data]     C:\Users\husseinf\AppData\Roaming\nltk_data...
+[nltk_data]   Package omw-1.4 is already up-to-date!
+Run time of job "generate_daily_puzzle_job (trigger: cron[hour='0', minute='0'], next run at: 2025-11-07 00:00:00 EST)" was missed by 8:29:11.076707

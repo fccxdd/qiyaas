@@ -20,6 +20,7 @@ interface WordDashProps {
 	onFlashComplete?: () => void;
 	additionalLetters?: { vowel?: string; consonant?: string };
 	onAdditionalLettersFilled?: (positions: Map<number, string>) => void;
+	wordType?: string;
 }
 
 export default function WordDash({ 
@@ -37,7 +38,8 @@ export default function WordDash({
 	isLocked = false,
 	onFlashComplete,
 	additionalLetters = {},
-	onAdditionalLettersFilled
+	onAdditionalLettersFilled,
+	wordType
 }: WordDashProps) {
 	const [revealedLetters, setRevealedLetters] = useState<Map<number, string>>(new Map());
 	const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null);
@@ -48,6 +50,22 @@ export default function WordDash({
 	const prevUserInputsRef = useRef<Map<number, string>>(new Map());
 	const startingLettersPositions = useRef<Set<number>>(new Set());
 	const additionalLettersPositions = useRef<Set<number>>(new Set());
+
+	// Get color class based on word type
+	const getWordTypeColor = () => {
+		if (!wordType) return GameConfig.wordColors.default;
+		
+		switch (wordType.toUpperCase()) {
+			case 'NOUN':
+				return GameConfig.wordColors.noun;
+			case 'VERB':
+				return GameConfig.wordColors.verb;
+			case 'ADJECTIVE':
+				return GameConfig.wordColors.adjective;
+			default:
+				return GameConfig.wordColors.default;
+		}
+	};
 
 	// Check if starting letters match THIS specific clue
 	const startingLettersMatchThisClue = useRef(false);
@@ -105,7 +123,6 @@ export default function WordDash({
 	}, [userInputs, isAnimating]);
 
 	// Auto-fill starting letters with sequential animation
-	// This runs when: 1) Component initializes, OR 2) hasValidatedAdditionalLetter changes to true
 	useEffect(() => {
 		if (startingLetters) {
 			const startingLettersArray = startingLetters.toUpperCase().split('');
@@ -129,10 +146,7 @@ export default function WordDash({
 				// Animate each matching position sequentially
 				matchingPositions.forEach((match, idx) => {
 					setTimeout(() => {
-						// First: highlight dash in green
 						setHighlightedIndex(match.position);
-						
-						// After 300ms: reveal letter with bounce
 						setTimeout(() => {
 							setHighlightedIndex(null);
 							setRevealedLetters(prev => new Map(prev).set(match.position, match.letter));
@@ -170,7 +184,6 @@ export default function WordDash({
 	}, [word, startingLetters, hasValidatedAdditionalLetter]);
 
 	// Auto-fill additional letters when hasValidatedAdditionalLetter becomes true
-	// BUG FIX: Skip positions that already have user-typed letters AND skip completed words
 	const [hasFilledAdditionalLetters, setHasFilledAdditionalLetters] = useState(false);
 	const hasFilledRef = useRef(false);
 	const lastAdditionalLettersRef = useRef<string>('');
@@ -187,15 +200,15 @@ export default function WordDash({
 	}, [additionalLetters]);
 	
 	useEffect(() => {
-		// CRITICAL FIX: Don't auto-fill if word is already complete (prevents wiping completed words)
+		// CRITICAL FIX: Don't auto-fill if word is already complete
 		if (hasValidatedAdditionalLetter && !hasFilledRef.current && additionalLetters && !isComplete) {
-			console.log('🎨 Auto-fill triggered for word:', word, 'isComplete:', isComplete, 'userInputs size:', userInputs.size);
+			console.log('🎨 Auto-fill triggered for word:', word, 'isComplete:', isComplete);
 			const wordUpper = word.toUpperCase();
 			const additionalToFill: { position: number; letter: string }[] = [];
 			
-			// CRITICAL CHECK #1: If word is complete, NEVER auto-fill (prevents wiping completed words)
+			// CRITICAL CHECK #1: If word is complete, NEVER auto-fill
 			if (isComplete) {
-				console.log('⏭️ Word is already complete:', word, '- skipping auto-fill to preserve completion status');
+				console.log('⏭️ Word is already complete:', word, '- skipping auto-fill');
 				hasFilledRef.current = true;
 				setHasFilledAdditionalLetters(true);
 				return;
@@ -211,7 +224,7 @@ export default function WordDash({
 			}
 			
 			if (allPositionsFilled) {
-				console.log('⏭️ All positions already filled for word:', word, '- skipping auto-fill');
+				console.log('⏭️ All positions already filled for word:', word);
 				hasFilledRef.current = true;
 				setHasFilledAdditionalLetters(true);
 				return;
@@ -221,7 +234,6 @@ export default function WordDash({
 			if (additionalLetters.vowel) {
 				const vowelUpper = additionalLetters.vowel.toUpperCase();
 				for (let i = 0; i < wordUpper.length; i++) {
-					// BUG FIX: Check userInputs from parent (not local revealedLetters) to see if position is filled
 					if (wordUpper[i] === vowelUpper && !userInputs.has(i)) {
 						additionalToFill.push({ position: i, letter: vowelUpper });
 						additionalLettersPositions.current.add(i);
@@ -233,7 +245,6 @@ export default function WordDash({
 			if (additionalLetters.consonant) {
 				const consonantUpper = additionalLetters.consonant.toUpperCase();
 				for (let i = 0; i < wordUpper.length; i++) {
-					// BUG FIX: Check userInputs from parent (not local revealedLetters) to see if position is filled
 					if (wordUpper[i] === consonantUpper && !userInputs.has(i)) {
 						additionalToFill.push({ position: i, letter: consonantUpper });
 						additionalLettersPositions.current.add(i);
@@ -241,23 +252,19 @@ export default function WordDash({
 				}
 			}
 			
-			console.log('📊 Positions to fill:', additionalToFill);
-			
 			// Only proceed if there are positions to fill
 			if (additionalToFill.length > 0) {
-				// Build the map of filled positions
 				const filledPositions = new Map<number, string>();
 				additionalToFill.forEach(match => {
 					filledPositions.set(match.position, match.letter);
 				});
 				
-				// Notify parent FIRST so userInputs gets updated immediately
+				// Notify parent FIRST
 				if (onAdditionalLettersFilled) {
-					console.log('🔔 Notifying parent about filled positions:', filledPositions);
 					onAdditionalLettersFilled(filledPositions);
 				}
 				
-				// Then animate each additional letter position sequentially
+				// Then animate
 				additionalToFill.forEach((match, idx) => {
 					setTimeout(() => {
 						setHighlightedIndex(match.position);
@@ -271,55 +278,30 @@ export default function WordDash({
 			
 			hasFilledRef.current = true;
 			setHasFilledAdditionalLetters(true);
-		} else {
-			console.log('⏭️ Skipping auto-fill for word:', word, 'Reasons:', {
-				hasValidatedAdditionalLetter,
-				hasFilledRef: hasFilledRef.current,
-				hasAdditionalLetters: !!additionalLetters,
-				isComplete
-			});
 		}
 	}, [hasValidatedAdditionalLetter, additionalLetters, word, userInputs, isComplete, onAdditionalLettersFilled]);
 
-	// Handle flash animation - show color twice with pulses
+	// Handle flash animation
 	const [animationKey, setAnimationKey] = useState(0);
 	
 	useEffect(() => {
 		if (flashState !== 'none') {
-			// Clear any bouncing animations when flash starts
 			setBouncingIndices(new Set());
-			
-			// Force animation restart by changing key
 			setAnimationKey(prev => prev + 1);
-			
-			// Keep color on for entire sequence
 			setIsAnimating(true);
 			
-			// Tailwind's animate-pulse is 2s per pulse, so 4s = 2 pulses
 			setTimeout(() => {
 				setIsAnimating(false);
-				
-				// Trigger callback for letter removal (if applicable)
 				if (onFlashComplete) {
 					onFlashComplete();
 				}
-			}, 4000);
+			}, GameConfig.flashDuration);
 		}
 	}, [flashState, onFlashComplete]);
 
-	// Determine how many dashes to show and whether to hide starting letters:
-	// Logic:
-	// 1. If starting letters match this clue → show all dashes WITH starting letters
-	// 2. If starting letters DON'T match this clue:
-	//    a. If at least one additional letter is validated as correct → show all dashes WITH starting/additional letters
-	//    b. If BOTH additional letters have been guessed AND BOTH are wrong → show all dashes WITHOUT starting letters (fully unlocked for guessing)
-	//    c. Otherwise (no additional letters used yet, or only one guessed, or waiting for validation) → show 1 locked dash
-	
-	const shouldShowAllDashes = startingLettersMatchThisClue.current || hasValidatedAdditionalLetter || (bothAdditionalLettersGuessed && !hasValidatedAdditionalLetter);
-	const dashesToShow = shouldShowAllDashes ? word.length : 1;
-	
-	// Hide starting letters and unlock ONLY when: starting letters don't match AND BOTH additional letters guessed AND BOTH are wrong
-	const shouldHideStartingLetters = !startingLettersMatchThisClue.current && bothAdditionalLettersGuessed && !hasValidatedAdditionalLetter;
+	const shouldShowAllDashes = true;
+	const dashesToShow = word.length;
+	const shouldHideStartingLetters = !startingLettersMatchThisClue.current;
 
 	return (
 		<div className={`flex gap-1.5 sm:gap-3 md:gap-4 my-2 relative ${shouldShake ? 'animate-shake' : ''} justify-start`}>
@@ -331,14 +313,8 @@ export default function WordDash({
 				const isStartingLetter = startingLettersPositions.current.has(index);
 				const isAdditionalLetterPosition = additionalLettersPositions.current.has(index);
 				
-				// When hiding starting letters (both additional letters wrong), don't lock starting letter positions
 				const shouldIgnoreStartingLetter = shouldHideStartingLetters && isStartingLetter;
-				
-				// Lock if: verified, starting letter (unless hiding), or additional letter position
 				const isDashLocked = isLocked || isVerified || (isStartingLetter && !shouldIgnoreStartingLetter) || isAdditionalLetterPosition;
-				
-				// Check if this position contains an additional letter (vowel or consonant)
-				// Additional letters should have white dashes, not purple
 
 				return (
 					<div 
@@ -362,12 +338,12 @@ export default function WordDash({
 								isAnimating 
 									? flashState === 'red' ? GameConfig.flashColors.incorrect 
 									: flashState === 'yellow' ? GameConfig.flashColors.partial
-									: flashState === 'green' ? GameConfig.flashColors.correct
+									: flashState === 'green' ? getWordTypeColor() // Use word type color
 									: 'text-black dark:text-white'
 									: isHighlighted
 									? GameConfig.flashColors.correct
 									: isComplete && flashState === 'green'
-									? GameConfig.flashColors.correct
+									? getWordTypeColor() // Use word type color for completion
 									: isCursor
 									? 'text-purple-500'
 									: 'text-black dark:text-white'
@@ -376,7 +352,7 @@ export default function WordDash({
 							_
 						</span>
 
-						{/* Letter display above dash - absolutely positioned */}
+						{/* Letter display above dash */}
 						{isRevealed && !shouldIgnoreStartingLetter && (
 							<span
 								key={`letter-${index}-${animationKey}`}
@@ -389,10 +365,10 @@ export default function WordDash({
 									isAnimating 
 										? flashState === 'red' ? GameConfig.flashColors.incorrect 
 										: flashState === 'yellow' ? GameConfig.flashColors.partial
-										: flashState === 'green' ? GameConfig.flashColors.correct
+										: flashState === 'green' ? getWordTypeColor() // For completed words, use word type color
 										: 'text-black dark:text-white'
 										: isComplete && flashState === 'green'
-										? GameConfig.flashColors.correct
+										? getWordTypeColor() // Use word type color for completion
 										: verifiedPositions.has(index) || startingLettersPositions.current.has(index) || additionalLettersPositions.current.has(index)
 										? 'text-black dark:text-white'
 										: userTypedIndices.has(index)

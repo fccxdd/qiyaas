@@ -1,4 +1,6 @@
-// hooks/clue/RevealLetters.tsx
+// hooks/clue/SlowRevealLetters.tsx
+
+// TODO: Implment this
 
 import { useState, useEffect, useRef } from 'react';
 

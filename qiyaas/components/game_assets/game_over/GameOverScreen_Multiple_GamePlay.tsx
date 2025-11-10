@@ -37,7 +37,7 @@ export const LoseScreen: React.FC<LoseScreenProps> = ({ onPlayAgain }) => {
   return (
     <div className="fixed inset-0 flex flex-col items-center justify-center bg-white dark:bg-black z-[9999]">
       <h1 className="text-4xl md:text-6xl font-bold text-red-600">💀 You Lost</h1>
-      <p className="mt-4 text-lg md:text-xl text-gray-800 dark:text-gray-200">
+      <p className="mt-4 text-lg md:text-xl text-gray-800 dark:text-gray-200 text-center">
         Don’t worry! You can try your luck on the next round.
       </p>
       <button

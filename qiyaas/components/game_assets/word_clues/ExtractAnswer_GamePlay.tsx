@@ -1,14 +1,20 @@
 "use client";
 
 import DailyWordsData from '@/data/daily_words.json';
+import { GameConfig}  from '@/lib/gameConfig';
 
 // ----------------------
 // Types
 // ----------------------
+export type ClueWithType = {
+  word: string;
+  type: string;
+};
+
 export type DailyWordRound = {
-  clue_1: string;
-  clue_2: string;
-  clue_3: string;
+  clue_1: ClueWithType;
+  clue_2: ClueWithType;
+  clue_3: ClueWithType;
   numbers_for_clue: number[];
 };
 
@@ -21,9 +27,27 @@ export type DailyWordsByDate = {
 };
 
 // ----------------------
-// Config: today's date
+// Config: today's date in America/New_York timezone
 // ----------------------
-const todayKey = new Date().toISOString().slice(0, 10);
+const getTodayKey = () => {
+  const now = new Date();
+  // Convert to America/New_York timezone
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
+  
+  const parts = formatter.formatToParts(now);
+  const year = parts.find(p => p.type === 'year')?.value;
+  const month = parts.find(p => p.type === 'month')?.value;
+  const day = parts.find(p => p.type === 'day')?.value;
+  
+  return `${year}-${month}-${day}`;
+};
+
+const todayKey = getTodayKey();
 const dailyRounds = (DailyWordsData as DailyWordsByDate)[todayKey] ?? {};
 const roundsArray = Object.values(dailyRounds) as DailyWordRound[];
 
@@ -43,14 +67,48 @@ export function getCurrentRound(): DailyWordRound {
   // Fallback if roundsArray is empty or index out of bounds
   if (!roundsArray || roundsArray.length === 0) {
     return {
-      clue_1: '',
-      clue_2: '',
-      clue_3: '',
-      numbers_for_clue: [0, 0, 0],
+      clue_1: { word: '', type: '' },
+      clue_2: { word: '', type: '' },
+      clue_3: { word: '', type: '' },
+      numbers_for_clue: GameConfig.hintNumberFallback,
     };
   }
 
   return roundsArray[currentRoundIndex] ?? roundsArray[0];
+}
+
+/**
+ * Get round by specific index (used for restoring from localStorage)
+ */
+export function getRoundByIndex(index: number): DailyWordRound {
+  if (!roundsArray || roundsArray.length === 0) {
+    return {
+      clue_1: { word: '', type: '' },
+      clue_2: { word: '', type: '' },
+      clue_3: { word: '', type: '' },
+      numbers_for_clue: GameConfig.hintNumberFallback,
+    };
+  }
+
+  // Ensure index is within bounds
+  const safeIndex = Math.max(0, Math.min(index, roundsArray.length - 1));
+  return roundsArray[safeIndex] ?? roundsArray[0];
+}
+
+/**
+ * Set the current round index (used when restoring from localStorage)
+ */
+export function setCurrentRoundIndex(index: number): void {
+  if (index >= 0 && index < roundsArray.length) {
+    currentRoundIndex = index;
+  }
+}
+
+/**
+ * Get the current round index
+ */
+export function getCurrentRoundIndex(): number {
+  return currentRoundIndex;
 }
 
 /**
@@ -60,9 +118,9 @@ export function getClueAnswers(): { clueAnswers: string[] } {
   const round = getCurrentRound();
   return {
     clueAnswers: [
-      round.clue_1.toLowerCase(),
-      round.clue_2.toLowerCase(),
-      round.clue_3.toLowerCase()
+      round.clue_1.word.toLowerCase(),
+      round.clue_2.word.toLowerCase(),
+      round.clue_3.word.toLowerCase()
     ]
   };
 }
@@ -79,17 +137,17 @@ export function getCluesData(): DailyWordRound {
  */
 export function getNumbersForClue(): { numbersForClue: number[] } {
   const round = getCurrentRound();
-  return { numbersForClue: round.numbers_for_clue ?? [0, 0, 0] };
+  return { numbersForClue: round.numbers_for_clue ?? GameConfig.hintNumberFallback };
 }
 
 /**
- * Returns a single clue answer by index (0,1,2)
+ * Returns a single clue answer by index (0, 1, 2)
  */
 export function getClueAnswer(index: number): { clueAnswer: string | null } {
   const round = getCurrentRound();
-  if (index === 0) return { clueAnswer: round.clue_1.toLowerCase() };
-  if (index === 1) return { clueAnswer: round.clue_2.toLowerCase() };
-  if (index === 2) return { clueAnswer: round.clue_3.toLowerCase() };
+  if (index === 0) return { clueAnswer: round.clue_1.word.toLowerCase() };
+  if (index === 1) return { clueAnswer: round.clue_2.word.toLowerCase() };
+  if (index === 2) return { clueAnswer: round.clue_3.word.toLowerCase() };
   return { clueAnswer: null };
 }
 
@@ -104,5 +162,13 @@ export function advanceToNextRound(): DailyWordRound {
   if (currentRoundIndex >= roundsArray.length) {
     currentRoundIndex = 0; // loop back to the first round
   }
+  return getCurrentRound();
+}
+
+/**
+ * Reset to first round (useful for new game sessions)
+ */
+export function resetToFirstRound(): DailyWordRound {
+  currentRoundIndex = 0;
   return getCurrentRound();
 }

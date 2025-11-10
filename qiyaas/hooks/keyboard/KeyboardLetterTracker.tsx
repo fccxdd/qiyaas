@@ -1,11 +1,10 @@
 // hooks/keyboard/KeyboardLetterTracker.tsx
 
-// components/game_assets/keyboard/KeyboardLetterTracker.tsx
-
 'use client';
 
 import { useMemo } from 'react';
 import { GameConfig } from '@/lib/gameConfig';
+import { getWordFromClue, ClueValue } from '@/hooks/clues/clueTypes';
 
 export interface LetterStatus {
   [key: string]: 'used_up' | 'still_available' | 'unused';
@@ -15,12 +14,12 @@ interface KeyboardLetterTrackerProps {
   selectedStartingLetters: string;
   additionalLetters: {
     vowel?: string;
-    consonant?: string;
+    consonant?: string; // Singular consonant (not array)
   };
   cluesData: {
-    clue_1?: string;
-    clue_2?: string;
-    clue_3?: string;
+    clue_1?: ClueValue; // Can be string or { word, type }
+    clue_2?: ClueValue;
+    clue_3?: ClueValue;
   };
   wordInputs?: Map<string, string>; // Map of verified positions -> letter
   gameStarted: boolean;
@@ -51,11 +50,20 @@ export function useKeyboardLetterStatus({
       return letterStatus;
     }
 
-    // Get all clue words
+    // Get all clue words using helper function to handle both string and object formats
     const clueWords: string[] = [];
-    if (cluesData.clue_1) clueWords.push(cluesData.clue_1.toUpperCase());
-    if (cluesData.clue_2) clueWords.push(cluesData.clue_2.toUpperCase());
-    if (cluesData.clue_3) clueWords.push(cluesData.clue_3.toUpperCase());
+    if (cluesData.clue_1) {
+      const word = getWordFromClue(cluesData.clue_1);
+      if (word) clueWords.push(word.toUpperCase());
+    }
+    if (cluesData.clue_2) {
+      const word = getWordFromClue(cluesData.clue_2);
+      if (word) clueWords.push(word.toUpperCase());
+    }
+    if (cluesData.clue_3) {
+      const word = getWordFromClue(cluesData.clue_3);
+      if (word) clueWords.push(word.toUpperCase());
+    }
 
     // Collect letters to track:
     // 1. Starting letters (ALWAYS tracked, treated as pre-placed)
@@ -74,12 +82,14 @@ export function useKeyboardLetterStatus({
       }
     });
     
-    // Add additional letters - these are also treated as pre-placed
+    // Add additional vowel - treated as pre-placed
     if (additionalLetters.vowel) {
       const upper = additionalLetters.vowel.toUpperCase();
       trackedLettersSet.add(upper);
       startingLettersSet.add(upper);
     }
+    
+    // Add additional consonant (singular) - treated as pre-placed
     if (additionalLetters.consonant) {
       const upper = additionalLetters.consonant.toUpperCase();
       trackedLettersSet.add(upper);
@@ -125,10 +135,10 @@ export function useKeyboardLetterStatus({
           });
         }
 
-        // If this is a starting letter, count how many positions it auto-fills in this clue
+        // If this is a starting letter (or additional letter), count how many positions it auto-fills in this clue
         let autoPlacedCount = 0;
         if (isStartingLetter) {
-          // Count positions where this starting letter appears in the clue
+          // Count positions where this starting/additional letter appears in the clue
           for (let i = 0; i < word.length; i++) {
             if (word[i] === letter) {
               autoPlacedCount++;

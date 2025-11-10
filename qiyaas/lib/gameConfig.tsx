@@ -2,18 +2,18 @@
 
 export const GameConfig = {
 
-							// Tutorial Title Font
-
-							// Tutorial Body Font
-
 							// Maximum number of lives
 							maxLives: 5,
 							
-							// Game over screen delay in milliseconds
+							// Game over screen delay (in milliseconds)
 							gameOverScreenDelay: 700,
 							
 							// Vowels
 							vowels: ['A', 'E', 'I', 'O', 'U'],
+							
+
+							// Hint Number Fallback
+							hintNumberFallback: [0, 0, 0],
 							
 							// Consonants
 							consonants: 		[
@@ -35,7 +35,9 @@ export const GameConfig = {
 								default: 'bg-gray-300 dark:bg-gray-500 text-black dark:text-white'
 							},
 							
-							cursorNavigation: '',
+							// Flash Duration (in milliseconds)
+							flashDuration: 1000,
+							
 							// Messages
 							messages: {
 								
@@ -65,8 +67,6 @@ export const GameConfig = {
 											wordIncorrect: "Incorrect.",
 										},
 
-							
-
 							// Messages Colors
 							messageColors: {
 												success: 'text-green-700 dark:text-green-400',
@@ -94,6 +94,21 @@ export const GameConfig = {
 											correct: 'text-green-500',
 											incorrect: 'text-red-500',
 											partial: 'text-yellow-500'
-										}
+										},
+							
+							// Noun & Verb & Adjective Colors
+
+							wordColors: {
+											noun: 'text-[#74A8DC]',
+											verb: 'text-[#6AA84F]',
+											adjective: 'text-[#E06666]',
+											default: 'text-gray-800 dark:text-gray-200'											
+							},
+							wordColors_bg: {
+											noun: 'bg-[#74A8DC]',
+											verb: 'bg-[#6AA84F]',
+											adjective: 'bg-[#E06666]'
+																						
+							}
 
 					};

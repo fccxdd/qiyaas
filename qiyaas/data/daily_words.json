@@ -1,203 +1,383 @@
 {
-    "2025-11-01": {
+    "2025-11-10": {
         "round_1": {
-            "clue_1": "TECH",
-            "clue_2": "DOWN",
-            "clue_3": "MOUNT",
+            "clue_1": {
+                "word": "DANGEROUS",
+                "type": "ADJECTIVE"
+            },
+            "clue_2": {
+                "word": "ASSUME",
+                "type": "VERB"
+            },
+            "clue_3": {
+                "word": "FOLK",
+                "type": "NOUN"
+            },
             "numbers_for_clue": [
-                2,
-                4,
+                9,
+                1,
                 5
             ]
         },
         "round_2": {
-            "clue_1": "SHARE",
-            "clue_2": "SOLAR",
-            "clue_3": "DEADLINE",
+            "clue_1": {
+                "word": "SAUCE",
+                "type": "VERB"
+            },
+            "clue_2": {
+                "word": "MENTAL",
+                "type": "ADJECTIVE"
+            },
+            "clue_3": {
+                "word": "AFFAIR",
+                "type": "NOUN"
+            },
             "numbers_for_clue": [
+                7,
                 6,
-                5,
-                4
+                1
             ]
         },
         "round_3": {
-            "clue_1": "TURN",
-            "clue_2": "FOUL",
-            "clue_3": "OWNERSHIP",
+            "clue_1": {
+                "word": "DEPENDENT",
+                "type": "ADJECTIVE"
+            },
+            "clue_2": {
+                "word": "SMASH",
+                "type": "VERB"
+            },
+            "clue_3": {
+                "word": "SURGERY",
+                "type": "NOUN"
+            },
             "numbers_for_clue": [
-                2,
-                6,
-                9
+                4,
+                5,
+                7
             ]
         },
         "round_4": {
-            "clue_1": "TAX",
-            "clue_2": "SPARE",
-            "clue_3": "ANTI",
+            "clue_1": {
+                "word": "EXAMINE",
+                "type": "VERB"
+            },
+            "clue_2": {
+                "word": "OPEN",
+                "type": "ADJECTIVE"
+            },
+            "clue_3": {
+                "word": "NORTHEAST",
+                "type": "NOUN"
+            },
             "numbers_for_clue": [
-                3,
-                6,
-                1
+                5,
+                1,
+                9
             ]
         },
         "round_5": {
-            "clue_1": "SEXY",
-            "clue_2": "CALL",
-            "clue_3": "ARENA",
+            "clue_1": {
+                "word": "MOOD",
+                "type": "NOUN"
+            },
+            "clue_2": {
+                "word": "COLLECT",
+                "type": "VERB"
+            },
+            "clue_3": {
+                "word": "ETHICAL",
+                "type": "ADJECTIVE"
+            },
             "numbers_for_clue": [
-                6,
+                4,
                 3,
-                5
+                8
             ]
         },
         "round_6": {
-            "clue_1": "AWARENESS",
-            "clue_2": "EXPAND",
-            "clue_3": "SUDDEN",
+            "clue_1": {
+                "word": "BLAME",
+                "type": "VERB"
+            },
+            "clue_2": {
+                "word": "NEAR",
+                "type": "ADJECTIVE"
+            },
+            "clue_3": {
+                "word": "NOVEL",
+                "type": "NOUN"
+            },
             "numbers_for_clue": [
+                2,
                 9,
-                5,
-                6
+                5
             ]
         },
         "round_7": {
-            "clue_1": "ASSESS",
-            "clue_2": "EAGER",
-            "clue_3": "AWARE",
+            "clue_1": {
+                "word": "HAVE",
+                "type": "VERB"
+            },
+            "clue_2": {
+                "word": "SURE",
+                "type": "ADJECTIVE"
+            },
+            "clue_3": {
+                "word": "EXCESS",
+                "type": "NOUN"
+            },
             "numbers_for_clue": [
+                4,
                 6,
-                8,
-                1
+                5
             ]
         },
         "round_8": {
-            "clue_1": "ETHICAL",
-            "clue_2": "COMMENT",
-            "clue_3": "DIG",
+            "clue_1": {
+                "word": "HAPPEN",
+                "type": "VERB"
+            },
+            "clue_2": {
+                "word": "TEMPORARY",
+                "type": "ADJECTIVE"
+            },
+            "clue_3": {
+                "word": "EDITOR",
+                "type": "NOUN"
+            },
             "numbers_for_clue": [
                 8,
-                7,
-                4
+                2,
+                6
             ]
         },
         "round_9": {
-            "clue_1": "FISCAL",
-            "clue_2": "AVOID",
-            "clue_3": "ARROW",
+            "clue_1": {
+                "word": "INCIDENT",
+                "type": "NOUN"
+            },
+            "clue_2": {
+                "word": "FORMAT",
+                "type": "VERB"
+            },
+            "clue_3": {
+                "word": "FOUL",
+                "type": "ADJECTIVE"
+            },
             "numbers_for_clue": [
-                4,
-                5,
-                1
-            ]
-        },
-        "round_10": {
-            "clue_1": "NATURE",
-            "clue_2": "ACID",
-            "clue_3": "FENCE",
-            "numbers_for_clue": [
-                9,
+                8,
                 4,
                 6
             ]
         },
-        "round_11": {
-            "clue_1": "SHOW",
-            "clue_2": "EFFORT",
-            "clue_3": "BLUE",
+        "round_10": {
+            "clue_1": {
+                "word": "WHEEL",
+                "type": "NOUN"
+            },
+            "clue_2": {
+                "word": "TALL",
+                "type": "ADJECTIVE"
+            },
+            "clue_3": {
+                "word": "BOOST",
+                "type": "VERB"
+            },
             "numbers_for_clue": [
+                5,
+                3,
+                2
+            ]
+        },
+        "round_11": {
+            "clue_1": {
+                "word": "THROW",
+                "type": "VERB"
+            },
+            "clue_2": {
+                "word": "DYNAMIC",
+                "type": "ADJECTIVE"
+            },
+            "clue_3": {
+                "word": "TEACHER",
+                "type": "NOUN"
+            },
+            "numbers_for_clue": [
+                5,
                 4,
-                8,
                 2
             ]
         },
         "round_12": {
-            "clue_1": "NATION",
-            "clue_2": "UNLIKELY",
-            "clue_3": "EXPOSE",
+            "clue_1": {
+                "word": "CELEBRATE",
+                "type": "VERB"
+            },
+            "clue_2": {
+                "word": "SISTER",
+                "type": "NOUN"
+            },
+            "clue_3": {
+                "word": "SORRY",
+                "type": "ADJECTIVE"
+            },
             "numbers_for_clue": [
-                9,
-                8,
-                5
+                3,
+                6,
+                7
             ]
         },
         "round_13": {
-            "clue_1": "EARTH",
-            "clue_2": "CURIOUS",
-            "clue_3": "EDIT",
+            "clue_1": {
+                "word": "EMOTIONAL",
+                "type": "ADJECTIVE"
+            },
+            "clue_2": {
+                "word": "AMOUNT",
+                "type": "NOUN"
+            },
+            "clue_3": {
+                "word": "WASTE",
+                "type": "VERB"
+            },
             "numbers_for_clue": [
-                5,
-                3,
-                8
+                8,
+                1,
+                5
             ]
         },
         "round_14": {
-            "clue_1": "EYE",
-            "clue_2": "ILLEGAL",
-            "clue_3": "SUGGEST",
+            "clue_1": {
+                "word": "ANXIOUS",
+                "type": "ADJECTIVE"
+            },
+            "clue_2": {
+                "word": "TERROR",
+                "type": "NOUN"
+            },
+            "clue_3": {
+                "word": "SUFFER",
+                "type": "VERB"
+            },
             "numbers_for_clue": [
-                5,
-                7,
+                1,
+                2,
                 6
             ]
         },
         "round_15": {
-            "clue_1": "GAUGE",
-            "clue_2": "TOGETHER",
-            "clue_3": "ARABIC",
+            "clue_1": {
+                "word": "STEAM",
+                "type": "VERB"
+            },
+            "clue_2": {
+                "word": "GORGEOUS",
+                "type": "ADJECTIVE"
+            },
+            "clue_3": {
+                "word": "SHELF",
+                "type": "NOUN"
+            },
             "numbers_for_clue": [
-                5,
-                2,
-                1
+                6,
+                7,
+                5
             ]
         },
         "round_16": {
-            "clue_1": "CALM",
-            "clue_2": "INNER",
-            "clue_3": "EGO",
+            "clue_1": {
+                "word": "FEATURE",
+                "type": "NOUN"
+            },
+            "clue_2": {
+                "word": "AUTHENTIC",
+                "type": "ADJECTIVE"
+            },
+            "clue_3": {
+                "word": "EXCUSE",
+                "type": "VERB"
+            },
             "numbers_for_clue": [
-                3,
-                5,
-                8
+                4,
+                9,
+                5
             ]
         },
         "round_17": {
-            "clue_1": "SPORT",
-            "clue_2": "FRESH",
-            "clue_3": "ABUSE",
+            "clue_1": {
+                "word": "SHUT",
+                "type": "VERB"
+            },
+            "clue_2": {
+                "word": "UNION",
+                "type": "NOUN"
+            },
+            "clue_3": {
+                "word": "ALIKE",
+                "type": "ADJECTIVE"
+            },
             "numbers_for_clue": [
+                6,
                 5,
-                4,
                 1
             ]
         },
         "round_18": {
-            "clue_1": "MUST",
-            "clue_2": "TIP",
-            "clue_3": "FISCAL",
+            "clue_1": {
+                "word": "CLEAN",
+                "type": "ADJECTIVE"
+            },
+            "clue_2": {
+                "word": "FACTORY",
+                "type": "NOUN"
+            },
+            "clue_3": {
+                "word": "SEEK",
+                "type": "VERB"
+            },
             "numbers_for_clue": [
-                4,
-                2,
+                3,
+                7,
                 6
             ]
         },
         "round_19": {
-            "clue_1": "INDICATE",
-            "clue_2": "CAPABLE",
-            "clue_3": "NIGHT",
+            "clue_1": {
+                "word": "BREACH",
+                "type": "NOUN"
+            },
+            "clue_2": {
+                "word": "COMPLETE",
+                "type": "VERB"
+            },
+            "clue_3": {
+                "word": "SLIGHT",
+                "type": "ADJECTIVE"
+            },
             "numbers_for_clue": [
-                8,
+                6,
                 3,
-                9
+                7
             ]
         },
         "round_20": {
-            "clue_1": "FILL",
-            "clue_2": "GROCERY",
-            "clue_3": "OTHER",
+            "clue_1": {
+                "word": "STADIUM",
+                "type": "NOUN"
+            },
+            "clue_2": {
+                "word": "ENSURE",
+                "type": "VERB"
+            },
+            "clue_3": {
+                "word": "CORPORATE",
+                "type": "ADJECTIVE"
+            },
             "numbers_for_clue": [
-                6,
                 7,
-                1
+                6,
+                3
             ]
         }
     }

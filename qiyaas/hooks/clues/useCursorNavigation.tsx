@@ -123,7 +123,7 @@ export function useCursorNavigation(
       return;
     }
 
-    // NEW: Look for next editable position (empty OR guessed but not verified/starting)
+    // Look for next editable position (empty OR guessed but not verified/starting)
     let nextPos = null;
     const verified = verifiedPositions.get(currentClue) || new Set();
     
@@ -141,6 +141,7 @@ export function useCursorNavigation(
     if (nextPos !== null) {
       setCursorPosition({ clueIndex: cursorPosition.clueIndex, position: nextPos });
     } else {
+      
       // Move to next clue - skip completed words
       let nextClueIdx = cursorPosition.clueIndex + 1;
       
@@ -240,7 +241,7 @@ export function useCursorNavigation(
       return;
     }
 
-    // NEW: Look for previous editable position (empty OR guessed but not verified/starting)
+    // Look for previous editable position (empty OR guessed but not verified/starting)
     let prevPos = null;
     const verified = verifiedPositions.get(currentClue) || new Set();
     

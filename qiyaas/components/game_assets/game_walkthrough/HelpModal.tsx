@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { IoMdClose } from "react-icons/io";
 import { IoHelp } from "react-icons/io5";
 import KeyboardPreview from '@/components/game_assets/game_walkthrough/KeyboardPreview';
+import { GameConfig } from '@/lib/gameConfig';
 
 export default function HelpModal() {
   const [showModal, setShowModal] = useState(false);
@@ -59,7 +60,7 @@ export default function HelpModal() {
                 {/* Game objective */}
                 <div>
                   <h3 className="text-base sm:text-xl font-semibold text-black dark:text-white mb-1 sm:mb-2 text-center">
-                    Guess the <span className="text-purple-600 dark:text-purple-400">n</span>oun, <span className="text-purple-600 dark:text-purple-400">v</span>erb, and <span className="text-purple-600 dark:text-purple-400">a</span>djective
+                    Guess the <span className={`${GameConfig.wordColors.noun}`}>n</span>oun, <span className={`${GameConfig.wordColors.verb}`}>v</span>erb, and <span className={`${GameConfig.wordColors.adjective}`}>a</span>djective
                   </h3>
                   <br/>
                   <h4 className="text-black dark:text-white font-bold text-base sm:text-xl text-center">
@@ -73,24 +74,24 @@ export default function HelpModal() {
                     {/* Left column - words */}
                     <div className="space-y-1.5 sm:space-y-2">
                       <div className="flex items-center justify-center sm:justify-start gap-1.5 sm:gap-2">
-                        <span className="inline-block bg-green-500 text-white px-2 sm:px-3 py-0.5 sm:py-1 rounded text-xl sm:text-3xl font-bold">S</span><span className="text-xl sm:text-3xl">MART</span>
-                        <h3 className="text-purple-600 dark:text-purple-400 text-lg sm:text-2xl">a</h3>
+                        <span className={`${GameConfig.wordColors_bg.adjective} inline-block text-white px-2 sm:px-3 py-0.5 sm:py-1 rounded text-xl sm:text-3xl font-bold`}>S</span><span className="text-xl sm:text-3xl">MART</span>
+                        <h3 className={`${GameConfig.wordColors.adjective} text-lg sm:text-2xl`}>a</h3>
                       </div>
                       <div className="flex items-center justify-center sm:justify-start gap-1.5 sm:gap-2">
-                        <span className="inline-block bg-green-500 text-white px-2 sm:px-3 py-0.5 sm:py-1 rounded text-xl sm:text-3xl font-bold">A</span><span className="text-xl sm:text-3xl">RRIVE</span>
-                        <h3 className="text-purple-600 dark:text-purple-400 text-lg sm:text-2xl">v</h3>
+                        <span className={`${GameConfig.wordColors_bg.verb} inline-block text-white px-2 sm:px-3 py-0.5 sm:py-1 rounded text-xl sm:text-3xl font-bold`}>A</span><span className="text-xl sm:text-3xl">RRIVE</span>
+                        <h3 className={`${GameConfig.wordColors.verb} text-lg sm:text-2xl`}>v</h3>
                       </div>
                       <div className="flex items-center justify-center sm:justify-start gap-1.5 sm:gap-2">
-                        <span className="inline-block bg-green-500 text-white px-2 sm:px-3 py-0.5 sm:py-1 rounded text-xl sm:text-3xl font-semibold">HONEY</span>
-                        <h3 className="text-purple-600 dark:text-purple-400 text-lg sm:text-2xl">n</h3>
+                        <span className={`${GameConfig.wordColors_bg.noun} inline-block text-white px-2 sm:px-3 py-0.5 sm:py-1 rounded text-xl sm:text-3xl font-bold`}>HONEY</span>
+                        <h3 className={`${GameConfig.wordColors.noun} text-lg sm:text-2xl`}>n</h3>
                       </div>
                     </div>
 
                     {/* Right column - clues */}
                     <div className="space-y-1.5 sm:space-y-2 text-black dark:text-white text-xl sm:text-3xl text-center">
-                      <div>7 = G , <span className="inline-block bg-green-500 text-white px-1.5 sm:px-2 py-0.5 rounded text-sxl sm:text-3xl">S</span></div>
-                      <div>1 = <span className="inline-block bg-green-500 text-white px-1.5 sm:px-2 py-0.5 rounded text-xl sm:text-3xl">A</span> , O</div>
-                      <div><span className="inline-block bg-green-500 text-white px-1.5 sm:px-2 py-0.5 rounded text-xl sm:text-3xl">5</span> = E , F</div>
+                      <div>7 = G , <span className={`${GameConfig.wordColors_bg.adjective} inline-block text-white px-1.5 sm:px-2 py-0.5 rounded text-sxl sm:text-3xl`}>S</span></div>
+                      <div>1 = <span className={`${GameConfig.wordColors_bg.verb} inline-block  text-white px-1.5 sm:px-2 py-0.5 rounded text-xl sm:text-3xl`}>A</span> , O</div>
+                      <div><span className={`${GameConfig.wordColors_bg.noun} inline-block text-white px-1.5 sm:px-2 py-0.5 rounded text-xl sm:text-3xl`}>5</span> = E , F</div>
                     </div>
                   </div>
                 </div>
