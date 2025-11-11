@@ -19,19 +19,21 @@ const inknutAntiqua = Inknut_Antiqua({
 // Metadata Definition
 // TODO: Fix metadata images URLs when deploying
 export const metadata = {
+  
+  metadataBase: new URL("https://beta.qiyaasgame.com"),
   title: "Qiyaas",
-  description: "Qiyaas is a word game based on numbers. It’s similar to ‘hangman’ with a little detective work. Every puzzle has one noun, one verb, and one adjective.",
+  description: "Qiyaas - A word game based on numbers",
   openGraph: {
     title: "Qiyaas",
-    description: "Qiyaas is a word game based on numbers. It’s similar to ‘hangman’ with a little detective work. Every puzzle has one noun, one verb, and one adjective.",
-    url: "https://qiyaasgame.com",
+    description: "Qiyaas - A word game based on numbers.",
+    url: "https://beta.qiyaasgame.com",
     siteName: "Qiyaas",
     images: [
                 {
-                url: 'https://qiyaasgame.com/logo-image.png',
-                width: 0,
-                height: 0,
-                alt: 'Qiyaas Game Logo',
+                url: 'https://beta.qiyaasgame.com/qiyaas_shareable.png',
+                width: 1200,
+                height: 630,
+                alt: 'Qiyaas Shareable Logo',
                 }
             ],
     locale: 'en_US',
@@ -41,8 +43,8 @@ export const metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Qiyaas',
-    description: "Qiyaas is a word game based on numbers. It’s similar to ‘hangman’ with a little detective work. Every puzzle has one noun, one verb, and one adjective.",
-    images: ['https://qiyaasgame.com/logo-image.png'],
+    description: "Qiyaas - A word game based on numbers.",
+    images: ['https://beta.qiyaasgame.com/qiyaas_shareable.png'],
   },
 };
 
