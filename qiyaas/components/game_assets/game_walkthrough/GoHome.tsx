@@ -6,16 +6,39 @@ import { useState } from 'react';
 import { IoMdHome } from "react-icons/io";
 import { useRouter } from 'next/navigation';
 
-export default function GoHome() {
+interface GoHomeProps {
+  showConfirmation?: boolean;
+  onNavigate?: () => void;
+  navigateTo?: string;
+}
+
+export default function GoHome({ 
+  showConfirmation = false, 
+  onNavigate,
+  navigateTo = '/'
+}: GoHomeProps) {
   const [showModal, setShowModal] = useState(false);
   const router = useRouter();
 
   const handleHomeClick = () => {
-    setShowModal(true);
+    if (showConfirmation) {
+      setShowModal(true);
+    } else {
+      handleNavigation();
+    }
+  };
+
+  const handleNavigation = () => {
+    if (onNavigate) {
+      onNavigate();
+    } else {
+      router.push(navigateTo);
+    }
   };
 
   const handleConfirmHome = () => {
-    router.push('/');
+    setShowModal(false);
+    handleNavigation();
   };
 
   const handleCancel = () => {
@@ -26,18 +49,17 @@ export default function GoHome() {
     <>
       <button
         onClick={handleHomeClick}
-        className="cursor-pointer rounded-full h-7 w-7 sm:h-11 sm:w-11 shadow-xl border border-solid border-transparent transition-all flex items-center justify-center bg-foreground text-background hover:bg-[#383838] dark:hover:bg-[#ccc] hover:-translate-y-1 hover:shadow-2xl z-50"
+        className="cursor-pointer rounded-full h-7 w-7 sm:h-9 sm:w-9 shadow-xl border border-solid border-transparent transition-all flex items-center justify-center bg-foreground text-background hover:bg-[#383838] dark:hover:bg-[#ccc] hover:-translate-y-1 hover:shadow-2xl z-50"
         aria-label="Go Home"
       >
-        <IoMdHome className="text-lg sm:text-xl" />
+        <IoMdHome className="text-lg sm:text-2xl" />
       </button>
 
       {/* Modal */}
-      {showModal && (
+      {showConfirmation && showModal && (
         <div 
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-4"
           onClick={(e) => {
-            // Close modal if clicking the backdrop
             if (e.target === e.currentTarget) {
               handleCancel();
             }
