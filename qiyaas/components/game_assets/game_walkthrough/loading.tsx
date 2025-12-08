@@ -4,6 +4,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { FaSpinner } from "react-icons/fa";
+import { GameConfig } from '@/lib/gameConfig';
 
 const Loading = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -12,7 +13,7 @@ const Loading = () => {
     // Simulate loading delay
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 500);
+    }, GameConfig.duration.tutorialLoadingDelay);
 
     return () => clearTimeout(timer);
   }, []);
