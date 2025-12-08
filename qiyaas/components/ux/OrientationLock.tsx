@@ -10,20 +10,36 @@ const OrientationLock = ({ children }: { children: React.ReactNode }) => {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+
     const checkOrientation = () => {
-      // Check if device is mobile/tablet
-      const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
-        || (window.innerWidth <= 1024 && 'ontouchstart' in window);
-      
-      setIsMobile(isMobileDevice);
-      
-      // Only check orientation on mobile devices
-      if (isMobileDevice) {
-        const isCurrentlyLandscape = window.innerWidth > window.innerHeight;
-        setIsLandscape(isCurrentlyLandscape);
-      } else {
-        setIsLandscape(false); // Never show rotation message on desktop
-      }
+      // Clear any pending timeout
+      clearTimeout(timeoutId);
+
+      // Debounce to avoid flickering during browser chrome animations
+      timeoutId = setTimeout(() => {
+        // Check if device is mobile/tablet
+        const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
+          || (window.innerWidth <= 1024 && 'ontouchstart' in window);
+        
+        setIsMobile(isMobileDevice);
+        
+        // Only check orientation on mobile devices
+        if (isMobileDevice) {
+          // Use screen.orientation API if available (more reliable)
+          if (window.screen?.orientation) {
+            const isCurrentlyLandscape = window.screen.orientation.type.includes('landscape');
+            setIsLandscape(isCurrentlyLandscape);
+          } else {
+            // Fallback: add threshold to prevent false positives
+            const aspectRatio = window.innerWidth / window.innerHeight;
+            const isCurrentlyLandscape = aspectRatio > 1.1; // More than 10% wider
+            setIsLandscape(isCurrentlyLandscape);
+          }
+        } else {
+          setIsLandscape(false);
+        }
+      }, 100); // 100ms debounce
     };
 
     // Check orientation on mount
@@ -35,6 +51,7 @@ const OrientationLock = ({ children }: { children: React.ReactNode }) => {
 
     // Cleanup
     return () => {
+      clearTimeout(timeoutId);
       window.removeEventListener('resize', checkOrientation);
       window.removeEventListener('orientationchange', checkOrientation);
     };
@@ -42,7 +59,6 @@ const OrientationLock = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <>
-      {/* Always render children */}
       {children}
       
       {/* Show landscape warning overlay on top when needed */}
