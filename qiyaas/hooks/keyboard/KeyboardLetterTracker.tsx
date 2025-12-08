@@ -14,7 +14,7 @@ interface KeyboardLetterTrackerProps {
   selectedStartingLetters: string;
   additionalLetters: {
     vowel?: string;
-    consonant?: string; // Singular consonant (not array)
+    consonant?: string;
   };
   cluesData: {
     clue_1?: ClueValue; // Can be string or { word, type }
@@ -89,13 +89,13 @@ export function useKeyboardLetterStatus({
       startingLettersSet.add(upper);
     }
     
-    // Add additional consonant (singular) - treated as pre-placed
+    // Add additional consonant - treated as pre-placed
     if (additionalLetters.consonant) {
       const upper = additionalLetters.consonant.toUpperCase();
       trackedLettersSet.add(upper);
       startingLettersSet.add(upper);
     }
-    
+
     // Add any NEW letters that have been verified (from wordInputs)
     if (wordInputs) {
       wordInputs.forEach((letter) => {
@@ -138,6 +138,7 @@ export function useKeyboardLetterStatus({
         // If this is a starting letter (or additional letter), count how many positions it auto-fills in this clue
         let autoPlacedCount = 0;
         if (isStartingLetter) {
+          
           // Count positions where this starting/additional letter appears in the clue
           for (let i = 0; i < word.length; i++) {
             if (word[i] === letter) {

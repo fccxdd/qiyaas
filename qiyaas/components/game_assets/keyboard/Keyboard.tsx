@@ -14,7 +14,7 @@ interface KeyboardProps {
   onEnter?: () => void;
   disabled?: boolean;
   gameStarted?: boolean;
-  letterStatus?: LetterStatus | Record<string, 'correct' | 'partial' | 'incorrect' | 'unused'>; // Support both types
+  letterStatus?: LetterStatus | Record<string, 'correct' | 'partial' | 'incorrect' | 'unused'>;
   awaitingLetterType?: 'vowel' | 'consonant' | null;
 }
 
@@ -42,25 +42,21 @@ export default function Keyboard({
     const isSpecial = key === "ENTER" || key === "BACKSPACE";
     const Icon = key === "ENTER" ? KeyboardReturnIcon : key === "BACKSPACE" ? BackspaceIcon : null;
 
-    // Get the appropriate background color class based on letter status
-    // Cast to LetterStatus to ensure compatibility with both fresh calculation and localStorage restore
     const bgColorClass = getKeyboardKeyClass(key, letterStatus as LetterStatus);
 
-    // FIXED: Only disable if disabled=true AND not awaiting letter type
     const isKeyDisabled = disabled && !awaitingLetterType;
 
     return (
       <button
         key={key}
         onClick={() => {
-          // FIXED: Check isKeyDisabled instead of just disabled
           if (isKeyDisabled) return;
           if (key === "ENTER") handleEnterClick();
           else if (key === "BACKSPACE") handleBackspaceClick();
           else handleKeyClick(key);
         }}
         disabled={isKeyDisabled}
-        className={`cursor-pointer flex items-center justify-center font-bold uppercase rounded-md select-none
+        className={`keyboard-key cursor-pointer flex items-center justify-center font-bold uppercase rounded-md select-none
           ${bgColorClass}
           active:scale-95 transition-transform
           ${pressedKey === key ? 'scale-95 opacity-80' : ''}
@@ -68,30 +64,147 @@ export default function Keyboard({
           ${isKeyDisabled ? 'opacity-50 cursor-not-allowed' : ''} 
         `}
         style={{
-          height: 'clamp(1.875rem, 7vh, 3.5rem)',
-          fontSize: 'clamp(0.7rem, 2vh, 1.25rem)',
           touchAction: 'manipulation',
         }}
       >
-        {Icon ? <Icon style={{ fontSize: 'clamp(1rem, 3vh, 1.875rem)' }} /> : key}
+        {Icon ? <Icon className="keyboard-icon" /> : key}
       </button>
     );
   };
 
   return (
-    <div className="w-full max-w-[600px] md:max-w-[700px] mx-auto px-1 sm:px-3 flex flex-col" 
-         style={{ 
-           gap: 'clamp(0.2rem, 0.8vh, 1rem)',
-           paddingTop: 'clamp(0.1rem, 0.3vh, 0.75rem)',
-           paddingBottom: 'clamp(0.1rem, 0.3vh, 0.75rem)'
-         }}>
-      {rows.map((row, i) => (
-        <div key={i} className="flex justify-center w-full" style={{ gap: 'clamp(0.375rem, 1vw, 0.75rem)' }}>
-          {i === 1 && <div className="flex-[0.5]" />}
-          {row.map(renderKey)}
-          {i === 1 && <div className="flex-[0.5]" />}
-        </div>
-      ))}
-    </div>
+    <>
+      <style jsx>{`
+        /* Standard Breakpoints for keyboard sizing */
+        
+        /* Mobile devices (320px — 480px) */
+        :global(.keyboard-key) {
+          height: 3rem;
+          font-size: 1rem;
+        }
+        :global(.keyboard-icon) {
+          font-size: 1rem !important;
+        }
+        .keyboard-container {
+          max-width: 500px;
+          gap: 0.5rem;
+          padding-top: 0.125rem;
+          padding-bottom: 1rem;
+        }
+        .keyboard-row {
+          gap: 0.5rem;
+        }
+        
+        /* iPads, Tablets (481px — 768px) */
+        @media screen and (min-width: 481px) and (max-width: 768px) {
+          :global(.keyboard-key) {
+            height: 2.5rem;
+            font-size: 0.875rem;
+          }
+          :global(.keyboard-icon) {
+            font-size: 1.25rem !important;
+          }
+          .keyboard-container {
+            max-width: 550px;
+            gap: 0.375rem;
+            padding-top: 0.25rem;
+            padding-bottom: 0.25rem;
+          }
+          .keyboard-row {
+            gap: 0.375rem;
+          }
+        }
+        
+        /* Small screens, laptops - 13-inch (769px — 1024px) */
+        @media screen and (min-width: 769px) and (max-width: 1024px) {
+          :global(.keyboard-key) {
+            height: 2.75rem;
+            font-size: 1rem;
+          }
+          :global(.keyboard-icon) {
+            font-size: 1.5rem !important;
+          }
+          .keyboard-container {
+            max-width: 600px;
+            gap: 0.5rem;
+            padding-top: 0.375rem;
+            padding-bottom: 0.375rem;
+          }
+          .keyboard-row {
+            gap: 0.5rem;
+          }
+        }
+        
+        /* Desktops, large screens - 15-inch+ (1025px — 1200px) */
+        @media screen and (min-width: 1025px) and (max-width: 1200px) {
+          :global(.keyboard-key) {
+            height: 3rem;
+            font-size: 1.0625rem;
+          }
+          :global(.keyboard-icon) {
+            font-size: 1.625rem !important;
+          }
+          .keyboard-container {
+            max-width: 650px;
+            gap: 0.625rem;
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+          }
+          .keyboard-row {
+            gap: 0.5rem;
+          }
+        }
+        
+        /* Extra large screens (1201px and more) */
+        @media screen and (min-width: 1201px) {
+          :global(.keyboard-key) {
+            height: 3.5rem;
+            font-size: 1.25rem;
+          }
+          :global(.keyboard-icon) {
+            font-size: 1.875rem !important;
+          }
+          .keyboard-container {
+            max-width: 700px;
+            gap: 0.75rem;
+            padding-top: 0.75rem;
+            padding-bottom: 0.75rem;
+          }
+          .keyboard-row {
+            gap: 0.75rem;
+          }
+        }
+        
+        /* High-DPI 13-inch laptops (Yoga, etc.) - needs smaller sizing */
+        @media screen and (min-width: 1201px) and (max-width: 1400px) {
+          :global(.keyboard-key) {
+            height: 2.5rem;
+            font-size: 1rem;
+          }
+          :global(.keyboard-icon) {
+            font-size: 1.125rem !important;
+          }
+          .keyboard-container {
+            max-width: 500px;
+            gap: 0.375rem;
+            padding-top: 0.25rem;
+            padding-bottom: 0.25rem;
+          }
+          .keyboard-row {
+            gap: 0.375rem;
+          }
+        }
+      `}</style>
+      
+      <div className="keyboard-container w-full mx-auto px-1 sm:px-3 flex flex-col">
+        {rows.map((row, i) => (
+          <div key={i} className="keyboard-row flex justify-center w-full">
+            {i === 1 && <div className="flex-[0.5]" />}
+            {row.map(renderKey)}
+            {i === 1 && <div className="flex-[0.5]" />}
+          </div>
+        ))}
+      </div>
+    </>
   );
 }
