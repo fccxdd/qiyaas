@@ -25,6 +25,7 @@ interface UseKeyboardHandlersProps {
   setHasAnyCorrectAdditionalLetter: (value: boolean) => void;
   setGameStarted: (value: boolean) => void;
   setLettersInClues: (value: Set<string>) => void;
+  onStartingLettersSubmit?: () => void;
   
   showMessage: (msg: string, type?: 'error' | 'success' | 'info') => void;
   handleLifeLost: () => void;
@@ -47,6 +48,7 @@ export function useKeyboardHandlers({
   setHasAnyCorrectAdditionalLetter,
   setGameStarted,
   setLettersInClues,
+  onStartingLettersSubmit,
   showMessage,
   handleLifeLost,
   checkLettersInClues,
@@ -271,13 +273,16 @@ export function useKeyboardHandlers({
     }
 
     // Start the game
-    if (!gameStarted && selectedLetters.length === 4) {
+    if (!gameStarted && selectedLetters.length === GameConfig.startingLettersNumber) {
       if (message !== '') return;
       
       const inClues = checkLettersInClues(selectedLetters);
       setLettersInClues(inClues);
       setGameStarted(true);
-    } else if (!gameStarted && selectedLetters.length < 4) {
+
+      // Trigger color reveal animation
+      onStartingLettersSubmit?.(); 
+    } else if (!gameStarted && selectedLetters.length < GameConfig.startingLettersNumber) {
       showMessage(GameConfig.messages.noSelectedLetters, 'info');
     }
   }, [
@@ -285,7 +290,7 @@ export function useKeyboardHandlers({
     message, awaitingLetterType, pendingLetter, handleLifeLost, 
     cluesData, validatedAdditionalLetters, setValidatedAdditionalLetters,
     setAdditionalLetters, setHasAnyCorrectAdditionalLetter, setPendingLetter,
-    setAwaitingLetterType, setLettersInClues, setGameStarted
+    setAwaitingLetterType, setLettersInClues, setGameStarted, onStartingLettersSubmit
   ]);
 
   const handleRequestAdditionalLetter = useCallback((type: 'vowel' | 'consonant' ) => {

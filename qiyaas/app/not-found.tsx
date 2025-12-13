@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import ThemeToggle from "@/components/themes/ThemeToggle";
+import { GameConfig } from "@/lib/gameConfig";
 
 export default function Custom404() {
   return (
@@ -15,14 +16,14 @@ export default function Custom404() {
 	
 		<Image
 		  className="block"
-		  src="/qiyaas_404.png"
+		  src={GameConfig.imagePaths.image404}
 		  alt="qiyaas-404"
 		  width={178}
 		  height={151}
 		/>
 	
 		<div className="flex align-center items-center">
-			<h1 className="text-2xl font-bold ">Its not you, its just a 404-Error</h1>
+			<h1 className="text-2xl font-bold">Its not you, its just a 404-Error</h1>
 		</div>
 	</main>
 </div>

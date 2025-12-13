@@ -14,7 +14,7 @@ export default function TutorialWalkthrough() {
   const totalSteps = getTotalSteps();
 
   const handleStart = () => {
-    router.push('/tutorial-play');
+    router.push('/play');
   };
 
   return (

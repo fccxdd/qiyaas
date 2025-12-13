@@ -3,6 +3,7 @@
 "use client"
 
 import React, { useState, useEffect } from 'react';
+import { GameConfig } from '@/lib/gameConfig';
 
 interface LifeBarProps {
   lives: number;
@@ -33,23 +34,65 @@ const LifeBar: React.FC<LifeBarProps> = ({
   }, [lives, previousLives, onLifeLost]);
 
   return (
-
-    	<div className="flex justify-center w-full mt-4 mb-2 z-20">
-      <div className={`flex gap-2 ${isShaking ? 'animate-shake' : ''}`}>
-        {Array.from({ length: maxLives }, (_, index) => (
-          <div
-            key={index}
-            className={`w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 rounded-full transition-all duration-300 ${
-              index < (maxLives - lives)
-                ? 'bg-gray-700 dark:bg-gray-300 scale-75 opacity-30'
-                : 'bg-purple-500 dark:shadow-lg dark:shadow-purple-500/50'
-            }`}
-          />
-        ))}
-      </div>
-
-      {/* Custom animations */}
+    <>
       <style jsx>{`
+        /* Standard Breakpoints for life dot sizing */
+        
+        /* Mobile devices (320px — 480px) */
+         @media (max-width: 480px) {
+          .life-dot {
+            width: 0.75rem;
+            height: 0.75rem;
+          }
+          .life-container {
+            gap: 0.5rem;
+          }
+        }
+
+        /* iPads, Tablets (481px — 768px) */
+        @media screen and (min-width: 481px) and (max-width: 768px) {
+          .life-dot {
+            width: 0.875rem;
+            height: 0.875rem;
+          }
+          .life-container {
+            gap: 0.5rem;
+          }
+        }
+        
+        /* Small screens, laptops - 13-inch (769px — 1024px) */
+        @media screen and (min-width: 769px) and (max-width: 1024px) {
+          .life-dot {
+            width: 1rem;
+            height: 1rem;
+          }
+          .life-container {
+            gap: 0.5rem;
+          }
+        }
+        
+        /* Desktops, large screens - 15-inch+ (1025px — 1280px) */
+        @media screen and (min-width: 1025px) and (max-width: 1280px) {
+          .life-dot {
+            width: 1.125rem;
+            height: 1.125rem;
+          }
+          .life-container {
+            gap: 0.5rem;
+          }
+        }
+        
+        /* Extra large screens (1281px and more) */
+        @media screen and (min-width: 1281px) {
+          .life-dot {
+            width: 1.25rem;
+            height: 1.25rem;
+          }
+          .life-container {
+            gap: 0.5rem;
+          }
+        }
+        
         .animate-shake {
           animation: shake 0.6s ease-in-out;
         }
@@ -60,7 +103,22 @@ const LifeBar: React.FC<LifeBarProps> = ({
           20%, 40%, 60%, 80% { transform: translateX(2px); }
         }
       `}</style>
-    </div>
+      
+      <div className="flex justify-center w-full mt-4 mb-2 z-20">
+        <div className={`life-container flex ${isShaking ? 'animate-shake' : ''}`}>
+          {Array.from({ length: maxLives }, (_, index) => (
+            <div
+              key={index}
+              className={`life-dot rounded-full transition-all duration-300 ${
+                index < (maxLives - lives)
+                  ? GameConfig.livesColors.lost
+                  : GameConfig.livesColors.full
+              }`}
+            />
+          ))}
+        </div>
+      </div>
+    </>
   );
 };
 

@@ -20,21 +20,21 @@ lemmatizer = WordNetLemmatizer()
 BLOCKLIST = {
 	'aba', 'abandon', 'abortion', 'abuse', 'abused', 'absues', 'abuser', 'abusers', 'abusive', 'addiction', 'adultery', 'alcohol', 'alcoholic', 'alexander',  'amen', 'any', 
 	'anymore', 'anyway', 'anyways', 'anywhere', 'arousal', 'arthritis', 'assault', 'atheism', 'atheist',
-	'beer', 'bisexual', 'bipolar', 'bomb', 'boston', 'bostons', 'bullet',
-	'cannabis', 'cancer', 'carcinoma', 'champagne', 'christian', 'cocaine', 
+	'bar', 'beer', 'berlin', 'bisexual', 'bipolar', 'bomb', 'bordeaux', 'boston', 'bostons', 'bra', 'bullet', 'burial',
+	'cannabis', 'cancer', 'cancerous', 'carcinoma', 'champagne', 'christian', 'cleavage', 'cocaine', 'coffin', 'cremation',
 	'dada', 'dak', 'dal', 'dah', 'dated', 'dead', 'death', 'dementia', 'depressed', 'diarrhea', 'die', 'drug', 'dumb', 
-	'east', 'erotica', 
+	'east', 'erotica', 'extremism', 'extremist', 
 	'fatal', 'fascism', 'fascist', 'fatty', 'feces', 'funeral',
-	'genocide', 'grief', 'gunshot',
+	'genocide', 'grave', 'graveyard', 'grief', 'gunshot',
 	'handgun', 'hepatitis', 'hickey', 'hindu', 'homeless', 'holocaust', 'horrible', 'horror', 'however', 'idiot', 'idiots', 'idiotic', 'ill', 'illegal', 'illness', 'islam', 'islamic', 
 	'khan', 'killer', 
 	'lesbian', 'likewise', 'lingerie', 'liquor', 'loser', 'lucifer', 
-	'marijuana', 'magnum', 'martini', 'medicaid', 'medicaid', 'mike', 'missile', 'muslim', 
+	'marijuana', 'marseille', 'magnum', 'martini', 'medicaid', 'medicaid', 'mike', 'missile', 'muslim', 
 	'north', 'northeast', 'northern', 'nowadays', 
-	'other', 'otherwise', 'one', 
+	'obese', 'obesity', 'other', 'otherwise', 'one', 
 	'pic', 'polio',
 	'racial', 'racism', 'racist', 
-	'sad', 'sadly', 'satanic', 'sexy', 'sex', 'sexual', 'sexually', 'sexuality', 'sexist', 'sexism', 'shooter', 'shotgun', 'slavery', 'slave', 'somebody', 'someday', 'somehow', 'someone', 'sometime', 'sometimes', 'somewhat', 'somewhere',
+	'sad', 'sadly', 'satanic', 'seduction', 'secutive', 'sexy', 'sex', 'sexual', 'sexually', 'sexuality', 'sexist', 'sexism', 'shooter', 'shotgun', 'slavery', 'slave', 'somebody', 'someday', 'somehow', 'someone', 'sometime', 'sometimes', 'somewhat', 'somewhere',
 	'south', 'southeast', 'southern', 'southwest', 'soviet', 'suicide', 'superman', 'stripper', 'stupidity',
 	'tequila', 'terror', 'terrorism', 'terrorist', 'tho', 'thou', 'tobacco', 'torture', 'twitter', 
 	'ulcer', 'ups', 'urine', 'urinary', 'ute',
@@ -55,6 +55,14 @@ NUMBER_WORDS = {
 	'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety', 'hundred', 'thousand', 
 	'first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth'
 }
+
+FORCE_ADD = {
+				'baptize', 'bicep', 
+				'crooked',
+				'fulfill',
+				'internet',
+				'king'
+			}
 
 def get_pos_for_lemmatizer(tag):
 	if tag.startswith('J'):
@@ -115,6 +123,7 @@ with open(input_path, "r", encoding="utf-8") as f:
 	text = f.read()
 
 all_words = re.findall(r'"([A-Za-z]+)"', text)
+
 tagged_words = nltk.pos_tag([w.lower() for w in all_words])  # lowercase here
 
 words_by_pos = {

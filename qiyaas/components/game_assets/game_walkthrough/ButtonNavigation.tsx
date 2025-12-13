@@ -144,7 +144,7 @@ export const StartButton = ({ onClick }: ButtonNavigationProps) => {
       className="rounded-full shadow-xl border border-solid border-transparent transition-all flex items-center text-center justify-center bg-green-600 text-white gap-2 hover:bg-green-700 dark:hover:bg-green-500 hover:-translate-y-1 hover:shadow-2xl font-medium text-xl sm:text-2xl h-12 sm:h-12 px-6 sm:px-5 w-[158px] whitespace-nowrap"
     >
       <PlayCircleFilledWhiteIcon />
-      Try It
+      Play!
     </button>
   );
 };

@@ -35,7 +35,7 @@ const GameWalkthrough: React.FC<GameWalkthroughProps> = ({ currentStep }) => {
   }, [currentStep, previousStep]);
 
   return (
-    <div className="w-full overflow-hidden">
+    <div className="w-full overflow-hidden walkthrough-container">
       <div 
         className={`w-full transition-transform duration-500 ease-in-out ${
           isAnimating 
@@ -48,7 +48,7 @@ const GameWalkthrough: React.FC<GameWalkthroughProps> = ({ currentStep }) => {
         {validSteps[currentStep]?.title && (
           <div 
             key={`title-${currentStep}`}
-            className={`text-base sm:text-base md:text-2xl title-text leading-loose text-black dark:text-white fade-in ${
+            className={`walkthrough-title title-text leading-loose text-black dark:text-white fade-in ${
               currentStep === 7 ? 'text-center' : ''
             }`}
             style={{ wordBreak: 'break-word', overflowWrap: 'break-word', whiteSpace: 'normal', display: 'block' }}
@@ -59,10 +59,20 @@ const GameWalkthrough: React.FC<GameWalkthroughProps> = ({ currentStep }) => {
         {validSteps[currentStep]?.content && (
           <div 
             key={`content-${currentStep}`}
-            className="text-base sm:text-lg title-text leading-loose md:leading-[2.5] text-black dark:text-white mt-2 fade-in-delay"
+            className="walkthrough-content title-text leading-loose md:leading-[2.5] text-black dark:text-white mt-2 fade-in-delay"
             style={{ wordBreak: 'break-word', overflowWrap: 'break-word', whiteSpace: 'pre-line', display: 'block' }}
             dangerouslySetInnerHTML={{ __html: validSteps[currentStep].content }} 
           />
+        )}
+
+        {/* Render component if it exists in the step */}
+        {validSteps[currentStep]?.component && (
+          <div className="fade-in-delay mt-4">
+            {(() => {
+              const StepComponent = validSteps[currentStep].component;
+              return <StepComponent />;
+            })()}
+          </div>
         )}
 
         {/* Step 7 keyboard preview */}
@@ -74,6 +84,84 @@ const GameWalkthrough: React.FC<GameWalkthroughProps> = ({ currentStep }) => {
       </div>
 
       <style jsx>{`
+        /* Mobile devices (320px — 480px) */
+        .walkthrough-container {
+          padding-top: 0;
+        }
+        
+        .walkthrough-title {
+          font-size: 1rem; /* text-base */
+          line-height: 2;
+        }
+        
+        .walkthrough-content {
+          font-size: 1rem; /* text-base */
+          line-height: 2;
+        }
+        
+        /* iPads, Tablets (481px — 768px) */
+        @media (min-width: 481px) and (max-width: 768px) {
+          .walkthrough-container {
+            padding-top: 0.5rem;
+          }
+          
+          .walkthrough-title {
+            font-size: 1.125rem; /* text-lg */
+          }
+          
+          .walkthrough-content {
+            font-size: 1.125rem; /* text-lg */
+          }
+        }
+        
+        /* Small screens, laptops - 13-inch (769px — 1024px) */
+        @media (min-width: 769px) and (max-width: 1024px) {
+          .walkthrough-container {
+            padding-top: 2rem;
+          }
+          
+          .walkthrough-title {
+            font-size: 1.25rem; /* text-xl - reduced from text-2xl */
+          }
+          
+          .walkthrough-content {
+            font-size: 1rem; /* text-base */
+            line-height: 2.25;
+          }
+        }
+        
+        /* Desktops, large screens - 15-inch+ (1025px — 1280px) */
+        @media (min-width: 1025px) and (max-width: 1280px) {
+          .walkthrough-container {
+            padding-top: 1rem;
+          }
+          
+          .walkthrough-title {
+            font-size: 1.125rem; /* text-2xl */
+          }
+          
+          .walkthrough-content {
+            font-size: 1rem; /* text-lg */
+            line-height: 2.5;
+          }
+        }
+        
+        /* Extra large screens, TV (1281px and more) */
+        @media (min-width: 1281px) {
+          .walkthrough-container {
+            padding-top: 1rem;
+          }
+          
+          .walkthrough-title {
+            font-size: 1.5rem; /* text-2xl */
+          }
+          
+          .walkthrough-content {
+            font-size: 1.125rem; /* text-lg */
+            line-height: 2.5;
+          }
+        }
+        
         .fade-in {
           animation: simpleFadeIn 0.8s ease-in forwards;
           opacity: 0;

@@ -61,7 +61,8 @@ export function isGamePlayCluesData(clues: BaseCluesData): clues is GamePlayClue
 /**
  * Extract the word string from a clue value
  */
-export function getWordFromClue(clue: ClueValue): string {
+export function getWordFromClue(clue?: ClueValue | null): string | null {
+  if (!clue) return null;
   if (typeof clue === 'string') {
     return clue;
   }
@@ -73,10 +74,9 @@ export function getWordFromClue(clue: ClueValue): string {
  */
 export function getTypeFromClue(clue?: ClueValue | null): string | null {
   if (!clue) return null;
-  if (typeof clue === 'string') return clue;
+  if (typeof clue === 'string') return null;
   return clue.type ?? null;
 }
-
 
 /**
  * Normalize clues data to always return word strings
@@ -84,13 +84,12 @@ export function getTypeFromClue(clue?: ClueValue | null): string | null {
  */
 export function normalizeCluesData(clues: BaseCluesData): NormalizedCluesData {
   return {
-    clue_1: getWordFromClue(clues.clue_1),
-    clue_2: getWordFromClue(clues.clue_2),
-    clue_3: getWordFromClue(clues.clue_3),
+    clue_1: getWordFromClue(clues.clue_1) ?? '',
+    clue_2: getWordFromClue(clues.clue_2) ?? '',
+    clue_3: getWordFromClue(clues.clue_3) ?? '',
     numbers_for_clue: clues.numbers_for_clue
   };
 }
-
 /**
  * Get all clue words as an array
  */
@@ -99,7 +98,7 @@ export function getClueWordsArray(clues: BaseCluesData): string[] {
     getWordFromClue(clues.clue_1),
     getWordFromClue(clues.clue_2),
     getWordFromClue(clues.clue_3)
-  ];
+  ].filter((word): word is string => word !== null);
 }
 
 /**
@@ -110,8 +109,7 @@ export function getClueTypesArray(clues: BaseCluesData): string[] {
     getTypeFromClue(clues.clue_1),
     getTypeFromClue(clues.clue_2),
     getTypeFromClue(clues.clue_3)
-  ]
-    .filter((type): type is string => Boolean(type)); // only keep non-null/undefined
+  ].filter((type): type is string => type !== null);
 }
 
 /**

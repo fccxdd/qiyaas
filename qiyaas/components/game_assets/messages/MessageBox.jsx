@@ -1,9 +1,12 @@
-// components/messages/MessageBox.jsx
-
 import React, { useState, useEffect, useRef } from 'react';
 import { GameConfig } from '@/lib/gameConfig';
 
-const MessageBox = ({ message, type, onClose, duration = GameConfig.messages.messageDelay }) => {
+const MessageBox = ({ 
+  message, 
+  type, 
+  onClose, 
+  duration = GameConfig.duration.messageDelay 
+}) => {
   const [isVisible, setIsVisible] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
   const timerRef = useRef(null);
@@ -17,7 +20,7 @@ const MessageBox = ({ message, type, onClose, duration = GameConfig.messages.mes
 
       // Show the message
       setShouldRender(true);
-      setTimeout(() => setIsVisible(true), 10);
+      setTimeout(() => setIsVisible(true), GameConfig.duration.messageFadeInDelay);
       
       // Auto-hide after duration
       timerRef.current = setTimeout(() => {
@@ -26,7 +29,7 @@ const MessageBox = ({ message, type, onClose, duration = GameConfig.messages.mes
         setTimeout(() => {
           setShouldRender(false);
           if (onClose) onClose();
-        }, 300);
+        }, GameConfig.messages.messageFadeOutDelay);
       }, duration);
 
       return () => {
@@ -36,7 +39,7 @@ const MessageBox = ({ message, type, onClose, duration = GameConfig.messages.mes
       };
     } else {
       setIsVisible(false);
-      setTimeout(() => setShouldRender(false), 300);
+      setTimeout(() => setShouldRender(false), GameConfig.duration.messageFadeOutDelay);
     }
   }, [message, duration, onClose]);
 
@@ -59,26 +62,51 @@ const MessageBox = ({ message, type, onClose, duration = GameConfig.messages.mes
   };
 
   return (
-    <div 
-      className={`fixed left-1/2 transform -translate-x-1/2 z-[9999] transition-all duration-300 ${
-        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'
-      }`}
-      style={{
-        top: 'clamp(10rem, 20vh, 8rem)',
-        // Override for desktop - much lower position
-      }}
-    >
+    <>
       <style jsx>{`
-        @media (min-width: 768px) {
-          div {
-            top: 30vh !important;
+        /* Mobile devices (320px — 480px) */
+        .message-box {
+          top: 23%;
+        }
+        
+        /* iPads, Tablets (481px — 768px) */
+        @media screen and (min-width: 481px) and (max-width: 768px) {
+          .message-box {
+            top: 30%;
+          }
+        }
+        
+        /* Small screens, laptops - 13-inch (769px — 1024px) */
+        @media screen and (min-width: 769px) and (max-width: 1024px) {
+          .message-box {
+            top: 32%;
+          }
+        }
+        
+        /* Desktops, large screens - 15-inch+ (1025px — 1280px) */
+        @media screen and (min-width: 1025px) and (max-width: 1280px) {
+          .message-box {
+            top: 25%;
+          }
+        }
+        
+        /* Extra large screens, TV (1281px and more) */
+        @media screen and (min-width: 1281px) {
+          .message-box {
+            top: 25%;
           }
         }
       `}</style>
-      <div className={getMessageStyles()}>
-        {message}
+      <div 
+        className={`message-box fixed left-1/2 transform -translate-x-1/2 z-[9999] transition-all duration-300 ${
+          isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'
+        }`}
+      >
+        <div className={`${getMessageStyles()} whitespace-nowrap`}>
+          {message}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

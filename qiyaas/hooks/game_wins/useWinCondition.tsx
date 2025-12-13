@@ -1,4 +1,4 @@
-// hooks/useWinCondition.ts
+// hooks/useWinCondition.tsx
 
 import { useEffect } from 'react';
 

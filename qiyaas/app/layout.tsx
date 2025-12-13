@@ -17,7 +17,7 @@ const inknutAntiqua = Inknut_Antiqua({
 })
 
 // Metadata Definition
-// TODO: Fix metadata images URLs when deploying
+// TODO: Fix metadata URLs to be non 'beta' when deploying to PROD and also update description
 export const metadata = {
   
   metadataBase: new URL("https://beta.qiyaasgame.com"),
