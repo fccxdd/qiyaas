@@ -8,7 +8,7 @@ import EmailIcon from '@mui/icons-material/Email';
 
 export default function EmailButton() {
   const [isMobile, setIsMobile] = useState(false);
-  const email = "qiyaasgame@gmail.com";
+  const email = "info@qiyaasgame.com";
 
   useEffect(() => {
     // Detect if user is on mobile
