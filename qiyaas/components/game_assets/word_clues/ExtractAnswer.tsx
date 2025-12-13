@@ -28,7 +28,7 @@ export type DailyWordPuzzle = {
 // ----------------------
 // API Configuration
 // ----------------------
-const API_ENDPOINT = process.env.NEXT_PUBLIC_PUZZLE_API_URL || 'https://qiyaas-daily-puzzle.fatima-hussein.workers.dev/puzzle';
+const API_ENDPOINT = process.env.NEXT_PUBLIC_PUZZLE_API_URL || 'https://beta.qiyaasgame.com/puzzle';
 
 // ----------------------
 // Helper to get today's date in America/New_York timezone
