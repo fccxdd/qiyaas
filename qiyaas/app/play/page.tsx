@@ -6,7 +6,9 @@ import ThemeToggle from "@/components/themes/ThemeToggle";
 import GoHome from "@/components/game_assets/game_walkthrough/GoHome";
 import HelpModal from "@/components/game_assets/game_walkthrough/HelpModal";
 
-export default function TutorialPlayPage() {
+export const runtime = 'edge';
+
+export default function PlayPage() {
   return (
     <div>
       <GameHeader
