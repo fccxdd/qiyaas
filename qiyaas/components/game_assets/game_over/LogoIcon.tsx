@@ -19,14 +19,14 @@ export const LogoIcon: React.FC<LogoIconProps> = ({ variant }) => {
   
         <Image
           className="block dark:hidden"
-          src="qiyaas_logo_glow_light.svg"
+          src={GameConfig.imagePaths.lostGameLightMode}
           alt="qiyaas-logo-light"
           width={140}
           height={119}
         />
         <Image
           className="hidden dark:block"
-          src="qiyaas_logo_glow_dark.svg"
+          src={GameConfig.imagePaths.lostGameDarkMode}
           alt="qiyaas-logo-dark"
           width={140}
           height={119}
@@ -41,14 +41,14 @@ export const LogoIcon: React.FC<LogoIconProps> = ({ variant }) => {
     <div className="flex flex-col gap-[20px] sm:gap-[30px] row-start-2 items-center">
       <Image
         className="dark:hidden block animate-pulse linear"
-        src="/qiyaas_grey_light.svg"
+        src={GameConfig.imagePaths.lostGameLightMode}
         alt="qiyaas-greyed-out-light"
         width={140}
         height={119}
       />
       <Image
         className="not-dark:hidden block animate-pulse linear"
-        src="/qiyaas_grey_dark.svg"
+        src={GameConfig.imagePaths.lostGameDarkMode}
         alt="qiyaas-greyed-out-dark"
         width={140}
         height={119}
