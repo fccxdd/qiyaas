@@ -96,6 +96,7 @@ export function useWordValidation(
 		const clueUpper = clue.toUpperCase();
 		let allCorrect = true;
 		let someCorrectPosition = false;
+		let hasLettersInWord = false;
 		const correctPositions = new Set<number>();
 
 		// Check each position
@@ -108,6 +109,11 @@ export function useWordValidation(
 				someCorrectPosition = true;
 			} else {
 				allCorrect = false;
+			}
+			
+			// Check if this letter exists anywhere in the clue (even if wrong position)
+			if (userLetter && clueUpper.includes(userLetter)) {
+				hasLettersInWord = true;
 			}
 		}
 
@@ -152,7 +158,7 @@ export function useWordValidation(
 			// Show incorrect message
 			onShowMessage(GameConfig.messages.wordIncorrect, 'error');
 		
-			if (someCorrectPosition) {
+			if (someCorrectPosition || hasLettersInWord) {
 				// Add correct positions to verified positions
 				setVerifiedPositions(prev => new Map(prev).set(clue, correctPositions));        
 
@@ -176,7 +182,7 @@ export function useWordValidation(
 					}, GameConfig.duration.moveToFirstEmptyPosition);
 				});
 			} else {
-				// Trigger red flash
+				// Trigger red flash - no letters from the guess exist in the clue
 				triggerFlash(clue, 'red', () => {
 					// After flash completes, wait additional time before cleanup
 					setTimeout(() => {
