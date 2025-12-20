@@ -12,12 +12,16 @@ export const GameConfig = {
 							// Image Paths
 							imagePaths: {
 
-											image404: "/qiyaas_glow_404.png",
+											image404: "qiyaas_glow_404.png",
+											lostGameDarkMode: "qiyaas_grey_dark.svg",
+											lostGameLightMode: "qiyaas_grey_light.svg",
+											blueRectangle: "/qiyaas_logo/blue_rectangle.svg",
+											greenRectangle: "/qiyaas_logo/green_rectangle.svg",
+											pinkRectangle: "/qiyaas_logo/pink_rectangle.svg"
 											
 										},
 							// Timing Durations
-							duration: {
-											
+							duration: {											
 											
 											// Tutorial Loading Delay
 											tutorialLoadingDelay: 500,
