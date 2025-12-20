@@ -58,78 +58,37 @@ export function useBackspaceHandler({
       return !isStarting && !verified.has(position) && !isAdditional;
     };
 
-    // If cursor is on a filled position that can be deleted, delete it
-    if (wordInputs.has(cursorPosition.position) && canDelete(currentClue, cursorPosition.position, wordInputs)) {
-      const newWordInputs = new Map(wordInputs);
-      newWordInputs.delete(cursorPosition.position);
-      setUserInputs(prev => new Map(prev).set(currentClue, newWordInputs));
-      return;
-    }
-    
-    // Otherwise, navigate backwards to find either:
-    // 1. A deletable letter (user-typed, not starting, not verified, not additional)
-    // 2. An empty position to move cursor to
+    // Navigate backwards to the immediately previous position
     let targetClueIndex = cursorPosition.clueIndex;
+    let targetPosition = cursorPosition.position - 1;
     let targetClue = currentClue;
     let targetWordInputs = wordInputs;
-    let positionToDelete = -1;
-    let emptyPositionToMoveTo = -1;
 
-    // Search backwards in current word
-    for (let i = cursorPosition.position - 1; i >= 0; i--) {
-      if (targetWordInputs.has(i)) {
-        if (canDelete(targetClue, i, targetWordInputs)) {
-          positionToDelete = i;
-          break;
-        }
-      } else {
-        if (emptyPositionToMoveTo === -1) {
-          emptyPositionToMoveTo = i;
-        }
-      }
-    }
-
-    // If no deletable letter found in current word, search previous words
-    if (positionToDelete === -1) {
-      for (let clueIdx = targetClueIndex - 1; clueIdx >= 0; clueIdx--) {
+    // If we're at the start of current word, move to previous word
+    if (targetPosition < 0) {
+      for (let clueIdx = cursorPosition.clueIndex - 1; clueIdx >= 0; clueIdx--) {
         const prevClue = activeClues[clueIdx];
         if (!completedWords.has(prevClue)) {
-          const prevWordInputs = userInputs.get(prevClue);
-          if (prevWordInputs) {
-            for (let i = prevClue.length - 1; i >= 0; i--) {
-              if (prevWordInputs.has(i)) {
-                if (canDelete(prevClue, i, prevWordInputs)) {
-                  targetClueIndex = clueIdx;
-                  targetClue = prevClue;
-                  targetWordInputs = prevWordInputs;
-                  positionToDelete = i;
-                  break;
-                }
-              } else {
-                if (emptyPositionToMoveTo === -1) {
-                  emptyPositionToMoveTo = i;
-                  targetClueIndex = clueIdx;
-                  targetClue = prevClue;
-                  targetWordInputs = prevWordInputs;
-                }
-              }
-            }
-          }
+          targetClueIndex = clueIdx;
+          targetClue = prevClue;
+          targetPosition = prevClue.length - 1;
+          targetWordInputs = userInputs.get(prevClue) || new Map();
+          break;
         }
-        if (positionToDelete !== -1) break;
       }
     }
-    
-    // Priority 1: Delete a user-typed letter if found
-    if (positionToDelete !== -1) {
-      const newWordInputs = new Map(targetWordInputs);
-      newWordInputs.delete(positionToDelete);
-      setUserInputs(prev => new Map(prev).set(targetClue, newWordInputs));
-      setCursorPosition({ clueIndex: targetClueIndex, position: positionToDelete });
-    } 
-    // Priority 2: Move cursor to empty position for navigation
-    else if (emptyPositionToMoveTo !== -1) {
-      setCursorPosition({ clueIndex: targetClueIndex, position: emptyPositionToMoveTo });
+
+    // If we found a valid position to move to
+    if (targetPosition >= 0) {
+      // Move cursor to that position
+      setCursorPosition({ clueIndex: targetClueIndex, position: targetPosition });
+      
+      // If that position has a deletable letter, delete it
+      if (targetWordInputs.has(targetPosition) && canDelete(targetClue, targetPosition, targetWordInputs)) {
+        const newWordInputs = new Map(targetWordInputs);
+        newWordInputs.delete(targetPosition);
+        setUserInputs(prev => new Map(prev).set(targetClue, newWordInputs));
+      }
     }
   }, [
     cursorPosition,
