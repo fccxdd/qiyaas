@@ -58,13 +58,37 @@ export function useBackspaceHandler({
       return !isStarting && !verified.has(position) && !isAdditional;
     };
 
-    // Navigate backwards to the immediately previous position
+    // Helper function to check if a position should be skipped during navigation
+    const shouldSkip = (clue: string, position: number): boolean => {
+      const verified = verifiedPositions.get(clue) || new Set();
+      const additionalPositions = additionalLetterPositions.get(clue) || new Set();
+      const inputs = userInputs.get(clue);
+      if (!inputs || !inputs.has(position)) return false;
+      const letter = inputs.get(position)!;
+      const isStarting = isStartingLetter(clue, position, letter);
+      return verified.has(position) || isStarting || additionalPositions.has(position);
+    };
+
+    // If cursor is on a filled position that can be deleted, delete it
+    if (wordInputs.has(cursorPosition.position) && canDelete(currentClue, cursorPosition.position, wordInputs)) {
+      const newWordInputs = new Map(wordInputs);
+      newWordInputs.delete(cursorPosition.position);
+      setUserInputs(prev => new Map(prev).set(currentClue, newWordInputs));
+      return;
+    }
+
+    // Navigate backwards to the immediately previous position, skipping verified/starting/additional positions
     let targetClueIndex = cursorPosition.clueIndex;
     let targetPosition = cursorPosition.position - 1;
     let targetClue = currentClue;
     let targetWordInputs = wordInputs;
 
-    // If we're at the start of current word, move to previous word
+    // Skip verified/starting/additional positions in current word
+    while (targetPosition >= 0 && shouldSkip(targetClue, targetPosition)) {
+      targetPosition--;
+    }
+
+    // If we're at the start of current word (or all positions were skipped), move to previous word
     if (targetPosition < 0) {
       for (let clueIdx = cursorPosition.clueIndex - 1; clueIdx >= 0; clueIdx--) {
         const prevClue = activeClues[clueIdx];
@@ -73,7 +97,13 @@ export function useBackspaceHandler({
           targetClue = prevClue;
           targetPosition = prevClue.length - 1;
           targetWordInputs = userInputs.get(prevClue) || new Map();
-          break;
+          
+          // Skip verified/starting/additional positions in previous word
+          while (targetPosition >= 0 && shouldSkip(targetClue, targetPosition)) {
+            targetPosition--;
+          }
+          
+          if (targetPosition >= 0) break;
         }
       }
     }
