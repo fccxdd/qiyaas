@@ -3,7 +3,6 @@
 'use client';
 
 import { useCallback } from 'react';
-import { isWordComplete } from '@/hooks/clues/clueHelpers';
 import { GameConfig } from '@/lib/gameConfig';
 
 interface CursorPosition {
@@ -17,6 +16,7 @@ interface UseEnterKeyHandlerProps {
   cursorPosition: CursorPosition | null;
   submitWord: (clue: string, clueIndex: number) => void;
   onShowMessage: (msg: string, type?: 'error' | 'success' | 'info') => void;
+  isWordComplete: (clue: string, wordInputs: Map<number, string>) => boolean;
 }
 
 export function useEnterKeyHandler({
@@ -24,7 +24,8 @@ export function useEnterKeyHandler({
   userInputs,
   cursorPosition,
   submitWord,
-  onShowMessage
+  onShowMessage,
+  isWordComplete
 }: UseEnterKeyHandlerProps) {
   
   const handleEnter = useCallback(() => {
@@ -40,7 +41,7 @@ export function useEnterKeyHandler({
     } else {
       onShowMessage(GameConfig.messages.wordNotComplete, 'info');
     }
-  }, [activeClues, userInputs, cursorPosition, submitWord, onShowMessage]);
+  }, [activeClues, userInputs, cursorPosition, submitWord, onShowMessage, isWordComplete]);
 
   return { handleEnter };
 }

@@ -9,6 +9,9 @@ interface UseKeyPressProps {
 	disabled?: boolean;
 	gameStarted?: boolean;
 	awaitingLetterType?: 'vowel' | 'consonant' | null;
+	clueLettersComplete?: boolean;
+	isGameOver?: boolean;
+	hasLostLifeForNoStartingLetters?: boolean;
 }
 
 export function useKeyPress({ 
@@ -17,61 +20,67 @@ export function useKeyPress({
 	onEnter, 
 	disabled = false,
 	gameStarted = false,
-	awaitingLetterType = null
+	awaitingLetterType = null,
+	clueLettersComplete = false,
+	isGameOver = false,
+	hasLostLifeForNoStartingLetters = false,
 }: UseKeyPressProps) {
 	const [pressedKey, setPressedKey] = useState<string | null>(null);
 
 	// Determine if keyboard should be actually disabled
-	// Only disable if disabled=true AND we're NOT waiting for additional letter
-	const isActuallyDisabled = disabled && !awaitingLetterType;
-
-	// Handle physical keyboard events
+	// Disable if:
+	// - disabled=true AND we're NOT waiting for additional letter
+	// - OR (game has started AND letters are still revealing)
+	const isRevealingLetters = gameStarted && !clueLettersComplete && !hasLostLifeForNoStartingLetters;
+	const isActuallyDisabled = !isGameOver && (disabled && !awaitingLetterType && !hasLostLifeForNoStartingLetters) || isRevealingLetters ;
+	
+// Handle physical keyboard events
 	useEffect(() => {
 		const handleKeyDown = (event: KeyboardEvent) => {
-			if (isActuallyDisabled) return;
-			
-			// Ignore key presses with modifier keys (Ctrl, Cmd, Alt)
-			// This allows browser shortcuts like Ctrl+R to work properly
+			// Ignore key presses with modifier keys
 			if (event.ctrlKey || event.metaKey || event.altKey) {
 				return;
 			}
 			
 			const key = event.key.toUpperCase();
-
-			// During active gameplay (gameStarted && !awaitingLetterType), 
-			// DON'T preventDefault or stop propagation - let ClueWords handle it
+			
+			// Check if this is a game-related key
+			const isGameKey = /^[A-Z]$/.test(key) || key === 'BACKSPACE' || key === 'ENTER';
+			
+			// If disabled and it's a game key, prevent it and stop
+			if (isActuallyDisabled && isGameKey) {
+				event.preventDefault();
+				event.stopPropagation();
+				event.stopImmediatePropagation();
+				return;
+			}			
+		
+			// Check if disabled and return if so
+			if (isActuallyDisabled) return;
+			
+			// During active gameplay, let ClueWords handle it
 			const isActiveGameplay = gameStarted && !awaitingLetterType;
+				
+			// Prevent default behavior for game keys
+			if (!isActiveGameplay) {
+				event.preventDefault();
+				event.stopPropagation();
+				event.stopImmediatePropagation();
+			}
 
-			// Always allow backspace and enter
 			if (key === 'BACKSPACE' && onBackspace) {
-				if (!isActiveGameplay) {
-					event.preventDefault();
-					event.stopPropagation();
-					event.stopImmediatePropagation();
-				}
 				setPressedKey('BACKSPACE');
 				onBackspace();
 				return;
 			}
 			
 			if (key === 'ENTER' && onEnter) {
-				if (!isActiveGameplay) {
-					event.preventDefault();
-					event.stopPropagation();
-					event.stopImmediatePropagation();
-				}
 				setPressedKey('ENTER');
 				onEnter();
 				return;
 			}
 
-			// Handle letter input
 			if (/^[A-Z]$/.test(key) && onKeyPress) {
-				if (!isActiveGameplay) {
-					event.preventDefault();
-					event.stopPropagation();
-					event.stopImmediatePropagation();
-				}
 				setPressedKey(key);
 				onKeyPress(key);
 			}
@@ -154,6 +163,7 @@ export function useKeyPress({
 		pressedKey,
 		handleKeyClick,
 		handleBackspaceClick,
-		handleEnterClick
+		handleEnterClick,
+		isActuallyDisabled,
 	};
 }

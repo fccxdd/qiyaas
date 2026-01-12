@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useKeyboardArrowNavigation } from './useKeyboardArrowNavigation';
 import { useLetterInput } from '@/hooks/clues/useLetterInput';
 import { useBackspaceHandler } from './useBackspaceHandler';
@@ -29,8 +29,10 @@ interface UseKeyboardInputProps {
   moveToPreviousPosition: () => void;
   moveToClueAbove: () => void;
   moveToClueBelow: () => void;
-  additionalLetters ?: { vowel?: string; consonant?: string; };
+  additionalLetters?: { vowel?: string; consonant?: string; };
   additionalLetterPositions: Map<string, Set<number>>;
+  isWordComplete: (clue: string, wordInputs: Map<number, string>) => boolean;
+  autoRevealedPositions?: Map<string, Set<number>>;
 }
 
 export function useKeyboardInput({
@@ -50,9 +52,13 @@ export function useKeyboardInput({
   moveToClueAbove,
   moveToClueBelow,
   additionalLetters,
-  additionalLetterPositions
-
+  additionalLetterPositions,
+  isWordComplete,
+  autoRevealedPositions = new Map(),
 }: UseKeyboardInputProps) {
+  
+  // Track composition state for mobile keyboards (important for iOS/Android)
+  const isComposingRef = useRef(false);
   
   // Arrow key navigation
   useKeyboardArrowNavigation({
@@ -85,7 +91,7 @@ export function useKeyboardInput({
     cursorPosition,
     setCursorPosition,
     startingLettersSet,
-     additionalLetterPositions
+    additionalLetterPositions
   });
 
   // Enter key handler
@@ -94,14 +100,41 @@ export function useKeyboardInput({
     userInputs,
     cursorPosition,
     submitWord,
-    onShowMessage
+    onShowMessage,
+    isWordComplete
   });
 
-  // Main keyboard event listener
+  // Main keyboard event listener - optimized for mobile
   useEffect(() => {
-    if (!isEnabled) return;
+    if (!isEnabled || !cursorPosition) return;
+
+    // Check if current position is locked
+    const currentClue = activeClues[cursorPosition.clueIndex];
+    const autoRevealed = autoRevealedPositions.get(currentClue);
+    const isCurrentPositionLocked = autoRevealed?.has(cursorPosition.position) || false;
+
+    // Handle composition events for mobile keyboards
+    const handleCompositionStart = () => {
+      isComposingRef.current = true;
+    };
+
+    const handleCompositionEnd = (e: CompositionEvent) => {
+      isComposingRef.current = false;
+      
+      // Don't process if position is locked
+      if (isCurrentPositionLocked) return;
+      
+      // Process the composed character immediately
+      const key = e.data?.toUpperCase();
+      if (key && /^[A-Z]$/.test(key)) {
+        handleLetterInput(key);
+      }
+    };
 
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't process keys during composition (mobile IME)
+      if (isComposingRef.current) return;
+
       // Arrow keys are handled by useKeyboardArrowNavigation
       if (['ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
         return;
@@ -117,6 +150,13 @@ export function useKeyboardInput({
       // Handle Backspace
       if (e.key === 'Backspace') {
         e.preventDefault();
+        
+        // If current position is locked, move to previous instead of deleting
+        if (isCurrentPositionLocked) {
+          moveToPreviousPosition();
+          return;
+        }
+        
         handleBackspace();
         return;
       }
@@ -125,11 +165,34 @@ export function useKeyboardInput({
       const key = e.key.toUpperCase();
       if (/^[A-Z]$/.test(key)) {
         e.preventDefault();
+        
+        // Don't allow input on locked positions
+        if (isCurrentPositionLocked) {
+          return;
+        }
+        
         handleLetterInput(key);
       }
     };
 
+    // Add all event listeners
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isEnabled, handleEnter, handleBackspace, handleLetterInput]);
+    window.addEventListener('compositionstart', handleCompositionStart);
+    window.addEventListener('compositionend', handleCompositionEnd);
+    
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('compositionstart', handleCompositionStart);
+      window.removeEventListener('compositionend', handleCompositionEnd);
+    };
+  }, [
+    isEnabled,
+    cursorPosition,
+    activeClues,
+    autoRevealedPositions,
+    handleEnter,
+    handleBackspace,
+    handleLetterInput,
+    moveToPreviousPosition
+  ]);
 }

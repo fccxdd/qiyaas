@@ -16,6 +16,9 @@ interface KeyboardProps {
   gameStarted?: boolean;
   letterStatus?: LetterStatus | Record<string, 'correct' | 'partial' | 'incorrect' | 'unused'>;
   awaitingLetterType?: 'vowel' | 'consonant' | null;
+  clueLettersComplete?: boolean;
+  isGameOver?: boolean;
+  hasLostLifeForNoStartingLetters?: boolean;
 }
 
 export default function Keyboard({ 
@@ -25,15 +28,21 @@ export default function Keyboard({
   disabled = false,
   gameStarted = false,
   letterStatus = {},
-  awaitingLetterType = null
+  awaitingLetterType = null,
+  clueLettersComplete = false,
+  isGameOver = false,
+  hasLostLifeForNoStartingLetters = false,
 }: KeyboardProps) {
-  const { pressedKey, handleKeyClick, handleBackspaceClick, handleEnterClick } = useKeyPress({
+  const { pressedKey, handleKeyClick, handleBackspaceClick, handleEnterClick, isActuallyDisabled } = useKeyPress({
     onKeyPress,
     onBackspace,
     onEnter,
     disabled,
     gameStarted,
-    awaitingLetterType
+    awaitingLetterType,
+    clueLettersComplete,
+    isGameOver,
+    hasLostLifeForNoStartingLetters
   });
 
   const rows = GameConfig.keyboardLayout;
@@ -44,24 +53,22 @@ export default function Keyboard({
 
     const bgColorClass = getKeyboardKeyClass(key, letterStatus as LetterStatus);
 
-    const isKeyDisabled = disabled && !awaitingLetterType;
-
     return (
       <button
         key={key}
         onClick={() => {
-          if (isKeyDisabled) return;
+          if (isActuallyDisabled) return;
           if (key === "ENTER") handleEnterClick();
           else if (key === "BACKSPACE") handleBackspaceClick();
           else handleKeyClick(key);
         }}
-        disabled={isKeyDisabled}
+        disabled={isActuallyDisabled}
         className={`keyboard-key cursor-pointer flex items-center justify-center font-bold uppercase rounded-md select-none
           ${bgColorClass}
           active:scale-95 transition-transform
           ${pressedKey === key ? 'scale-95 opacity-80' : ''}
           ${isSpecial ? 'flex-[1.3]' : 'flex-1'}
-          ${isKeyDisabled ? 'opacity-50 cursor-not-allowed' : ''} 
+          ${isActuallyDisabled ? 'opacity-50 cursor-not-allowed' : ''} 
         `}
         style={{
           touchAction: 'manipulation',
