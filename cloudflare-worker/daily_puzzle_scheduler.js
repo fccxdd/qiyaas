@@ -127,9 +127,6 @@ function countMatchingRules(word) {
     count++;
   }
   
-  // Length rule always applies (all words have a length)
-  count++;
-  
   return count;
 }
 
@@ -162,12 +159,6 @@ function pickWord(wordDict, lengthCat, rule, usedWords, rng) {
     if (availableWords.length === 0) {
       throw new Error(`No unused ${lengthCat} words starting with O/T/F/S/E/N available!`);
     }
-  }
-  
-  // Filter out words that match multiple rules
-  availableWords = availableWords.filter(w => countMatchingRules(w) === 1);
-  if (availableWords.length === 0) {
-    throw new Error(`No unused ${lengthCat} words that match exactly one rule available!`);
   }
 
   // Pick random word using seeded RNG
