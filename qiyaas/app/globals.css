@@ -117,7 +117,7 @@ h1, h2, h3, h4, h5, h6, .title-text {
 		}
 
 		.hint-number {
-			font-size: 1.5rem;
+			font-size: 1.75rem;
 			min-width: 16px;
 		}
 
@@ -366,6 +366,68 @@ h1, h2, h3, h4, h5, h6, .title-text {
 	}
 }
 
+/* Pulse Glow with Delay for Completed Words - 3s wait, 5s pulse (8s total) */
+@keyframes pulseGlowDelayed {
+	/* 0-37.5%: No glow (3s wait out of 8s total) */
+	0%, 37.5% { 
+		text-shadow: 0 0 0px currentColor;
+		filter: brightness(1);
+	}
+	/* 37.5-68.75%: Pulse up (2.5s) */
+	68.75% { 
+		text-shadow: 0 0 12px currentColor,
+								 0 0 16px currentColor;
+		filter: brightness(1.2);
+	}
+	/* 68.75-100%: Pulse down (2.5s) */
+	100% { 
+		text-shadow: 0 0 0px currentColor;
+		filter: brightness(1);
+	}
+}
+
+/* White glow reveal - pulses white, then reveals actual color */
+@keyframes pulseGlowWhiteReveal {
+	/* 0-60%: Long suspenseful white glow (3.6s) */
+	0% {
+		color: white !important;
+		text-shadow: 0 0 5px white;
+		filter: brightness(1.2);
+	}
+	20% {
+		color: white !important;
+		text-shadow: 0 0 40px white, 0 0 50px white, 0 0 60px white, 0 0 70px white;
+		filter: brightness(3);
+	}
+	50% {
+		color: white !important;
+		text-shadow: 0 0 40px white, 0 0 50px white, 0 0 60px white, 0 0 70px white;
+		filter: brightness(3);
+	}
+	60% {
+		color: white !important;
+		text-shadow: 0 0 20px white, 0 0 30px white;
+		filter: brightness(1.8);
+	}
+	/* 60-80%: Reveal color with glow (1.2s) */
+	70% {
+		color: currentColor !important;
+		text-shadow: 0 0 15px currentColor, 0 0 20px currentColor;
+		filter: brightness(1.3);
+	}
+	80% {
+		color: currentColor !important;
+		text-shadow: 0 0 8px currentColor;
+		filter: brightness(1.1);
+	}
+	/* 80-100%: Settle (1.2s) */
+	100% {
+		color: currentColor !important;
+		text-shadow: 0 0 0px currentColor;
+		filter: brightness(1);
+	}
+}
+
 /* Reverse Pulse Glow - starts with max glow, ends with no glow */
 @keyframes pulseGlowReverse {
 	0% { 
@@ -391,6 +453,68 @@ h1, h2, h3, h4, h5, h6, .title-text {
 									 0 0 40px currentColor,
 									 0 0 50px currentColor;
 			filter: brightness(1.3);
+		}
+	}
+	
+	@keyframes pulseGlowDelayed {
+		/* 0-37.5%: No glow (3s wait) */
+		0%, 37.5% { 
+			text-shadow: 0 0 0px currentColor;
+			filter: brightness(1);
+		}
+		/* 37.5-68.75%: Pulse up (2.5s) */
+		68.75% { 
+			text-shadow: 0 0 20px currentColor,
+									 0 0 30px currentColor,
+									 0 0 40px currentColor,
+									 0 0 50px currentColor;
+			filter: brightness(1.3);
+		}
+		/* 68.75-100%: Pulse down (2.5s) */
+		100% { 
+			text-shadow: 0 0 0px currentColor;
+			filter: brightness(1);
+		}
+	}
+	
+	@keyframes pulseGlowWhiteReveal {
+		/* 0-60%: Long suspenseful white glow (3.6s) */
+		0% {
+			color: white !important;
+			text-shadow: 0 0 8px white;
+			filter: brightness(1.3);
+		}
+		20% {
+			color: white !important;
+			text-shadow: 0 0 60px white, 0 0 70px white, 0 0 80px white, 0 0 90px white, 0 0 100px white;
+			filter: brightness(3.5);
+		}
+		50% {
+			color: white !important;
+			text-shadow: 0 0 60px white, 0 0 70px white, 0 0 80px white, 0 0 90px white, 0 0 100px white;
+			filter: brightness(3.5);
+		}
+		60% {
+			color: white !important;
+			text-shadow: 0 0 30px white, 0 0 40px white;
+			filter: brightness(2);
+		}
+		/* 60-80%: Reveal color with glow (1.2s) */
+		70% {
+			color: currentColor !important;
+			text-shadow: 0 0 25px currentColor, 0 0 35px currentColor, 0 0 45px currentColor;
+			filter: brightness(1.4);
+		}
+		80% {
+			color: currentColor !important;
+			text-shadow: 0 0 12px currentColor, 0 0 16px currentColor;
+			filter: brightness(1.2);
+		}
+		/* 80-100%: Settle (1.2s) */
+		100% {
+			color: currentColor !important;
+			text-shadow: 0 0 0px currentColor;
+			filter: brightness(1);
 		}
 	}
 	
@@ -423,6 +547,66 @@ h1, h2, h3, h4, h5, h6, .title-text {
 		}
 	}
 	
+	@keyframes pulseGlowDelayed {
+		/* 0-37.5%: No glow (3s wait) */
+		0%, 37.5% { 
+			text-shadow: 0 0 0px currentColor;
+			-webkit-filter: brightness(1);
+		}
+		/* 37.5-68.75%: Pulse up (2.5s) */
+		68.75% { 
+			text-shadow: 0 0 14px currentColor,
+									 0 0 18px currentColor;
+			-webkit-filter: brightness(1.2);
+		}
+		/* 68.75-100%: Pulse down (2.5s) */
+		100% { 
+			text-shadow: 0 0 0px currentColor;
+			-webkit-filter: brightness(1);
+		}
+	}
+	
+	@keyframes pulseGlowWhiteReveal {
+		/* 0-60%: Long suspenseful white glow (3.6s) */
+		0% {
+			color: white !important;
+			text-shadow: 0 0 6px white;
+			-webkit-filter: brightness(1.2);
+		}
+		20% {
+			color: white !important;
+			text-shadow: 0 0 50px white, 0 0 60px white, 0 0 70px white, 0 0 80px white;
+			-webkit-filter: brightness(3);
+		}
+		50% {
+			color: white !important;
+			text-shadow: 0 0 50px white, 0 0 60px white, 0 0 70px white, 0 0 80px white;
+			-webkit-filter: brightness(3);
+		}
+		60% {
+			color: white !important;
+			text-shadow: 0 0 25px white, 0 0 35px white;
+			-webkit-filter: brightness(1.8);
+		}
+		/* 60-80%: Reveal color with glow (1.2s) */
+		70% {
+			color: currentColor !important;
+			text-shadow: 0 0 18px currentColor, 0 0 22px currentColor;
+			-webkit-filter: brightness(1.3);
+		}
+		80% {
+			color: currentColor !important;
+			text-shadow: 0 0 10px currentColor;
+			-webkit-filter: brightness(1.1);
+		}
+		/* 80-100%: Settle (1.2s) */
+		100% {
+			color: currentColor !important;
+			text-shadow: 0 0 0px currentColor;
+			-webkit-filter: brightness(1);
+		}
+	}
+	
 	@keyframes pulseGlowReverse {
 		0% { 
 			text-shadow: 0 0 14px currentColor,
@@ -447,6 +631,68 @@ h1, h2, h3, h4, h5, h6, .title-text {
 										 0 0 42px currentColor,
 										 0 0 52px currentColor;
 				-webkit-filter: brightness(1.3);
+			}
+		}
+		
+		@keyframes pulseGlowDelayed {
+			/* 0-37.5%: No glow (3s wait) */
+			0%, 37.5% { 
+				text-shadow: 0 0 0px currentColor;
+				-webkit-filter: brightness(1);
+			}
+			/* 37.5-68.75%: Pulse up (2.5s) */
+			68.75% { 
+				text-shadow: 0 0 22px currentColor,
+										 0 0 32px currentColor,
+										 0 0 42px currentColor,
+										 0 0 52px currentColor;
+				-webkit-filter: brightness(1.3);
+			}
+			/* 68.75-100%: Pulse down (2.5s) */
+			100% { 
+				text-shadow: 0 0 0px currentColor;
+				-webkit-filter: brightness(1);
+			}
+		}
+		
+		@keyframes pulseGlowWhiteReveal {
+			/* 0-60%: Long suspenseful white glow (3.6s) */
+			0% {
+				color: white !important;
+				text-shadow: 0 0 10px white;
+				-webkit-filter: brightness(1.3);
+			}
+			20% {
+				color: white !important;
+				text-shadow: 0 0 62px white, 0 0 72px white, 0 0 82px white, 0 0 92px white, 0 0 102px white;
+				-webkit-filter: brightness(3.5);
+			}
+			50% {
+				color: white !important;
+				text-shadow: 0 0 62px white, 0 0 72px white, 0 0 82px white, 0 0 92px white, 0 0 102px white;
+				-webkit-filter: brightness(3.5);
+			}
+			60% {
+				color: white !important;
+				text-shadow: 0 0 32px white, 0 0 42px white;
+				-webkit-filter: brightness(2);
+			}
+			/* 60-80%: Reveal color with glow (1.2s) */
+			70% {
+				color: currentColor !important;
+				text-shadow: 0 0 27px currentColor, 0 0 37px currentColor, 0 0 47px currentColor;
+				-webkit-filter: brightness(1.4);
+			}
+			80% {
+				color: currentColor !important;
+				text-shadow: 0 0 14px currentColor, 0 0 18px currentColor;
+				-webkit-filter: brightness(1.2);
+			}
+			/* 80-100%: Settle (1.2s) */
+			100% {
+				color: currentColor !important;
+				text-shadow: 0 0 0px currentColor;
+				-webkit-filter: brightness(1);
 			}
 		}
 		
@@ -489,9 +735,9 @@ h1, h2, h3, h4, h5, h6, .title-text {
 
 .flash-wrapper.flash-active .dash-text,
 .flash-wrapper.flash-active .letter-text {
-	animation: pulseGlow 2000ms ease-in-out;
+	animation: pulseGlowWhiteReveal 6000ms ease-in-out forwards;
 	display: inline-block !important;
-	transition: color 500ms ease-in-out;
+	/* Remove this transition as it might interfere */
 	
 }
 
@@ -527,5 +773,38 @@ h1, h2, h3, h4, h5, h6, .title-text {
 
 .flash-wrapper.flash-active.flash-green-default .dash-text,
 .flash-wrapper.flash-active.flash-green-default .letter-text {
+	color: #22c55e !important;
+}
+
+/* ========================================
+   PERSISTENT GLOW FOR COMPLETED WORDS
+   ======================================== */
+
+/* Persistent glow for completed words - synchronized infinite animation */
+/* Uses pulseGlowDelayed (8s cycle: 3s wait + 5s pulse) to sync all words */
+.completed-word-glow .dash-text,
+.completed-word-glow .letter-text {
+	animation: pulseGlowDelayed 8s ease-in-out infinite !important;
+	display: inline-block !important;
+}
+
+/* Completed word colors - persistent after flash ends */
+.completed-word-glow.flash-green-noun .dash-text,
+.completed-word-glow.flash-green-noun .letter-text {
+	color: #74A8DC !important;
+}
+
+.completed-word-glow.flash-green-verb .dash-text,
+.completed-word-glow.flash-green-verb .letter-text {
+	color: #6AA84F !important;
+}
+
+.completed-word-glow.flash-green-adjective .dash-text,
+.completed-word-glow.flash-green-adjective .letter-text {
+	color: #E06666 !important;
+}
+
+.completed-word-glow.flash-green-default .dash-text,
+.completed-word-glow.flash-green-default .letter-text {
 	color: #22c55e !important;
 }

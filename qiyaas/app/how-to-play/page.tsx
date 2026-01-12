@@ -4,8 +4,8 @@ import TutorialWalkthrough from "@/components/game_mode/tutorial/TutorialWalkthr
 import GameHeader from "@/components/layouts/GameHeader";
 import ThemeToggle from "@/components/themes/ThemeToggle";
 import Loading from "@/components/game_assets/game_walkthrough/loading";
-import Link from "next/link";
 import GoHome from "@/components/game_assets/game_walkthrough/GoHome";
+
 export default function HowToPlayPage() {
   return (
     <div>

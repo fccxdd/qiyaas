@@ -1,6 +1,7 @@
 import { Indie_Flower, Inknut_Antiqua } from "next/font/google";
 import "@/app/globals.css";
 import OrientationLock from "@/components/ux/OrientationLock";
+import { GameConfig } from "@/lib/gameConfig";
 
 // Indie Flower for playful accent text
 const indieFlower = Indie_Flower({ 
@@ -20,17 +21,17 @@ const inknutAntiqua = Inknut_Antiqua({
 // TODO: Fix metadata URLs to be non 'beta' when deploying to PROD and also update description
 export const metadata = {
   
-  metadataBase: new URL("https://beta.qiyaasgame.com"),
-  title: "Qiyaas",
-  description: "Qiyaas - A word game based on numbers",
+  metadataBase: new URL(GameConfig.urlName),
+  title: GameConfig.titleName,
+  description: GameConfig.shareableDescription,
   openGraph: {
-    title: "Qiyaas",
-    description: "Qiyaas - A word game based on numbers.",
-    url: "https://beta.qiyaasgame.com",
-    siteName: "Qiyaas",
+    title: GameConfig.titleName,
+    description: GameConfig.shareableDescription,
+    url: GameConfig.urlName,
+    siteName: GameConfig.titleName,
     images: [
                 {
-                url: 'https://beta.qiyaasgame.com/qiyaas_shareable.png',
+                url: `${GameConfig.urlName}/${GameConfig.imagePaths.shareable}`,
                 width: 1200,
                 height: 630,
                 alt: 'Qiyaas Shareable Logo',
@@ -42,9 +43,9 @@ export const metadata = {
 
   twitter: {
     card: 'summary_large_image',
-    title: 'Qiyaas',
-    description: "Qiyaas - A word game based on numbers.",
-    images: ['https://beta.qiyaasgame.com/qiyaas_shareable.png'],
+    title: GameConfig.titleName,
+    description: GameConfig.shareableDescription,
+    images: [`${GameConfig.urlName}/${GameConfig.imagePaths.shareable}`],
   },
 };
 

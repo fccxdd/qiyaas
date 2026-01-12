@@ -18,8 +18,8 @@ export default function Custom404() {
 		  className="block"
 		  src={GameConfig.imagePaths.image404}
 		  alt="qiyaas-404"
-		  width={178}
-		  height={151}
+		  width={500}
+		  height={500}
 		/>
 	
 		<div className="flex align-center items-center">
