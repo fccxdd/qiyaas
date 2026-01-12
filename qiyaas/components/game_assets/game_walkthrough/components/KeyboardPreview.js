@@ -1,13 +1,15 @@
+// components/game_assets/game_walkthrough/componentsKeyboardPreview.js
+
 'use client';
 
 import { GameConfig } from '@/lib/gameConfig';
 
 export default function KeyboardPreview() {
   return (
-    <div className="flex flex-col gap-3 justify-center items-center py-4 w-full">
+    <div className="flex flex-col gap-3 py-4 w-full max-w-2xl">
       
       {/* Grey S with description */}
-      <div className="flex items-center justify-center gap-3 w-full max-w-md mx-auto">
+      <div className="flex items-center gap-3 sm:gap-4 md:gap-6 w-full">
         <div
           className={`flex items-center justify-center font-bold uppercase rounded-md select-none flex-shrink-0 ${GameConfig.keyboardColors.used_up}`}
           style={{
@@ -24,7 +26,7 @@ export default function KeyboardPreview() {
       </div>
 
       {/* Yellow E with description */}
-      <div className="flex items-center justify-center gap-3 w-full max-w-md mx-auto">
+      <div className="flex items-center gap-3 sm:gap-4 md:gap-6 w-full">
         <div
           className={`flex items-center justify-center font-bold uppercase rounded-md select-none flex-shrink-0 ${GameConfig.keyboardColors.still_available}`}
           style={{

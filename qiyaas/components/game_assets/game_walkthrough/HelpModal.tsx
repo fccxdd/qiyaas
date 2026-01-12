@@ -5,7 +5,7 @@
 import { useState } from 'react';
 import { IoMdClose } from "react-icons/io";
 import { IoHelp } from "react-icons/io5";
-import KeyboardPreview from '@/components/game_assets/game_walkthrough/KeyboardPreview';
+import KeyboardPreview from '@/components/game_assets/game_walkthrough/components/KeyboardPreview';
 import { GameConfig } from '@/lib/gameConfig';
 
 export default function HelpModal() {
