@@ -1,0 +1,34 @@
+name = "qiyaas-daily-puzzle"
+main = "daily_puzzle_scheduler.js"
+compatibility_date = "2024-01-01"
+
+# Cron trigger - runs at midnight Eastern Time (5 AM UTC)
+# Note: Adjust for daylight saving time if needed
+# EDT (Mar-Nov): midnight = 4 AM UTC
+# EST (Nov-Mar): midnight = 5 AM UTC
+[triggers]
+crons = ["0 5 * * *"]
+
+# Enable Logs
+[observability]
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
+invocation_logs = true
+persist = true
+
+# KV namespace for storing puzzle data
+[[kv_namespaces]]
+binding = "PUZZLE_DATA"
+id = "68485e1fb39a4686ab168d567274d229"  # Replace with your actual KV namespace ID
+preview_id = "fdb5db413a2f408eae8fffafa970b3ed"  # Replace with preview namespace ID
+
+# If you want to use a custom domain, uncomment and configure:
+# routes = [
+#   { pattern = "beta.qiyaasgame.com/*", zone_name = "beta.qiyaasgame.com" }
+# ]
+
+# Worker limits (free tier)
+# - 100,000 requests per day
+# - 10ms CPU time per request
+# - 128 MB memory

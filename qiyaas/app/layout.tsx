@@ -1,0 +1,91 @@
+import { Indie_Flower, Inknut_Antiqua } from "next/font/google";
+import "@/app/globals.css";
+import OrientationLock from "@/components/ux/OrientationLock";
+import { GameConfig } from "@/lib/gameConfig";
+
+// Indie Flower for playful accent text
+const indieFlower = Indie_Flower({ 
+  weight: '400',
+  subsets: ['latin'],
+  variable: '--font-indie-flower', // Creates CSS variable
+})
+
+// Inknut Antiqua for headings and general text
+const inknutAntiqua = Inknut_Antiqua({ 
+  weight: ['300', '400', '500', '600', '700'],
+  subsets: ['latin'],
+  variable: '--font-inknut-antiqua', // Creates CSS variable
+})
+
+// Metadata Definition
+// TODO: Fix metadata URLs to be non 'beta' when deploying to PROD and also update description
+export const metadata = {
+  
+  metadataBase: new URL(GameConfig.urlName),
+  title: GameConfig.titleName,
+  description: GameConfig.shareableDescription,
+  openGraph: {
+    title: GameConfig.titleName,
+    description: GameConfig.shareableDescription,
+    url: GameConfig.urlName,
+    siteName: GameConfig.titleName,
+    images: [
+                {
+                url: `${GameConfig.urlName}/${GameConfig.imagePaths.shareable}`,
+                width: 1200,
+                height: 630,
+                alt: 'Qiyaas Shareable Logo',
+                }
+            ],
+    locale: 'en_US',
+    type: 'website',
+},
+
+  twitter: {
+    card: 'summary_large_image',
+    title: GameConfig.titleName,
+    description: GameConfig.shareableDescription,
+    images: [`${GameConfig.urlName}/${GameConfig.imagePaths.shareable}`],
+  },
+};
+
+// Viewport Definition
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1.0,
+  orientation: 'portrait'
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en" suppressHydrationWarning className={`${indieFlower.variable} ${inknutAntiqua.variable}`}>
+      
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                const savedTheme = localStorage.getItem('theme');
+                if (savedTheme === 'light') {
+                  document.documentElement.classList.remove('dark');
+                } else {
+                  document.documentElement.classList.add('dark');
+                }
+              })();
+            `,
+          }}
+        />
+      </head>
+      {/* ↑ Both variables added to make them available everywhere */}
+      <body className={indieFlower.className}>
+        <OrientationLock>
+        {/* ↑ Only Indie Flower is applied as the default body font */}
+        {children}
+        </OrientationLock>
+      </body>
+    </html>  );
+}

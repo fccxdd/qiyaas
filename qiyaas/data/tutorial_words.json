@@ -1,0 +1,26 @@
+{
+	"clue_1": {
+					"word": "SMART",
+					"type": "ADJECTIVE",
+					"rule": "number_rule",
+					"number": 7,
+					"word_length": 5
+				},
+
+	"clue_2": {
+					"word": "ARRIVE",
+					"type": "VERB",
+					"rule": "alphabet_rule",
+					"number": 1,
+					"word_length": 6
+			},
+
+	"clue_3": 
+			{
+					"word": "HONEY",
+					"type": "NOUN",
+					"rule": "length_rule",
+					"number": 5,
+					"word_length": 5
+			}
+}

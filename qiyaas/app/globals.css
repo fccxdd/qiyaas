@@ -1,0 +1,810 @@
+@import "tailwindcss";
+
+/* Custom variant for class-based dark mode */
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+	--background: #ffffff;
+	--foreground: #171717;
+}
+
+@theme inline {
+	--color-background: var(--background);
+	--color-foreground: var(--foreground);
+}
+
+/* Class-based light mode */
+.light {
+	--background: #ffffff;
+	--foreground: #171717;
+}
+
+/* Class-based dark mode - this will work with toggle */
+.dark {
+	--background: #0a0a0a;
+	--foreground: #ededed;
+}
+
+body, .body-text {
+	@apply bg-white dark:bg-black text-gray-900 dark:text-gray-100;
+	font-family: var(--font-indie-flower); /* Body uses Indie Flower */
+	transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+h1, h2, h3, h4, h5, h6, .title-text {
+	font-family: var(--font-inknut-antiqua);  
+	/* Titles use Inknut Antiqua */
+	font-feature-settings: "lnum", "tnum";
+	-webkit-font-feature-settings: "lnum", "tnum";
+}
+
+/* Black Loading Screen */
+.loading-screen {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: white;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	color: black;
+	font-size: 2rem;
+	opacity: 0;
+	transition: opacity 0.6s ease-in-out;
+	z-index: 9999;
+}
+
+.dark .loading-screen {
+	background-color: black;
+	color: white;
+}
+
+/* Tutorial Page: Fade-in effect */
+.fade-in {
+	opacity: 1;
+}
+
+/* Tutorial Page: Fade-out effect */
+.fade-out {
+	opacity: 0;
+	pointer-events: none;
+}
+
+/* Loading Page: Spinner icon animation */
+.spinner-icon {
+	font-size: 3rem; /* Adjust size */
+	color: black; /* Spinner color */
+	animation: spin 1s linear infinite;
+}
+
+/* Dark mode for spinner */
+.dark .spinner-icon {
+	color: white;
+}
+
+/* Loading Page: Spinning animation */
+@keyframes spin {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+/* Game Styles for different ViewPorts */
+
+/* Mobile Devices TODO: Make a different viewport for smaller phones */
+@media screen and (min-width: 320px) and (max-width: 481px) {
+		
+		.dash-container {
+			width: 24px;
+			height: 36px;
+		}
+
+		.dash-text {
+			font-size: 1.75rem;
+		}
+
+		.letter-text {
+			font-size: 1.5rem;
+		}
+
+		.word-dash-wrapper {
+			gap: 0.4rem;
+		}
+
+		.hint-number {
+			font-size: 1.75rem;
+			min-width: 16px;
+		}
+
+		.hint-text {
+			font-size: 1.25rem;
+			padding: 0.25rem 0.1rem;
+			margin-left: 0.375rem;
+		}
+
+		.hint-container {
+			gap: 1.5rem;
+		}
+	}
+
+/* iPads and Tablets */
+@media screen and (min-width: 481px) and (max-width: 768px) {
+		
+		.dash-container {
+			width: 26px;
+			height: 38px;
+		}
+		
+		.dash-text {
+			font-size: 1.75rem;
+		}
+		
+		.letter-text {
+			font-size: 1.375rem;
+		}
+		
+		.word-dash-wrapper {
+			gap: 0.5rem;
+		}
+
+		.hint-number {
+			font-size: 1.875rem;
+			min-width: 20px;
+		}	
+		
+		.hint-text {
+			font-size: 1rem;
+			padding: 0.25rem 0.5rem;
+			margin-left: 0.75rem;
+		}
+		
+		.hint-container {
+			gap: 2rem;
+		}
+	}
+
+/* Small screens, laptops - 13-inch  */
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+	
+		.dash-container {
+			width: 28px;
+			height: 40px;
+		}
+		
+		.dash-text {
+			font-size: 2rem;
+		}
+		
+		.letter-text {
+			font-size: 1.5rem;
+		}
+		
+		.word-dash-wrapper {
+			gap: 0.75rem;
+		}
+
+		.hint-number {
+			font-size: 2.5rem;
+			min-width: 28px;
+		}
+		
+		.hint-text {
+			font-size: 1.125rem;
+			padding: 0.375rem 0.625rem;
+			margin-left: 0.75rem;
+		}
+		
+		.hint-container {
+			gap: 2rem;
+		}
+	}
+
+	/* Desktops, large screens - 15-inch+ */
+@media screen and (min-width: 1025px) and (max-width: 1200px) {
+	
+		.dash-container {
+			width: 30px;
+			height: 42px;
+		}
+
+		.dash-text {
+			font-size: 2.25rem;
+		}
+
+		.letter-text {
+			font-size: 1.625rem;
+		}
+
+		.word-dash-wrapper {
+			gap: 0.875rem;
+		}
+
+		.hint-number {
+			font-size: 3rem;
+			min-width: 32px;
+		}
+
+		.hint-text {
+			font-size: 1.25rem;
+			padding: 0.375rem 0.75rem;
+			margin-left: 0.75rem;
+		}
+
+		.hint-container {
+			gap: 2rem;
+		}
+	}
+
+/* Extra large screens (1201px and more) */
+@media screen and (min-width: 1201px) {
+	
+		.dash-container {
+			width: 32px;
+			height: 44px;
+		}
+	
+		.dash-text {
+			font-size: 2.5rem;
+		}
+		
+		.letter-text {
+			font-size: 1.75rem;
+		}
+		
+		.word-dash-wrapper {
+			gap: 1rem;
+		}
+
+		.hint-number {
+			font-size: 3rem;
+			min-width: 32px;
+		}
+		
+		.hint-text {
+			font-size: 1.75rem;
+			padding: 0.375rem 0.75rem;
+			margin-left: 0.75rem;
+		}
+		
+		.hint-container {
+			gap: 2rem;
+		}
+	}
+
+/* High-DPI 13-inch laptops (Yoga, etc.) - needs smaller sizing */
+@media screen and (min-width: 1201px) and (max-width: 1400px) {
+	
+		.dash-container {
+			width: 24px;
+			height: 36px;
+		}
+		
+		.dash-text {
+			font-size: 1.75rem;
+		}
+		
+		.letter-text {
+			font-size: 1.25rem;
+		}
+		
+		.word-dash-wrapper {
+			gap: 0.5rem;
+		}
+
+		.hint-number {
+			font-size: 2rem;
+			min-width: 16px;
+		}
+
+		.hint-text {
+			font-size: 1.25rem;
+			padding: 0.25rem 0.375rem;
+			margin-left: 0.375rem;
+		}
+
+		.hint-container {
+			gap: 1.5rem;
+		}
+	}
+
+/* Bounce Animation */
+@keyframes bounce {
+	0%, 100% { 
+		transform: translateX(-50%) translateY(0); 
+	}
+	50% { 
+		transform: translateX(-50%) translateY(-4px); 
+	}
+}
+
+/* Dash to Green Animation */
+@keyframes dash-to-green {
+	0% { 
+		transform: scale(1); 
+	}
+	50% { 
+		transform: scale(1.2); 
+	}
+	100% { 
+		transform: scale(1); 
+	}
+}
+
+/* Shake Animation */
+@keyframes shake {
+	0%, 100% { 
+		transform: translateX(0); 
+	}
+	10%, 30%, 50%, 70%, 90% { 
+		transform: translateX(-8px); 
+	}
+	20%, 40%, 60%, 80% { 
+		transform: translateX(8px); 
+	}
+}
+
+/* Utility class for shake animation */
+.animate-shake {
+	animation: shake 0.5s ease-in-out;
+}
+
+/* Pulse Glow Animation - used by FlashOverlay */
+@keyframes pulseGlow {
+	0%, 100% { 
+		text-shadow: 0 0 0px currentColor;
+		filter: brightness(1);
+	}
+	50% { 
+		text-shadow: 0 0 12px currentColor,
+								 0 0 16px currentColor;
+		filter: brightness(1.2);
+	}
+}
+
+/* Pulse Glow with Delay for Completed Words - 3s wait, 5s pulse (8s total) */
+@keyframes pulseGlowDelayed {
+	/* 0-37.5%: No glow (3s wait out of 8s total) */
+	0%, 37.5% { 
+		text-shadow: 0 0 0px currentColor;
+		filter: brightness(1);
+	}
+	/* 37.5-68.75%: Pulse up (2.5s) */
+	68.75% { 
+		text-shadow: 0 0 12px currentColor,
+								 0 0 16px currentColor;
+		filter: brightness(1.2);
+	}
+	/* 68.75-100%: Pulse down (2.5s) */
+	100% { 
+		text-shadow: 0 0 0px currentColor;
+		filter: brightness(1);
+	}
+}
+
+/* White glow reveal - pulses white, then reveals actual color */
+@keyframes pulseGlowWhiteReveal {
+	/* 0-60%: Long suspenseful white glow (3.6s) */
+	0% {
+		color: white !important;
+		text-shadow: 0 0 5px white;
+		filter: brightness(1.2);
+	}
+	20% {
+		color: white !important;
+		text-shadow: 0 0 40px white, 0 0 50px white, 0 0 60px white, 0 0 70px white;
+		filter: brightness(3);
+	}
+	50% {
+		color: white !important;
+		text-shadow: 0 0 40px white, 0 0 50px white, 0 0 60px white, 0 0 70px white;
+		filter: brightness(3);
+	}
+	60% {
+		color: white !important;
+		text-shadow: 0 0 20px white, 0 0 30px white;
+		filter: brightness(1.8);
+	}
+	/* 60-80%: Reveal color with glow (1.2s) */
+	70% {
+		color: currentColor !important;
+		text-shadow: 0 0 15px currentColor, 0 0 20px currentColor;
+		filter: brightness(1.3);
+	}
+	80% {
+		color: currentColor !important;
+		text-shadow: 0 0 8px currentColor;
+		filter: brightness(1.1);
+	}
+	/* 80-100%: Settle (1.2s) */
+	100% {
+		color: currentColor !important;
+		text-shadow: 0 0 0px currentColor;
+		filter: brightness(1);
+	}
+}
+
+/* Reverse Pulse Glow - starts with max glow, ends with no glow */
+@keyframes pulseGlowReverse {
+	0% { 
+		text-shadow: 0 0 12px currentColor,
+								 0 0 16px currentColor;
+		filter: brightness(1.2);
+	}
+	100% { 
+		text-shadow: 0 0 0px currentColor;
+		filter: brightness(1);
+	}
+}
+
+@media (prefers-color-scheme: dark) {
+	@keyframes pulseGlow {
+		0%, 100% { 
+			text-shadow: 0 0 0px currentColor;
+			filter: brightness(1);
+		}
+		50% { 
+			text-shadow: 0 0 20px currentColor,
+									 0 0 30px currentColor,
+									 0 0 40px currentColor,
+									 0 0 50px currentColor;
+			filter: brightness(1.3);
+		}
+	}
+	
+	@keyframes pulseGlowDelayed {
+		/* 0-37.5%: No glow (3s wait) */
+		0%, 37.5% { 
+			text-shadow: 0 0 0px currentColor;
+			filter: brightness(1);
+		}
+		/* 37.5-68.75%: Pulse up (2.5s) */
+		68.75% { 
+			text-shadow: 0 0 20px currentColor,
+									 0 0 30px currentColor,
+									 0 0 40px currentColor,
+									 0 0 50px currentColor;
+			filter: brightness(1.3);
+		}
+		/* 68.75-100%: Pulse down (2.5s) */
+		100% { 
+			text-shadow: 0 0 0px currentColor;
+			filter: brightness(1);
+		}
+	}
+	
+	@keyframes pulseGlowWhiteReveal {
+		/* 0-60%: Long suspenseful white glow (3.6s) */
+		0% {
+			color: white !important;
+			text-shadow: 0 0 8px white;
+			filter: brightness(1.3);
+		}
+		20% {
+			color: white !important;
+			text-shadow: 0 0 60px white, 0 0 70px white, 0 0 80px white, 0 0 90px white, 0 0 100px white;
+			filter: brightness(3.5);
+		}
+		50% {
+			color: white !important;
+			text-shadow: 0 0 60px white, 0 0 70px white, 0 0 80px white, 0 0 90px white, 0 0 100px white;
+			filter: brightness(3.5);
+		}
+		60% {
+			color: white !important;
+			text-shadow: 0 0 30px white, 0 0 40px white;
+			filter: brightness(2);
+		}
+		/* 60-80%: Reveal color with glow (1.2s) */
+		70% {
+			color: currentColor !important;
+			text-shadow: 0 0 25px currentColor, 0 0 35px currentColor, 0 0 45px currentColor;
+			filter: brightness(1.4);
+		}
+		80% {
+			color: currentColor !important;
+			text-shadow: 0 0 12px currentColor, 0 0 16px currentColor;
+			filter: brightness(1.2);
+		}
+		/* 80-100%: Settle (1.2s) */
+		100% {
+			color: currentColor !important;
+			text-shadow: 0 0 0px currentColor;
+			filter: brightness(1);
+		}
+	}
+	
+	@keyframes pulseGlowReverse {
+		0% { 
+			text-shadow: 0 0 20px currentColor,
+									 0 0 30px currentColor,
+									 0 0 40px currentColor,
+									 0 0 50px currentColor;
+			filter: brightness(1.3);
+		}
+		100% { 
+			text-shadow: 0 0 0px currentColor;
+			filter: brightness(1);
+		}
+	}
+}
+
+/* Safari/WebKit specific adjustments */
+@supports (-webkit-touch-callout: none) {
+	@keyframes pulseGlow {
+		0%, 100% { 
+			text-shadow: 0 0 0px currentColor;
+			-webkit-filter: brightness(1);
+		}
+		50% { 
+			text-shadow: 0 0 14px currentColor,
+									 0 0 18px currentColor;
+			-webkit-filter: brightness(1.2);
+		}
+	}
+	
+	@keyframes pulseGlowDelayed {
+		/* 0-37.5%: No glow (3s wait) */
+		0%, 37.5% { 
+			text-shadow: 0 0 0px currentColor;
+			-webkit-filter: brightness(1);
+		}
+		/* 37.5-68.75%: Pulse up (2.5s) */
+		68.75% { 
+			text-shadow: 0 0 14px currentColor,
+									 0 0 18px currentColor;
+			-webkit-filter: brightness(1.2);
+		}
+		/* 68.75-100%: Pulse down (2.5s) */
+		100% { 
+			text-shadow: 0 0 0px currentColor;
+			-webkit-filter: brightness(1);
+		}
+	}
+	
+	@keyframes pulseGlowWhiteReveal {
+		/* 0-60%: Long suspenseful white glow (3.6s) */
+		0% {
+			color: white !important;
+			text-shadow: 0 0 6px white;
+			-webkit-filter: brightness(1.2);
+		}
+		20% {
+			color: white !important;
+			text-shadow: 0 0 50px white, 0 0 60px white, 0 0 70px white, 0 0 80px white;
+			-webkit-filter: brightness(3);
+		}
+		50% {
+			color: white !important;
+			text-shadow: 0 0 50px white, 0 0 60px white, 0 0 70px white, 0 0 80px white;
+			-webkit-filter: brightness(3);
+		}
+		60% {
+			color: white !important;
+			text-shadow: 0 0 25px white, 0 0 35px white;
+			-webkit-filter: brightness(1.8);
+		}
+		/* 60-80%: Reveal color with glow (1.2s) */
+		70% {
+			color: currentColor !important;
+			text-shadow: 0 0 18px currentColor, 0 0 22px currentColor;
+			-webkit-filter: brightness(1.3);
+		}
+		80% {
+			color: currentColor !important;
+			text-shadow: 0 0 10px currentColor;
+			-webkit-filter: brightness(1.1);
+		}
+		/* 80-100%: Settle (1.2s) */
+		100% {
+			color: currentColor !important;
+			text-shadow: 0 0 0px currentColor;
+			-webkit-filter: brightness(1);
+		}
+	}
+	
+	@keyframes pulseGlowReverse {
+		0% { 
+			text-shadow: 0 0 14px currentColor,
+									 0 0 18px currentColor;
+			-webkit-filter: brightness(1.2);
+		}
+		100% { 
+			text-shadow: 0 0 0px currentColor;
+			-webkit-filter: brightness(1);
+		}
+	}
+	
+	@media (prefers-color-scheme: dark) {
+		@keyframes pulseGlow {
+			0%, 100% { 
+				text-shadow: 0 0 0px currentColor;
+				-webkit-filter: brightness(1);
+			}
+			50% { 
+				text-shadow: 0 0 22px currentColor,
+										 0 0 32px currentColor,
+										 0 0 42px currentColor,
+										 0 0 52px currentColor;
+				-webkit-filter: brightness(1.3);
+			}
+		}
+		
+		@keyframes pulseGlowDelayed {
+			/* 0-37.5%: No glow (3s wait) */
+			0%, 37.5% { 
+				text-shadow: 0 0 0px currentColor;
+				-webkit-filter: brightness(1);
+			}
+			/* 37.5-68.75%: Pulse up (2.5s) */
+			68.75% { 
+				text-shadow: 0 0 22px currentColor,
+										 0 0 32px currentColor,
+										 0 0 42px currentColor,
+										 0 0 52px currentColor;
+				-webkit-filter: brightness(1.3);
+			}
+			/* 68.75-100%: Pulse down (2.5s) */
+			100% { 
+				text-shadow: 0 0 0px currentColor;
+				-webkit-filter: brightness(1);
+			}
+		}
+		
+		@keyframes pulseGlowWhiteReveal {
+			/* 0-60%: Long suspenseful white glow (3.6s) */
+			0% {
+				color: white !important;
+				text-shadow: 0 0 10px white;
+				-webkit-filter: brightness(1.3);
+			}
+			20% {
+				color: white !important;
+				text-shadow: 0 0 62px white, 0 0 72px white, 0 0 82px white, 0 0 92px white, 0 0 102px white;
+				-webkit-filter: brightness(3.5);
+			}
+			50% {
+				color: white !important;
+				text-shadow: 0 0 62px white, 0 0 72px white, 0 0 82px white, 0 0 92px white, 0 0 102px white;
+				-webkit-filter: brightness(3.5);
+			}
+			60% {
+				color: white !important;
+				text-shadow: 0 0 32px white, 0 0 42px white;
+				-webkit-filter: brightness(2);
+			}
+			/* 60-80%: Reveal color with glow (1.2s) */
+			70% {
+				color: currentColor !important;
+				text-shadow: 0 0 27px currentColor, 0 0 37px currentColor, 0 0 47px currentColor;
+				-webkit-filter: brightness(1.4);
+			}
+			80% {
+				color: currentColor !important;
+				text-shadow: 0 0 14px currentColor, 0 0 18px currentColor;
+				-webkit-filter: brightness(1.2);
+			}
+			/* 80-100%: Settle (1.2s) */
+			100% {
+				color: currentColor !important;
+				text-shadow: 0 0 0px currentColor;
+				-webkit-filter: brightness(1);
+			}
+		}
+		
+		@keyframes pulseGlowReverse {
+			0% { 
+				text-shadow: 0 0 22px currentColor,
+										 0 0 32px currentColor,
+										 0 0 42px currentColor,
+										 0 0 52px currentColor;
+				-webkit-filter: brightness(1.3);
+			}
+			100% { 
+				text-shadow: 0 0 0px currentColor;
+				-webkit-filter: brightness(1);
+			}
+		}
+	}
+}
+
+/* Utility class for pulse glow */
+.animate-pulse-glow {
+	animation: pulseGlow 2s ease-in-out infinite;
+	transform: translateZ(0);
+	-webkit-transform: translateZ(0);
+	display: inline-block;
+}
+
+.animate-pulse-glow-reverse {
+	animation: pulseGlowReverse 5s ease-in-out;
+	transform: translateZ(0);
+	-webkit-transform: translateZ(0);
+	display: inline-block;
+}
+
+/* Flash overlay styles */
+.flash-wrapper {
+	transform: translateZ(0);
+	-webkit-transform: translateZ(0);
+}
+
+.flash-wrapper.flash-active .dash-text,
+.flash-wrapper.flash-active .letter-text {
+	animation: pulseGlowWhiteReveal 6000ms ease-in-out forwards;
+	display: inline-block !important;
+	/* Remove this transition as it might interfere */
+	
+}
+
+/* Incorrect Word */
+.flash-wrapper.flash-active.flash-red .dash-text,
+.flash-wrapper.flash-active.flash-red .letter-text {
+	color: #ef4444 !important;
+}
+
+/* Partially Correct Word */
+.flash-wrapper.flash-active.flash-yellow .dash-text,
+.flash-wrapper.flash-active.flash-yellow .letter-text {
+	color: #eab308 !important;
+}
+
+/* Correct Noun */
+.flash-wrapper.flash-active.flash-green-noun .dash-text,
+.flash-wrapper.flash-active.flash-green-noun .letter-text {
+	color: #74A8DC !important;
+}
+
+/* Correct Verb */
+.flash-wrapper.flash-active.flash-green-verb .dash-text,
+.flash-wrapper.flash-active.flash-green-verb .letter-text {
+	color: #6AA84F !important;
+}
+
+/* Correct Adjective */
+.flash-wrapper.flash-active.flash-green-adjective .dash-text,
+.flash-wrapper.flash-active.flash-green-adjective .letter-text {
+	color: #E06666 !important;
+}
+
+.flash-wrapper.flash-active.flash-green-default .dash-text,
+.flash-wrapper.flash-active.flash-green-default .letter-text {
+	color: #22c55e !important;
+}
+
+/* ========================================
+   PERSISTENT GLOW FOR COMPLETED WORDS
+   ======================================== */
+
+/* Persistent glow for completed words - synchronized infinite animation */
+/* Uses pulseGlowDelayed (8s cycle: 3s wait + 5s pulse) to sync all words */
+.completed-word-glow .dash-text,
+.completed-word-glow .letter-text {
+	animation: pulseGlowDelayed 8s ease-in-out infinite !important;
+	display: inline-block !important;
+}
+
+/* Completed word colors - persistent after flash ends */
+.completed-word-glow.flash-green-noun .dash-text,
+.completed-word-glow.flash-green-noun .letter-text {
+	color: #74A8DC !important;
+}
+
+.completed-word-glow.flash-green-verb .dash-text,
+.completed-word-glow.flash-green-verb .letter-text {
+	color: #6AA84F !important;
+}
+
+.completed-word-glow.flash-green-adjective .dash-text,
+.completed-word-glow.flash-green-adjective .letter-text {
+	color: #E06666 !important;
+}
+
+.completed-word-glow.flash-green-default .dash-text,
+.completed-word-glow.flash-green-default .letter-text {
+	color: #22c55e !important;
+}

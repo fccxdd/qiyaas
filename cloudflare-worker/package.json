@@ -1,0 +1,28 @@
+{
+  "name": "qiyaas-daily-puzzle-worker",
+  "version": "1.0.0",
+  "description": "Cloudflare Worker for Qiyaas daily puzzle generation",
+  "main": "worker.js",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev",
+    "tail": "wrangler tail",
+    "setup": "bash setup.sh",
+    "test-generate": "curl -X POST https://qiyaas-daily-puzzle.$(wrangler whoami | grep 'Account Name' | awk '{print $NF}').workers.dev/generate",
+    "test-puzzle": "curl https://qiyaas-daily-puzzle.$(wrangler whoami | grep 'Account Name' | awk '{print $NF}').workers.dev/puzzle",
+    "kv:list": "wrangler kv:key list --namespace-id=$(grep 'id = ' wrangler.toml | head -1 | cut -d'\"' -f2)",
+    "kv:get-puzzle": "wrangler kv:key get --namespace-id=$(grep 'id = ' wrangler.toml | head -1 | cut -d'\"' -f2) current_puzzle",
+    "kv:get-used": "wrangler kv:key get --namespace-id=$(grep 'id = ' wrangler.toml | head -1 | cut -d'\"' -f2) used_words"
+  },
+  "keywords": [
+    "cloudflare",
+    "workers",
+    "puzzle",
+    "daily"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  }
+}
