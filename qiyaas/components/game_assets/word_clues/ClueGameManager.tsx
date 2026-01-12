@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import ClueWord from './ClueWord';
 import { useClueManagement } from '@/hooks/clues/useClueManagement';
 import { useCursorNavigation } from '@/hooks/clues/useCursorNavigation';
@@ -11,9 +11,10 @@ import { useWinCondition } from '@/hooks/game_wins/useWinCondition';
 import { useKeyboardInput } from '@/hooks/keyboard/useKeyboardInput';
 import { useInputTracking } from '@/hooks/clues/useInputTracking';
 import { useStartingLettersValidation } from '@/hooks/clues/useStartingLettersValidation';
-import { BaseCluesData, normalizeCluesData } from '@/hooks/clues/clueTypes';
-import { useAutoCompleteShortWords } from '@/hooks/clues/useAutoCompleteShortWords';
+import { usePositionEditability } from '@/hooks/clues/usePositionEditability';
+import { BaseCluesData, normalizeCluesData, getClueWordsArray } from '@/hooks/clues/clueTypes';
 import { useFlashState } from '@/hooks/clues/useFlashState';
+import { useAutoCompleteWords } from '@/hooks/clues/useAutoCompleteShortWords';
 import { GameConfig } from '@/lib/gameConfig';
 
 interface ClueGameManagerProps {
@@ -33,8 +34,22 @@ interface ClueGameManagerProps {
 	dashesCurrentlyAnimating?: Map<string, Set<number>>;
 	clueLettersComplete?: boolean;
 	onClueSolved?: (clueIndex: number) => void;
-	setSolvedClues?: (clues: boolean[] | ((prev: boolean[]) => boolean[])) => void
+	setSolvedClues?: (clues: boolean[] | ((prev: boolean[]) => boolean[])) => void;
 	clueWordsArray?: string[];
+	initialCompletedWords?: Set<string>;
+	onCompletedWordsChange?: (completedWords: Set<string>) => void;
+	initialVerifiedPositions?: Map<string, Set<number>>;
+	onVerifiedPositionsSync?: (verifiedPositions: Map<string, Set<number>>) => void;
+	initialUserInputs?: Map<string, Map<number, string>>; 
+	onUserInputsSync?: (userInputs: Map<string, Map<number, string>>) => void; 
+	hasLostLifeForNoStartingLetters: boolean; 
+	setHasLostLifeForNoStartingLetters: (value: boolean) => void;
+	onWordAutoComplete?: (handler: (clue: string) => void) => void;
+	initialCursorPosition?: { clueIndex: number; position: number } | null;
+	onCursorPositionChange?: (position: { clueIndex: number; position: number } | null) => void;
+	silentRevealedWords?: Set<string>;
+	autoRevealedPositions?: Map<string, Set<number>>;
+	isGameOver?: boolean;
 }
 
 export default function ClueGameManager({ 
@@ -55,17 +70,54 @@ export default function ClueGameManager({
 	clueLettersComplete = false,
 	onClueSolved,
 	setSolvedClues,
-	clueWordsArray = []
+	clueWordsArray = [],
+	initialCompletedWords = new Set(),
+	onCompletedWordsChange,
+	initialVerifiedPositions = new Map(),
+	onVerifiedPositionsSync,
+	initialUserInputs = new Map(), 
+	onUserInputsSync, 
+	hasLostLifeForNoStartingLetters,
+	setHasLostLifeForNoStartingLetters,
+	onWordAutoComplete,
+	initialCursorPosition = null,
+	onCursorPositionChange,
+	silentRevealedWords = new Set(),
+	autoRevealedPositions = new Map(),
+	isGameOver = false
 }: ClueGameManagerProps) {
 
 	const [shakeWord, setShakeWord] = useState<string | null>(null);
 	const [allGuessedLetters, setAllGuessedLetters] = useState<Set<string>>(new Set());
-	const [verifiedPositions, setVerifiedPositions] = useState<Map<string, Set<number>>>(new Map());
+	const [verifiedPositions, setVerifiedPositions] = useState<Map<string, Set<number>>>(initialVerifiedPositions);
 	const [additionalLetterPositions, setAdditionalLetterPositions] = useState<Map<string, Set<number>>>(new Map());
 	const [notifiedSolvedClues, setNotifiedSolvedClues] = useState<Set<number>>(new Set());
+	
+	// Track which letters have been synced to userInputs to avoid re-syncing
+	const syncedLettersRef = useRef<Map<string, Set<number>>>(new Map());
 
-	// Per-clue state for clue letters completion
-	const [clueLettersCompleteMap, setClueLettersCompleteMap] = useState<Map<string, boolean>>(new Map());
+	// Initialize clueLettersCompleteMap based on whether there are starting letters
+	const [clueLettersCompleteMap, setClueLettersCompleteMap] = useState<Map<string, boolean>>(() => {
+		const initialMap = new Map<string, boolean>();
+		const initialClues = getClueWordsArray(clues);
+		const startingSet = new Set(selectedStartingLetters.toUpperCase().split(''));
+		
+		initialClues.forEach((clue: string) => {
+			
+			// Check if this clue has ANY letters from the starting letters
+			const clueUpper = clue.toUpperCase();
+			const hasMatchingLetters = Array.from(startingSet).some(letter => 
+				clueUpper.includes(letter)
+			);
+			
+			// If no matching letters, mark as complete immediately
+			if (!hasMatchingLetters) {
+				initialMap.set(clue, true);
+			}
+		});
+		
+		return initialMap;
+	});
 	
 	// Use centralized flash state hook
 	const { triggerFlash, getFlashState } = useFlashState();
@@ -97,36 +149,146 @@ export default function ClueGameManager({
 		completedWords,
 		setCompletedWords,
 		startingLettersSet
-	} = useClueManagement(clueWords, allAvailableLetters);
+	} = useClueManagement(clueWords, allAvailableLetters, initialCompletedWords, initialUserInputs);
 
-	 // After useClueManagement but before other hooks
 	useEffect(() => {
-		activeClues.forEach(clue => {
-			const isAnimating = (dashesCurrentlyAnimating.get(clue)?.size ?? 0) > 0;
-			const hasRevealedLetters = (revealedLetters.get(clue)?.size ?? 0) > 0;
-			
-			// If no letters are animating AND we have revealed letters (or no starting letters at all)
-			if (!isAnimating && (hasRevealedLetters || selectedStartingLetters.length === 0)) {
+	// When initialUserInputs changes (from RevealUnsolvedWords), update local userInputs
+	if (initialUserInputs && initialUserInputs.size > 0) {
+		setUserInputs(initialUserInputs);
+	}
+	}, [initialUserInputs, setUserInputs]);
+	
+	// Sync completedWords changes back to parent
+	useEffect(() => {
+		if (onCompletedWordsChange) {
+			onCompletedWordsChange(completedWords);
+		}
+	}, [completedWords, onCompletedWordsChange]);
+
+	// Sync verifiedPositions changes back to parent
+	useEffect(() => {
+		if (onVerifiedPositionsSync) {
+			onVerifiedPositionsSync(verifiedPositions);
+		}
+	}, [verifiedPositions, onVerifiedPositionsSync]);
+
+	// Sync userInputs changes back to parent
+	useEffect(() => {
+		if (onUserInputsSync) {
+			onUserInputsSync(userInputs);
+		}
+	}, [userInputs, onUserInputsSync]);
+
+	// Use position editability hook
+	const {
+		findNextEmptyPosition,
+		findNextEditablePosition,
+		isWordComplete,
+		isPositionEditable
+	} = usePositionEditability({
+		verifiedPositions,
+		startingLetters: selectedStartingLetters,
+		additionalLetters,
+		additionalLetterPositions
+	});
+
+	// Update clueLettersCompleteMap when global clueLettersComplete changes
+	useEffect(() => {
+		if (clueLettersComplete) {
+			activeClues.forEach(clue => {
 				setClueLettersCompleteMap(prev => {
 					if (prev.get(clue) !== true) {
 						return new Map(prev).set(clue, true);
 					}
 					return prev;
 				});
-			}
-		});
+			});
+		} else {
+			// Reset completion when a new animation starts
+			activeClues.forEach(clue => {
+				// Only reset if there are new dashes being animated for this clue
+				const animatingDashes = dashesCurrentlyAnimating.get(clue);
+				if (animatingDashes && animatingDashes.size > 0) {
+					setClueLettersCompleteMap(prev => {
+						if (prev.get(clue) !== false) {
+							return new Map(prev).set(clue, false);
+						}
+						return prev;
+					});
+				}
+			});
+		}
+	}, [clueLettersComplete, activeClues, dashesCurrentlyAnimating]);
+
+	// Add sequence letters to userInputs ONLY when clueLettersComplete is true
+	// This ensures letters don't appear before the animation completes
+	useEffect(() => {
+		// Don't sync while animation is still running
+		if (!clueLettersComplete) return;
 		
-	}, [activeClues, dashesCurrentlyAnimating, revealedLetters, selectedStartingLetters]);
+		activeClues.forEach(clue => {
+			const letterMap = revealedLetters.get(clue);
+			if (!letterMap || letterMap.size === 0) return;
+			
+			const currentInputs = userInputs.get(clue) || new Map();
+			const syncedForClue = syncedLettersRef.current.get(clue) || new Set();
+			
+			// Find letters that haven't been synced yet
+			const newLettersToSync = new Map<number, string>();
+			letterMap.forEach((letter, position) => {
+				if (!syncedForClue.has(position) && !currentInputs.has(position)) {
+					newLettersToSync.set(position, letter);
+				}
+			});
+			
+			if (newLettersToSync.size === 0) return;
+			
+			// Mark as synced
+			const newSyncedSet = new Set(syncedForClue);
+			newLettersToSync.forEach((_, position) => {
+				newSyncedSet.add(position);
+			});
+			syncedLettersRef.current.set(clue, newSyncedSet);
+			
+			// Add to userInputs with a small delay
+			setTimeout(() => {
+				setUserInputs(prev => {
+					const currentWordInputs = prev.get(clue) || new Map();
+					const newWordInputs = new Map(currentWordInputs);
+					
+					newLettersToSync.forEach((letter, position) => {
+						if (!newWordInputs.has(position)) {
+							newWordInputs.set(position, letter);
+						}
+					});
+					
+					return new Map(prev).set(clue, newWordInputs);
+				});
+				
+				// Mark this specific word as having completed its letter reveal
+				setClueLettersCompleteMap(prev => {
+					if (prev.get(clue) !== true) {
+						return new Map(prev).set(clue, true);
+					}
+					return prev;
+				});
+			}, 100);
+		});
+	}, [clueLettersComplete, revealedLetters, userInputs, setUserInputs, activeClues]);
+	
+	
 	useStartingLettersValidation({
 		selectedStartingLetters,
 		activeClues,
 		onLifeLost,
-		onShowMessage
+		onShowMessage,
+		hasLostLifeForNoStartingLetters,
+		setHasLostLifeForNoStartingLetters, 
 	});
 
 	const {
-		cursorPosition,
-		setCursorPosition,
+		cursorPosition: internalCursorPosition,
+		setCursorPosition: internalSetCursorPosition,
 		findNextIncompleteWord,
 		moveToNextPosition,
 		moveToPreviousPosition,
@@ -140,9 +302,53 @@ export default function ClueGameManager({
 		startingLetters: selectedStartingLetters,
 		hasAnyCorrectAdditionalLetter,
 		additionalLetters,
-		additionalLetterPositions
+		additionalLetterPositions,
+		initialCursorPosition
 	});
 
+	// Create a wrapper for setCursorPosition that syncs with parent
+	const setCursorPosition = useCallback((position: { clueIndex: number; position: number } | null) => {
+		internalSetCursorPosition(position);
+		onCursorPositionChange?.(position);
+	}, [internalSetCursorPosition, onCursorPositionChange]);
+
+	// Use the internal cursor position (which now includes the initial value)
+	const cursorPosition = internalCursorPosition;
+	
+	// Move cursor away from sequence letter positions
+	useEffect(() => {
+		if (!cursorPosition) return;
+		
+		const currentClue = activeClues[cursorPosition.clueIndex];
+		if (!currentClue) return;
+		
+		const revealedLettersForClue = revealedLetters.get(currentClue);
+		if (!revealedLettersForClue) return;
+		
+		const wordInputs = userInputs.get(currentClue) || new Map();
+		
+		// Check if cursor is on a position that just got a sequence letter
+		if (revealedLettersForClue.has(cursorPosition.position)) {
+			// Use the proper logic to find next editable position
+			const nextPosition = findNextEditablePosition(
+				currentClue,
+				wordInputs,
+				cursorPosition.position
+			);
+			
+			// Only move if we found a different position
+			if (nextPosition !== cursorPosition.position) {
+				setCursorPosition({
+					clueIndex: cursorPosition.clueIndex,
+					position: nextPosition
+				});
+			} else {
+				// No editable positions left in this word, clear cursor
+				setCursorPosition(null);
+			}
+		}
+	}, [revealedLetters, cursorPosition, activeClues, userInputs, findNextEditablePosition, setCursorPosition]);
+	
 	const { submitWord } = useWordValidation(
 		userInputs,
 		setUserInputs,
@@ -159,7 +365,10 @@ export default function ClueGameManager({
 		setAllGuessedLetters,
 		completedWords,
 		setSolvedClues || (() => {}),
-		clueWordsArray
+		clueWordsArray,
+		findNextEmptyPosition,
+		isWordComplete,
+		silentRevealedWords
 	);
 
 	const isKeyboardEnabled = !isMessageActive && !awaitingAdditionalLetter && !!cursorPosition;
@@ -180,7 +389,9 @@ export default function ClueGameManager({
 		moveToClueAbove,
 		moveToClueBelow,
 		additionalLetters,
-		additionalLetterPositions
+		additionalLetterPositions,
+		isWordComplete,
+		autoRevealedPositions,
 	});
 
 	useInputTracking({
@@ -207,7 +418,7 @@ export default function ClueGameManager({
 	}, [activeClues, completedWords]);
 
 	
-		useEffect(() => {
+	useEffect(() => {
 		if (!onClueSolved) return;
 		
 		activeClues.forEach((clue, index) => {
@@ -222,10 +433,11 @@ export default function ClueGameManager({
 		cluesData: clueWords,
 		solvedClues,
 		onWin,
-		isGameOver: false
+		isGameOver: isGameOver
 	});
 
 	const handleWordComplete = useCallback((clue: string) => {
+		
 		if (completedWords.has(clue)) {
 			return;
 		}
@@ -242,7 +454,7 @@ export default function ClueGameManager({
 		
 		setCompletedWords(prev => new Set(prev).add(clue));
 		
-		// Use triggerFlash instead of setFlashStates
+		// Flash for when word is completed
 		triggerFlash(clue, 'green', () => {
 			setTimeout(() => {
 				if (nextPos) {
@@ -262,13 +474,26 @@ export default function ClueGameManager({
 		setCursorPosition
 	]);
 
-	useAutoCompleteShortWords({
+	// Use the auto-complete hook
+	useAutoCompleteWords({
 		activeClues,
 		userInputs,
 		startingLetters: selectedStartingLetters,
 		additionalLetters,
-		onWordComplete: handleWordComplete
+		onWordComplete: handleWordComplete,
+		completedWords,
+		findNextEditablePosition,
+		cursorPosition,
+		setCursorPosition,
+		revealedLetters
 	});
+
+	// Expose handleWordComplete to parent
+	useEffect(() => {
+		if (onWordAutoComplete) {
+			onWordAutoComplete(handleWordComplete);
+		}
+	}, [onWordAutoComplete, handleWordComplete]);
 	
 	const handleAdditionalLettersFilled = useCallback((
 		clue: string, 
@@ -306,26 +531,14 @@ export default function ClueGameManager({
 		if (completedWords.has(clue)) return;
 
 		const wordInputs = userInputs.get(clue);
-		const verified = verifiedPositions.get(clue) || new Set();
-		const additionalPositions = additionalLetterPositions.get(clue) || new Set();
 		
 		if (!wordInputs) return;
 
-		const isVerified = verified.has(position);
-		const isAdditionalLetterPosition = additionalPositions.has(position);
-		
-		const isStartingLetter = wordInputs.has(position) && (() => {
-			const letter = wordInputs.get(position)!;
-			const clueUpper = clue.toUpperCase();
-			const letterUpper = letter.toUpperCase();
-			const startingLettersArray = allAvailableLetters.toUpperCase().split('');
-			return clueUpper[position] === letterUpper && startingLettersArray.includes(letterUpper);
-		})();
-		
-		if (!isVerified && !isStartingLetter && !isAdditionalLetterPosition) {
+		// Use isPositionEditable from the hook
+		if (isPositionEditable(clue, position, wordInputs)) {
 			setCursorPosition({ clueIndex: index, position });
 		}
-	}, [completedWords, userInputs, verifiedPositions, additionalLetterPositions, allAvailableLetters, setCursorPosition]);
+	}, [completedWords, userInputs, isPositionEditable, setCursorPosition]);
 	
 	if (activeClues.length === 0) return null;
 
@@ -349,7 +562,11 @@ export default function ClueGameManager({
 					revealedDashIndices={revealedDashes.get(clue) || new Set()}
 					revealedSequenceLetters={revealedLetters.get(clue) || new Map()}
 					dashesCurrentlyAnimating={dashesCurrentlyAnimating.get(clue) || new Set()}
-					clueLettersComplete={clueLettersCompleteMap.get(clue) ?? false} // Use per-clue state
+					clueLettersComplete={clueLettersCompleteMap.get(clue) ?? false}
+					findNextEditablePosition={findNextEditablePosition}
+					autoRevealedPositions={autoRevealedPositions}
+					silentRevealedWords={silentRevealedWords}
+					isLocked={isGameOver}
 				/>
 			))}
 		</div>

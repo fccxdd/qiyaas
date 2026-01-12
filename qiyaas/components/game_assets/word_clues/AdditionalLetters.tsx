@@ -2,9 +2,9 @@
 
 'use client';
 
-import LetterSelectorGroup, { LetterSelectorConfig } from './LetterSelectorGroup';
+import LetterSelectorGroup, { LetterSelectorConfig } from './AdditionalLetterSelectorGroup';
 import { GameConfig } from '@/lib/gameConfig';
-import { LetterType } from './LetterSelector';
+import { LetterType } from './AdditionalLetterSelector';
 
 interface AdditionalLettersProps {
 	onRequestAdditionalLetter?: (type: 'vowel' | 'consonant') => void;
@@ -18,6 +18,9 @@ interface AdditionalLettersProps {
 		consonant?: { letter: string; correct: boolean };
 	};
 	onCancelSelection?: () => void;
+	isGameOver?: boolean;
+	clueLettersComplete?: boolean;
+	hasLostLifeForNoStartingLetters?: boolean;
 }
 
 export default function AdditionalLetters({
@@ -28,6 +31,10 @@ export default function AdditionalLetters({
 	pendingLetter = {},
 	validatedLetters = {},
 	onCancelSelection,
+	isGameOver = false,
+	clueLettersComplete = false,
+	hasLostLifeForNoStartingLetters = false,
+
 }: AdditionalLettersProps) {
 	
 	// Configure the letter selectors
@@ -39,7 +46,9 @@ export default function AdditionalLetters({
 				label: GameConfig.additionalColors.vowel,
 				selected: GameConfig.additionalColors.selectedLetter,
 				unselected: GameConfig.additionalColors.unselectedLetter,
-			}
+			},
+			clueLettersComplete: clueLettersComplete,
+			hasLostLifeForNoStartingLetters: hasLostLifeForNoStartingLetters
 		},
 		{
 			type: 'consonant' as LetterType,
@@ -48,7 +57,9 @@ export default function AdditionalLetters({
 				label: GameConfig.additionalColors.consonant,
 				selected: GameConfig.additionalColors.selectedLetter,
 				unselected: GameConfig.additionalColors.unselectedLetter,
-			}
+			},
+			clueLettersComplete: clueLettersComplete,
+			hasLostLifeForNoStartingLetters: hasLostLifeForNoStartingLetters
 		}
 	];
 
@@ -81,6 +92,9 @@ export default function AdditionalLetters({
 			pendingLetters={pending}
 			validatedLetters={validated}
 			onCancelSelection={onCancelSelection}
+			isGameOver={isGameOver}
+			clueLettersComplete={clueLettersComplete}
+			hasLostLifeForNoStartingLetters={hasLostLifeForNoStartingLetters}
 		/>
 	);
 }

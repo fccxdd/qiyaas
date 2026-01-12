@@ -46,7 +46,7 @@ export default function StartingLetters({
                 key={index}
                 className={`w-7 h-7 sm:w-8 sm:h-8 md:w-12 md:h-12 rounded-full ${GameConfig.startingColors.default} flex items-center justify-center animate-[scale-in_0.2s_ease-out]`}
               >
-                <span className="text-white text-xl sm:text-2xl md:text-3xl font-bold uppercase">
+                <span className={`${GameConfig.startingColors.lettersText} text-xl sm:text-2xl md:text-3xl font-bold uppercase`}>
                   {letter}
                 </span>
               </div>
@@ -128,7 +128,7 @@ export default function StartingLetters({
                     : undefined
                 }}
               >
-                <span className="text-white text-xl sm:text-2xl md:text-3xl font-bold uppercase">
+                <span className={`${GameConfig.startingColors.lettersText} text-xl sm:text-2xl md:text-3xl font-bold`}>
                   {letter}
                 </span>
               </div>

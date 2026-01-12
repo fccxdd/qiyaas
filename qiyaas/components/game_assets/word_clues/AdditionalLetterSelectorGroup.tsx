@@ -3,7 +3,7 @@
 'use client';
 
 import { useRef, useEffect } from 'react';
-import LetterSelector, { LetterType } from './LetterSelector';
+import LetterSelector, { LetterType } from './AdditionalLetterSelector';
 
 export interface LetterSelectorConfig {
 	type: LetterType;
@@ -13,6 +13,8 @@ export interface LetterSelectorConfig {
 		selected: string;
 		unselected: string;
 	};
+	clueLettersComplete?: boolean;
+	hasLostLifeForNoStartingLetters?: boolean;
 }
 
 interface LetterSelectorGroupProps {
@@ -26,6 +28,9 @@ interface LetterSelectorGroupProps {
 		[key: string]: { letter: string; correct: boolean };
 	};
 	onCancelSelection?: () => void;
+	isGameOver?: boolean;
+	clueLettersComplete?: boolean;
+	hasLostLifeForNoStartingLetters?: boolean;
 }
 
 export default function LetterSelectorGroup({
@@ -37,6 +42,9 @@ export default function LetterSelectorGroup({
 	pendingLetters = {},
 	validatedLetters = {},
 	onCancelSelection,
+	isGameOver = false,
+	clueLettersComplete = false,
+	hasLostLifeForNoStartingLetters = false,
 }: LetterSelectorGroupProps) {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const buttonRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
@@ -114,6 +122,9 @@ export default function LetterSelectorGroup({
 							validated={validatedLetters[typeKey] || null}
 							onCancelSelection={onCancelSelection}
 							colorConfig={config.colorConfig}
+							isGameOver={isGameOver}
+							clueLettersComplete={clueLettersComplete}
+							hasLostLifeForNoStartingLetters={hasLostLifeForNoStartingLetters}
 						/>
 					</div>
 				);

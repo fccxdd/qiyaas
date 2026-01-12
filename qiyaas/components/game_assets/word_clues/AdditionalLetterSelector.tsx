@@ -1,4 +1,4 @@
-// components/game_assets/word_clues/LetterSelector.tsx
+// components/game_assets/word_clues/AdditionalLetterSelector.tsx
 
 'use client';
 
@@ -23,6 +23,9 @@ interface LetterSelectorProps {
 		selected: string;
 		unselected: string;
 	};
+	isGameOver?: boolean;
+	clueLettersComplete?: boolean;
+	hasLostLifeForNoStartingLetters?: boolean;
 }
 
 export default function LetterSelector({
@@ -37,6 +40,9 @@ export default function LetterSelector({
 	validated = null,
 	onCancelSelection,
 	colorConfig,
+	isGameOver = false,
+	clueLettersComplete = false,
+	hasLostLifeForNoStartingLetters = false,
 }: LetterSelectorProps) {
 	const buttonRef = useRef<HTMLButtonElement>(null);
 	const [colorRevealed, setColorRevealed] = useState(false);
@@ -49,7 +55,7 @@ export default function LetterSelector({
 			? GameConfig.additionalColors.vowel 
 			: type === 'consonant'
 			? GameConfig.additionalColors.consonant
-			: 'text-gray-600 dark:text-gray-400',
+			: GameConfig.additionalColors.default,
 		selected: GameConfig.additionalColors.selectedLetter,
 		unselected: GameConfig.additionalColors.unselectedLetter,
 	};
@@ -82,7 +88,8 @@ export default function LetterSelector({
 	}, [type]);
 
 	const handleClick = () => {
-		if (validated) return;
+		if (validated || isGameOver) return;
+		if (!clueLettersComplete && !hasLostLifeForNoStartingLetters) return;
 		onRequestLetter?.();
 	};
 
@@ -93,7 +100,7 @@ export default function LetterSelector({
 	const displayLetter = validated?.letter || pendingLetter || letter || null;
 	const isCorrect = validated?.correct;
 	const hasValidated = !!validated;
-
+	const isDisabled = hasValidated || isGameOver || (!clueLettersComplete && !hasLostLifeForNoStartingLetters);
 	// Determine background color based on reveal state
 	const getBgColor = () => {
 		if (hasValidated && colorRevealed) {
@@ -139,17 +146,19 @@ export default function LetterSelector({
 				/* Standard Breakpoints for letter selector sizing */
 				
 				/* Mobile devices (320px — 480px) */
-				.letter-selector {
-					width: 1.75rem;
-					height: 1.75rem;
-				}
-				.letter-text {
-					font-size: 1.25rem;
-				}
-				.label-text {
-					font-size: 0.875rem;
-				}
 				
+					.letter-selector {
+						width: 1.75rem;
+						height: 1.75rem;
+					}
+					.letter-text {
+						font-size: 1.25rem;
+					}
+					.label-text {
+						font-size: 0.875rem;
+					}
+				
+
 				/* iPads, Tablets (481px — 768px) */
 				@media screen and (min-width: 481px) and (max-width: 768px) {
 					.letter-selector {
@@ -224,14 +233,13 @@ export default function LetterSelector({
 			<button
 				ref={buttonRef}
 				onClick={handleClick}
-				disabled={hasValidated}
+				disabled={isDisabled}
 				className={`letter-selector rounded-full flex items-center justify-center transition-all ${
 					hasValidated || isPending
 						? `${getBgColor()} animate-[scale-in_0.2s_ease-out] transition-colors duration-500`
 						: isAwaiting
 						? `border-2 ${colors.selected} border-solid animate-pulse`
-						: `border-2 border-dashed ${colors.unselected} hover:${colors.selected} hover:scale-105 active:scale-95 animate-pulse cursor-pointer`
-				}`}
+						: `border-2 border-dashed ${colors.unselected} ${!isDisabled ? 'hover:' + colors.selected + ' hover:scale-105 active:scale-95 cursor-pointer' : 'cursor-not-allowed opacity-50'} ${!isDisabled ? 'animate-pulse' : ''}`}`}
 				style={{
 					animation: shouldAnimate && colorRevealed
 						? 'color-reveal 0.5s ease-out'
@@ -242,8 +250,8 @@ export default function LetterSelector({
 				{displayLetter ? (
 					<span className={`letter-text font-bold uppercase ${
 						hasValidated || isPending
-							? 'text-white dark:text-white'
-							: 'text-black dark:text-white'
+							? GameConfig.additionalColors.lettersText
+							:GameConfig.wordColors.default
 					}`}>
 						{displayLetter}
 					</span>
