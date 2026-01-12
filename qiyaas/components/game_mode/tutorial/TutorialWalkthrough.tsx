@@ -2,56 +2,74 @@
 
 'use client';
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import GameWalkthrough, { getTotalSteps } from "@/components/game_assets/game_walkthrough/GameWalkthrough";
-import { NextButton, BackButton, StartButton } from '@/components/game_assets/game_walkthrough/ButtonNavigation';
-import ProgressIndicator from '@/components/game_assets/game_walkthrough/ProgressIndicator';
+import { tutorialSteps } from '@/data/tutorialSteps';
+import KeyboardPreview from '@/components/game_assets/game_walkthrough/components/KeyboardPreview';
+import { StartButton } from '@/components/game_assets/game_walkthrough/ButtonNavigation';
 
 export default function TutorialWalkthrough() {
-  const [currentStep, setCurrentStep] = useState(0);
   const router = useRouter();
-  const totalSteps = getTotalSteps();
 
   const handleStart = () => {
     router.push('/play');
   };
 
   return (
-    <div className="fixed inset-0 bg-white dark:bg-black overflow-hidden">
-      {/* Main Game Area - Centered content */}
- 
-      <div className="absolute inset-0 flex flex-col justify-center items-center">
-
-        {/* Center Section - Tutorial Content */}
-        <div className="w-[78%] sm:w-[50%] md:max-w-md text-center z-10 md:text-xl lg:text-2xl">
-          <GameWalkthrough currentStep={currentStep} />
-        </div>
+    <div className="min-h-screen bg-white dark:bg-black pt-24 sm:pt-28 md:pt-32">
+      {/* Main Content Container */}
+      <div className="max-w-4xl mx-auto px-6 py-12 md:py-16">
         
-      </div>
+        {/* Tutorial Steps */}
+        <div className="space-y-16 md:space-y-20">
+          {tutorialSteps.map((step, index) => (
+            <div 
+              key={index}
+              className="tutorial-step"
+            >
+              {/* Step Title */}
+              {step.title && (
+                <h2 
+                  className={`tutorial-title text-xl md:text-2xl lg:text-3xl font-medium leading-relaxed text-black dark:text-white mb-4 `}
+                  style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}
+                  dangerouslySetInnerHTML={{ __html: step.title }} 
+                />
+              )}
+              
+              {/* Step Content */}
+              {step.content && (
+                <div 
+                  className="tutorial-content text-xl md:text-2xl lg:text-3xl text-center leading-loose md:leading-[2.5] text-black dark:text-white"
+                  style={{ wordBreak: 'break-word', overflowWrap: 'break-word', whiteSpace: 'pre-line' }}
+                  dangerouslySetInnerHTML={{ __html: step.content }} 
+                />
+              )}
 
-      {/* Progress Indicator */}
-      <div className={`absolute left-0 right-0 flex justify-center items-center px-4 z-20 ${
-        currentStep === totalSteps - 1 ? 'bottom-44' : 'bottom-28'
-      }`}>
-        <ProgressIndicator currentStep={currentStep} />
-      </div>
+              {/* Render component if it exists in the step */}
+              {step.component && (
+                <div className="mt-5 flex justify-center">
+                  {(() => {
+                    const StepComponent = step.component;
+                    return <StepComponent />;
+                  })()}
+                </div>
+              )}
+           
 
-      {/* Start Button */}
-      {currentStep === totalSteps - 1 && (
-        <div className="absolute bottom-24 left-0 right-0 flex justify-center items-center px-4 z-20">
+              {/* Step 9 keyboard preview */}
+              {index === 9 && (
+                <div className="mt-6">
+                  <KeyboardPreview />
+                </div>
+              )}
+
+            </div>
+          ))}
+        </div>
+
+        {/* Start Button */}
+        <div className="mt-16 md:mt-20 flex justify-center">
           <StartButton onClick={handleStart} />
         </div>
-      )}
-
-      {/* Navigation Buttons */}
-      <div className="absolute bottom-8 left-0 right-0 flex justify-center items-center gap-4 sm:gap-8 md:gap-12 px-4 z-20">
-        {currentStep > 0 && (
-          <BackButton onClick={() => setCurrentStep(prev => prev - 1)} />
-        )}
-        {currentStep < totalSteps - 1 && (
-          <NextButton onClick={() => setCurrentStep(prev => prev + 1)} />
-        )}
       </div>
     </div>
   );
