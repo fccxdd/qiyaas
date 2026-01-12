@@ -1,45 +1,4 @@
-// hooks/clueHelpers.tsx
-
-/**
- * Find the next empty position in a word starting from a given position
- */
-export function findNextEmptyPosition(
-  clue: string, 
-  fromPosition: number, 
-  wordInputs: Map<number, string>
-): number | null {
-  for (let i = fromPosition + 1; i < clue.length; i++) {
-    if (!wordInputs.has(i)) {
-      return i;
-    }
-  }
-  return null;
-}
-
-/**
- * Find the previous empty position in a word starting from a given position
- */
-export function findPreviousEmptyPosition(
-  fromPosition: number,
-  wordInputs: Map<number, string>
-): number | null {
-  for (let i = fromPosition - 1; i >= 0; i--) {
-    if (!wordInputs.has(i)) {
-      return i;
-    }
-  }
-  return null;
-}
-
-/**
- * Check if a word is completely filled
- */
-export function isWordComplete(
-  clue: string,
-  wordInputs: Map<number, string>
-): boolean {
-  return wordInputs.size === clue.length;
-}
+// hooks/clues/clueHelpers.tsx
 
 interface TutorialWords {
   clue_1: string;

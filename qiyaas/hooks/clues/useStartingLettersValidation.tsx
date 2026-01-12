@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { GameConfig } from '@/lib/gameConfig';
 
 interface UseStartingLettersValidationProps {
@@ -10,17 +10,19 @@ interface UseStartingLettersValidationProps {
   activeClues: string[];
   onLifeLost: () => void;
   onShowMessage: (msg: string, type?: 'error' | 'success' | 'info') => void;
+  hasLostLifeForNoStartingLetters: boolean;
+  setHasLostLifeForNoStartingLetters: (value: boolean) => void;
 }
 
 export function useStartingLettersValidation({
   selectedStartingLetters,
   activeClues,
   onLifeLost,
-  onShowMessage
+  onShowMessage,
+  hasLostLifeForNoStartingLetters,
+  setHasLostLifeForNoStartingLetters
 }: UseStartingLettersValidationProps) {
   
-  const [hasLostLifeForNoStartingLetters, setHasLostLifeForNoStartingLetters] = useState(false);
-
   // Check if starting letters appear in any of the clues
   const startingLettersMatchClues = useMemo(() => {
     if (!selectedStartingLetters) return false;
@@ -44,12 +46,7 @@ export function useStartingLettersValidation({
       
       return () => clearTimeout(timeoutId);
     }
-  }, [startingLettersMatchClues, hasLostLifeForNoStartingLetters, selectedStartingLetters, onLifeLost, onShowMessage]);
-
-  // Reset the life loss flag when starting letters change
-  useEffect(() => {
-    setHasLostLifeForNoStartingLetters(false);
-  }, [selectedStartingLetters]);
+  }, [startingLettersMatchClues, hasLostLifeForNoStartingLetters, selectedStartingLetters, onLifeLost, onShowMessage, setHasLostLifeForNoStartingLetters]);
 
   return { startingLettersMatchClues };
 }

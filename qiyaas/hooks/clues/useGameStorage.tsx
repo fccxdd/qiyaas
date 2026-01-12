@@ -15,18 +15,39 @@ interface GameState {
 		consonant?: { letter: string; correct: boolean };
 	};
 	hasAnyCorrectAdditionalLetter: boolean;
+	hasLostLifeForNoStartingLetters: boolean;
 	gameStarted: boolean;
-	lettersInClues: string[]; // Convert Set to Array for JSON
-	wordInputs: Array<[string, string]>; // Convert Map to Array for JSON
-	verifiedInputs: Array<[string, string]>; // Convert Map to Array for JSON
+	lettersInClues: string[];
+	wordInputs: Array<[string, string]>; // Flat Map - kept for compatibility
+	verifiedInputs: Array<[string, string]>;
+	userInputsNested: Array<[string, Array<[number, string]>]>; // Nested structure for ClueGameManager
+	verifiedPositions: Array<[string, number[]]>;
+	completedWords: string[];
+	revealedSequenceLetters: Array<[string, Array<[number, string]>]>; // Track sequence revealed letters
+	cursorPosition?: { clueIndex: number; position: number } | null;
 	cluesData: DailyWordPuzzle;
 	isGameOver: boolean;
 	hasWon: boolean;
 	letterStatus: Record<string, 'correct' | 'partial' | 'incorrect' | 'unused'>;
 	hintsEnabled: boolean;
-	puzzleDate: string; // Track which puzzle this save is for
+	puzzleDate: string;
 	solvedClues: boolean[];
 	timestamp: number;
+	hasRevealedOnLoss: boolean;
+	silentRevealedWords: string[];
+	autoRevealedPositions: Array<[string, number[]]>;
+	
+	// Starting letter color reveal state
+	revealedStartingColors: number[]; // Indices of starting letters with revealed colors
+	
+	// Track if starting letters animation has completed
+	hasStartingLettersAnimationCompleted: boolean;
+	
+	// Track if additional letters animation has completed
+	hasAdditionalLettersAnimationCompleted: {
+		vowel: boolean;
+		consonant: boolean;
+	};
 }
 
 const EXPIRY_TIME = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
@@ -47,7 +68,6 @@ export function useGameStorage(puzzleDate: string) {
 			
 			// Check if saved state is for correct puzzle date
 			if (parsed.puzzleDate !== puzzleDate) {
-				console.log('🗑️ Puzzle date mismatch, clearing old save');
 				localStorage.removeItem(STORAGE_KEY);
 				return null;
 			}
@@ -55,14 +75,12 @@ export function useGameStorage(puzzleDate: string) {
 			// Check if saved state is expired (older than 24 hours)
 			const now = Date.now();
 			if (now - parsed.timestamp > EXPIRY_TIME) {
-				console.log('🗑️ Save expired, clearing');
 				localStorage.removeItem(STORAGE_KEY);
 				return null;
 			}
 			
 			return parsed;
 		} catch (error) {
-			console.error('Error loading game state:', error);
 			localStorage.removeItem(STORAGE_KEY);
 			return null;
 		}

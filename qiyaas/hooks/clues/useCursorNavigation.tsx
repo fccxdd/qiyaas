@@ -21,6 +21,7 @@ interface UseCursorNavigationProps {
 	hasAnyCorrectAdditionalLetter?: boolean;
 	additionalLetters?: { vowel?: string; consonant?: string; any?: string; };
 	additionalLetterPositions: Map<string, Set<number>>;
+	initialCursorPosition?: { clueIndex: number; position: number } | null; 
 }
 
 /**
@@ -32,6 +33,7 @@ interface UseCursorNavigationProps {
  * - Starting letters (pre-filled)
  * - Additional vowels and consonants (bonus letters)
  */
+
 export function useCursorNavigation({
 	activeClues,
 	userInputs,
@@ -40,10 +42,11 @@ export function useCursorNavigation({
 	startingLetters,
 	hasAnyCorrectAdditionalLetter,
 	additionalLetters,
-	additionalLetterPositions
+	additionalLetterPositions,
+	initialCursorPosition = null
 }: UseCursorNavigationProps) {
 	
-	const [cursorPosition, setCursorPosition] = useState<CursorPosition | null>(null);
+	const [cursorPosition, setCursorPosition] = useState<CursorPosition | null>(initialCursorPosition);
 
 	// Check position editability (skips protected letters)
 	const { isPositionEditable } = usePositionEditability({

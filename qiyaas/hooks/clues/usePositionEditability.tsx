@@ -7,7 +7,7 @@ import { useCallback } from 'react';
 interface UsePositionEditabilityProps {
   verifiedPositions: Map<string, Set<number>>;
   startingLetters?: string;
-  additionalLetters?: { vowel?: string; consonant?: string; any?: string };
+  additionalLetters?: { vowel?: string; consonant?: string; };
   additionalLetterPositions: Map<string, Set<number>>;
 }
 
@@ -63,14 +63,9 @@ export function usePositionEditability({
       return true;
     }
     
-    // Check if it's a validated bonus letter from additionalLetters
-    if (additionalLetters?.any && additionalLetters.any.toUpperCase() === letterUpper) {
-      return true;
-    }
-
     // Otherwise return false
     return false;
-  }, [startingLetters, additionalLetters]);;
+  }, [startingLetters, additionalLetters]);
 
   // Check if position is an additional letter position (auto-filled by system)
   const isAdditionalLetterPosition = useCallback((
@@ -101,10 +96,85 @@ export function usePositionEditability({
     return true;
   }, [isVerifiedPosition, isStartingLetterPosition, isAdditionalLetterPosition]);
 
+  // Check if position is empty (no letter entered yet)
+  const isPositionEmpty = useCallback((
+    position: number,
+    wordInputs: Map<number, string>
+  ): boolean => {
+    return !wordInputs.has(position);
+  }, []);
+
+  // Find next editable position after validation (wraps around)
+  const findNextEditablePosition = useCallback((
+    clue: string,
+    wordInputs: Map<number, string>,
+    currentPosition?: number
+  ): number => {
+    const wordLength = clue.length;
+    const startPos = currentPosition !== undefined ? currentPosition + 1 : 0;
+    
+    // Search forward from current position
+    for (let i = startPos; i < wordLength; i++) {
+      if (isPositionEditable(clue, i, wordInputs)) {
+        return i;
+      }
+    }
+    
+    // Wrap around: search from beginning
+    for (let i = 0; i < startPos; i++) {
+      if (isPositionEditable(clue, i, wordInputs)) {
+        return i;
+      }
+    }
+    
+    // If no editable position found, return first position
+    return 0;
+  }, [isPositionEditable]);
+
+  // Find next EMPTY position (doesn't wrap, returns null if none found)
+  const findNextEmptyPosition = useCallback((
+    clue: string,
+    fromPosition: number,
+    wordInputs: Map<number, string>
+  ): number | null => {
+    for (let i = fromPosition + 1; i < clue.length; i++) {
+      if (isPositionEmpty(i, wordInputs)) {
+        return i;
+      }
+    }
+    return null;
+  }, [isPositionEmpty]);
+
+  // Find previous EMPTY position (doesn't wrap, returns null if none found)
+  const findPreviousEmptyPosition = useCallback((
+    fromPosition: number,
+    wordInputs: Map<number, string>
+  ): number | null => {
+    for (let i = fromPosition - 1; i >= 0; i--) {
+      if (isPositionEmpty(i, wordInputs)) {
+        return i;
+      }
+    }
+    return null;
+  }, [isPositionEmpty]);
+
+  // Check if word is completely filled
+  const isWordComplete = useCallback((
+    clue: string,
+    wordInputs: Map<number, string>
+  ): boolean => {
+    return wordInputs.size === clue.length;
+  }, []);
+
   return {
     isPositionEditable,
     isVerifiedPosition,
     isStartingLetterPosition,
-    isAdditionalLetterPosition
+    isAdditionalLetterPosition,
+    isPositionEmpty,
+    findNextEditablePosition,
+    findNextEmptyPosition,
+    findPreviousEmptyPosition,
+    isWordComplete
   };
 }

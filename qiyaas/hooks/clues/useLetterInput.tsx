@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import { useLetterReplacement } from './useLetterReplacement';
 
 interface CursorPosition {
@@ -38,6 +38,9 @@ export function useLetterInput({
     startingLettersSet
   });
   
+  // Track pending cursor movements to avoid race conditions
+  const pendingMoveRef = useRef(false);
+  
   const handleLetterInput = useCallback((key: string) => {
     if (!cursorPosition || !/^[A-Z]$/.test(key)) return;
 
@@ -51,16 +54,25 @@ export function useLetterInput({
       return; // Position is protected (verified or starting letter)
     }
 
-    // Add or replace the letter
-    const newWordInputs = new Map(wordInputs);
-    newWordInputs.set(cursorPosition.position, key);
-    setUserInputs(prev => new Map(prev).set(currentClue, newWordInputs));
+    // Prevent overlapping cursor moves
+    if (pendingMoveRef.current) return;
+    pendingMoveRef.current = true;
 
-    // Move cursor to next editable position after state update
-    // Use setTimeout to ensure state has been updated
-    setTimeout(() => {
+    // Add or replace the letter - use functional update to ensure we have latest state
+    setUserInputs(prev => {
+      const newMap = new Map(prev);
+      const newWordInputs = new Map(wordInputs);
+      newWordInputs.set(cursorPosition.position, key);
+      newMap.set(currentClue, newWordInputs);
+      return newMap;
+    });
+
+    // Move cursor immediately using queueMicrotask for better mobile performance
+    // This executes before the next render but after current execution context
+    queueMicrotask(() => {
       moveToNextPosition(false);
-    }, 0);
+      pendingMoveRef.current = false;
+    });
   }, [
     activeClues, 
     userInputs, 

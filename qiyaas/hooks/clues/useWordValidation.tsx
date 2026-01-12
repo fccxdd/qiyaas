@@ -1,7 +1,6 @@
 // /hooks/clues/useWordValidation.tsx
 
 import { useCallback, RefObject } from 'react';
-import { isWordComplete, findNextEmptyPosition } from '@/hooks/clues/clueHelpers';
 import { validateWord } from '@/components/game_assets/word_clues/ValidateWords';
 import { GameConfig } from '@/lib/gameConfig';
 import { FlashState } from './useFlashState';
@@ -22,7 +21,10 @@ export function useWordValidation(
 	setAllGuessedLetters: (letters: Set<string> | ((prev: Set<string>) => Set<string>)) => void,
 	completedWords: Set<string>,
 	setSolvedClues: (clues: boolean[] | ((prev: boolean[]) => boolean[])) => void,
-	clueWordsArray: string[]
+	clueWordsArray: string[],
+	findNextEmptyPosition: (clue: string, fromPosition: number, wordInputs: Map<number, string>) => number | null,
+	isWordComplete: (clue: string, wordInputs: Map<number, string>) => boolean,
+	silentRevealedWords: Set<string>
 ) {
 	const submitWord = useCallback((clue: string, clueIndex: number) => {
 		const wordInputs = userInputs.get(clue);
@@ -125,7 +127,10 @@ export function useWordValidation(
 			}
 			setVerifiedPositions(prev => new Map(prev).set(clue, allPositions));
 			
-			onShowMessage(GameConfig.messages.wordCorrect, 'success');
+			// Only show message if this wasn't auto-revealed on loss
+			if (!silentRevealedWords.has(clue)) {
+				onShowMessage(GameConfig.messages.wordCorrect, 'success');
+			}
 			
 			// IMPORTANT: Find next position BEFORE marking word as complete
 			// Otherwise findNextIncompleteWord will include the current word in its search
@@ -221,7 +226,10 @@ export function useWordValidation(
 		setAllGuessedLetters,
 		completedWords,
 		setSolvedClues,
-		clueWordsArray 
+		clueWordsArray,
+		findNextEmptyPosition,
+		isWordComplete,
+		silentRevealedWords
 	]);
 
 	return { submitWord };
