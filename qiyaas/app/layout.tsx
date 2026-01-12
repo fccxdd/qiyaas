@@ -23,6 +23,9 @@ export const metadata = {
   metadataBase: new URL(GameConfig.urlName),
   title: GameConfig.titleName,
   description: GameConfig.shareableDescription,
+  icons: {
+            apple: '/apple-icon.png',
+        },
   openGraph: {
     title: GameConfig.titleName,
     description: GameConfig.shareableDescription,
