@@ -25,7 +25,7 @@ preview_id = "fdb5db413a2f408eae8fffafa970b3ed"  # Replace with preview namespac
 
 # If you want to use a custom domain, uncomment and configure:
 # routes = [
-#   { pattern = "beta.qiyaasgame.com/*", zone_name = "beta.qiyaasgame.com" }
+#   { pattern = "qiyaasgame.com/*", zone_name = "qiyaasgame.com" }
 # ]
 
 # Worker limits (free tier)

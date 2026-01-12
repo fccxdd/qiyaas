@@ -18,7 +18,6 @@ const inknutAntiqua = Inknut_Antiqua({
 })
 
 // Metadata Definition
-// TODO: Fix metadata URLs to be non 'beta' when deploying to PROD and also update description
 export const metadata = {
   
   metadataBase: new URL(GameConfig.urlName),
