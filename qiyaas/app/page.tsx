@@ -46,6 +46,8 @@ function formatDate(dateString: string): string {
   return date.toLocaleDateString('en-US', options);
 }
 
+export const revalidate = 86400; // 24 hours
+
 async function getPuzzleData(): Promise<PuzzleData> {
   try {
     // Replace with your actual Cloudflare Worker URL
