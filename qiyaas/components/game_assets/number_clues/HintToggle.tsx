@@ -111,7 +111,7 @@ return (
 								className={`hint-number relative z-10 transition-all duration-500 ease-in-out rounded-lg ${
 									// Add background highlight if it's a length_rule and solved (regardless of hint visibility)
 									(ruleType === 'length_rule' && isSolved) 
-										? `${getBackgroundColor(wordType)} ${GameConfig.wordColors.default} px-2 py-1 rounded font-bold`
+										? `${getBackgroundColor(wordType)} ${GameConfig.hintMappingColors} px-2 py-1 rounded font-bold`
 										: `${colorClass} font-bold`
 								} ${
 									(hintsEnabled || isSolved) && !gameOver

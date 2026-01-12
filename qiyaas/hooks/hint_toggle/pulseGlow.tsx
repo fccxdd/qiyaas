@@ -31,7 +31,7 @@ const PulseGlow: React.FC<PulseGlowProps> = ({
 		}
 	};
 
-	// Trigger pulse animation repeatedly: wait 3s, pulse 2s, repeat
+	// Trigger pulse animation repeatedly: repeat
 	useEffect(() => {
 		if (enabled && !hasInteracted) {
 			let pulseInterval: NodeJS.Timeout;
@@ -43,7 +43,7 @@ const PulseGlow: React.FC<PulseGlowProps> = ({
 				// Turn off after pulse duration
 				setTimeout(() => setShouldPulse(false), GameConfig.duration.hintToggleDuration);
 				
-				// Set up repeating cycle: wait 3s, pulse 2s
+				// Set up repeating cycle:
 				pulseInterval = setInterval(() => {
 					setShouldPulse(true);
 					setTimeout(() => setShouldPulse(false), GameConfig.duration.hintToggleDuration);

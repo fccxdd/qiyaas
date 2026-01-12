@@ -67,7 +67,7 @@ const HintHighlighter: React.FC<HintHighlighterProps> = ({
 // Determine which part to highlight based on rule type
 const renderHighlightedHint = () => {
   const bgColor = getBackgroundColor(wordType);
-  const highlightClass = `${bgColor} ${GameConfig.wordColors.default} px-2 py-1 rounded font-bold`;
+  const highlightClass = `${bgColor} ${GameConfig.hintMappingColors} px-2 py-1 rounded font-bold`;
 
   // Only highlight if the clue is solved - otherwise show plain text
   if (!isSolved) {
