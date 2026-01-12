@@ -30,11 +30,11 @@ except enchant.errors.DictNotFoundError as e:
 # FORCE REMOVE / FORCE ADD LISTS
 # -------------------------------------------------------------------
 FORCE_REMOVE = {
-                    'paris', 'decolour', 'decoloured', 'decolouring', 'decolours', 'christiania', 'christianias', 'phoenix', 'phonenixes'
+                    'paris', 'decolour', 'decoloured', 'decolouring', 'decolours', 'christiania', 'christianias'
                 }
 
 FORCE_ADD = {
-                'islam', 'islamic', 'christian', 'hindu', 'muslim', 'quran', 'dhikr'
+                    'christian', 'dhikr', 'hindu', 'islam', 'islamic', 'muslim', 'qibla', 'quran', 'sweaty', 'warden', 'trans'
             }
 
 # -------------------------------------------------------------------

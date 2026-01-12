@@ -4,20 +4,24 @@ export const GameConfig = {
 
 							
 							// Puzzle Start Day
-							puzzleStartDay: "2025-12-11",
+							puzzleStartDay: "2025-12-07",
 
 							// Maximum number of lives
 							maxLives: 5,
 							
+							// Description of Qiyaas
+							shareableDescription: "Qiyaas - A word game based on numbers",
+							titleName: "Qiyaas",
+							urlName: "https://beta.qiyaasgame.com",
+
 							// Image Paths
 							imagePaths: {
 
-											image404: "qiyaas_glow_404.png",
-											lostGameDarkMode: "qiyaas_grey_dark.svg",
-											lostGameLightMode: "qiyaas_grey_light.svg",
-											blueRectangle: "/qiyaas_logo/blue_rectangle.svg",
-											greenRectangle: "/qiyaas_logo/green_rectangle.svg",
-											pinkRectangle: "/qiyaas_logo/pink_rectangle.svg"
+											image404: "/qiyaas_glow_404.png",
+											wonGame: "qiyaas_glow.svg",
+											lostGameDarkMode: "qiyaas_gray_dark.svg",
+											lostGameLightMode: "qiyaas_gray_light.svg",
+											shareable: "qiyaas_glow_shareable.png"
 											
 										},
 							// Timing Durations
@@ -32,9 +36,12 @@ export const GameConfig = {
 											// Hint Toggle Duration
 											hintToggleDuration: 5000,
 
-											// Game over screen delay (in milliseconds)
-											gameOverScreenDelay: 700,
+											// Game over message delay (in milliseconds)
+											gameOverMessageDelay: 2000,
 											
+											// Game over screen delay (in milliseconds)
+											gameOverScreenDelay: 1500,
+
 											// Flash Duration (in milliseconds)
 											flashDuration: 1000,
 
@@ -55,7 +62,7 @@ export const GameConfig = {
 
 											moveToFirstEmptyPosition: 250,
 
-											// Letter Reveal delay
+											// Letter Reveal Delay
 											letterRevealDelay: 500,
 
 											// Green Cursor Duration
@@ -63,7 +70,8 @@ export const GameConfig = {
 
 											// Bounce Duration
 											bounceDuration: 1000,
-											// Reveal Sequence Timings
+											
+											// --- REVEAL SEQUENCE TIMINGS ---
 											
 											// Speed of the starting letter color
 											startingLetterColorReveal: 2000,
@@ -77,9 +85,12 @@ export const GameConfig = {
 											// Delay between revealing each clue dash (in milliseconds)
 											clueDashRevealDelay: 1000,
 
+											// Delay between revealing each letter in unsolved words (in milliseconds)
+											revealLetterDelay: 1000,
+
 										},
 
-							// Vibration Pattern
+							// Vibration Pattern (Shaking Animation)
 							vibrationPattern: [100, 50, 100],
 							
 							// Number of Starting Letters
@@ -106,35 +117,39 @@ export const GameConfig = {
 
 							// Keyboard Colors
 							keyboardColors: {
-								used_up: 'bg-gray-500 dark:bg-gray-600/50 text-white',
-								still_available: 'bg-yellow-500 dark:bg-yellow-500 text-white',
-								default: 'bg-gray-300 dark:bg-gray-500 text-black dark:text-white'
-							},
+												used_up: 'bg-gray-500 dark:bg-gray-600/50 text-white',
+												still_available: 'bg-yellow-500 dark:bg-yellow-500 text-white',
+												default: 'bg-gray-300 dark:bg-gray-500 text-black dark:text-white'
+											},
 														
 							// Messages
 							messages: {
 
-											// Starting Letters Messages
-											letterAlreadySelected: "Letter already selected!",
-											onlyOneVowel: "Only 1 vowel allowed!",
-											onlyThreeConsonants: "Only 3 consonants allowed!",
-											maxLettersReached: "Only 4 starting letters allowed!",
-											noSelectedLetters: "Please select 4 starting letters first!",
-											noStartingLettersMatch: "No starting letters match any clues!",
-											
+										// Starting Letters Messages
+										letterAlreadySelected: "Letter already selected!",
+										onlyOneVowel: "Only 1 vowel allowed!",
+										onlyThreeConsonants: "Only 3 consonants allowed!",
+										maxLettersReached: "Only 4 starting letters allowed!",
+										noSelectedLetters: "Please select 4 starting letters first!",
+										noStartingLettersMatch: "No starting letters match any clues!",
+										
 
-											// Additional Letters Messages
-											additionalLetterAlreadySelected: "You've already selected an additional {type}",
-											selectAdditionalLetter: "Select a {type}, then press Enter to confirm",
-											confirmAdditionalLetter: "Press Enter to confirm {letter}",
-											additionalLetterWrongType: "Please select a {expected}!",
-											additionalLetterAlreadyUsed: "This letter is already in use!",
-											
-											// Clue Words Messages
-											wordNotValid: "Not a playable word. Try again",
-											wordNotComplete: "Please enter a complete word.",
-											wordCorrect: "Correct!",
-											wordIncorrect: "Incorrect.",
+										// Additional Letters Messages
+										additionalLetterAlreadySelected: "You've already selected an additional {type}",
+										selectAdditionalLetter: "Select a {type}, then press Enter to confirm",
+										confirmAdditionalLetter: "Press Enter to confirm {letter}",
+										additionalLetterWrongType: "Please select a {expected}!",
+										additionalLetterAlreadyUsed: "This letter is already in use!",
+										
+										// Clue Words Messages
+										wordNotValid: "Not a playable word. Try again.",
+										wordNotComplete: "Please enter a complete word.",
+										wordCorrect: "Correct!",
+										wordIncorrect: "Incorrect.",
+
+										// Game Over Messages
+										gameLossMessage: "Next Time...",
+										gameWinMessage: "Well Done!"
 										},
 
 							// Messages Colors
@@ -148,7 +163,6 @@ export const GameConfig = {
 							cursorColor: {
 											default: 'text-purple-500',
 											inClue: 'text-green-500',
-
 										},
 							
 							// Starting Letters Colors
@@ -156,7 +170,8 @@ export const GameConfig = {
 												beforeGameBegins: 'border-purple-300',
 												default: 'bg-purple-500',
 												inClue: 'bg-green-500',
-												notInClue: 'bg-gray-500 dark:bg-gray-700'
+												notInClue: 'bg-gray-500 dark:bg-gray-700',
+												lettersText: 'text-white dark:text-white'
 											},
 							
 							// Lives Colors
@@ -172,7 +187,9 @@ export const GameConfig = {
 												selectedLetter: 'border-purple-500',
 												unselectedLetter: 'border-purple-400',
 												vowel: 'text-purple-600 dark:text-purple-400',
-												consonant: 'text-purple-600 dark:text-purple-400'
+												consonant: 'text-purple-600 dark:text-purple-400',
+												lettersText: 'text-white dark:text-white',
+												default: 'text-gray-600 dark:text-gray-400'
 											},
 
 							// Flash Colors for WordDash
@@ -181,19 +198,26 @@ export const GameConfig = {
 											partial: 'text-yellow-500'
 										},
 							
+							// Hint Mapping Color
+							hintMappingColors: 'text-white dark:text-white',
+
 							// Noun & Verb & Adjective Colors
 							wordColors: {
 											noun: 'text-[#74A8DC]',
 											verb: 'text-[#6AA84F]',
 											adjective: 'text-[#E06666]',
-											default: 'text-black dark:text-white'											
+											default: 'text-gray-600 dark:text-white'											
 										},
 							
 							wordColors_bg: {
 											noun: 'bg-[#74A8DC]',
 											verb: 'bg-[#6AA84F]',
 											adjective: 'bg-[#E06666]'
-																						
-											}
+											},
 
+							wordColors_puzzle: {
+											NOUN: 'text-[#74A8DC]',
+											VERB: 'text-[#6AA84F]',
+											ADJECTIVE: 'text-[#E06666]',
+												}
 					};

@@ -5,10 +5,14 @@ from better_profanity import profanity
 from wordfreq import zipf_frequency
 from nltk.stem import WordNetLemmatizer
 from nltk.corpus import wordnet
+import spacy
 from collections import Counter
+from nltk.corpus import brown
+
+nlp = spacy.load("en_core_web_sm")  # or en_core_web_lg for better accuracy
 
 # Setup
-for resource in ['averaged_perceptron_tagger', 'wordnet', 'omw-1.4']:
+for resource in ['averaged_perceptron_tagger', 'wordnet', 'omw-1.4', 'brown']:
 	try:
 		nltk.data.find(f'taggers/{resource}' if 'tagger' in resource else f'corpora/{resource}')
 	except LookupError:
@@ -18,46 +22,47 @@ profanity.load_censor_words()
 lemmatizer = WordNetLemmatizer()
 
 BLOCKLIST = {
-	'aba', 'abandon', 'abortion', 'abuse', 'abused', 'absues', 'abuser', 'abusers', 'abusive', 'addiction', 'adultery', 'alcohol', 'alcoholic', 'alexander',  'amen', 'any', 
-	'anymore', 'anyway', 'anyways', 'anywhere', 'arousal', 'arthritis', 'assault', 'atheism', 'atheist',
-	'bar', 'beer', 'berlin', 'bisexual', 'bipolar', 'bomb', 'bordeaux', 'boston', 'bostons', 'bra', 'bullet', 'burial',
-	'cannabis', 'cancer', 'cancerous', 'carcinoma', 'champagne', 'christian', 'cleavage', 'cocaine', 'coffin', 'cremation',
-	'dada', 'dak', 'dal', 'dah', 'dated', 'dead', 'death', 'dementia', 'depressed', 'diarrhea', 'die', 'drug', 'dumb', 
-	'east', 'erotica', 'extremism', 'extremist', 
-	'fatal', 'fascism', 'fascist', 'fatty', 'feces', 'funeral',
-	'genocide', 'grave', 'graveyard', 'grief', 'gunshot',
-	'handgun', 'hepatitis', 'hickey', 'hindu', 'homeless', 'holocaust', 'horrible', 'horror', 'however', 'idiot', 'idiots', 'idiotic', 'ill', 'illegal', 'illness', 'islam', 'islamic', 
-	'khan', 'killer', 
-	'lesbian', 'likewise', 'lingerie', 'liquor', 'loser', 'lucifer', 
-	'marijuana', 'marseille', 'magnum', 'martini', 'medicaid', 'medicaid', 'mike', 'missile', 'muslim', 
-	'north', 'northeast', 'northern', 'nowadays', 
-	'obese', 'obesity', 'other', 'otherwise', 'one', 
-	'pic', 'polio',
-	'racial', 'racism', 'racist', 
-	'sad', 'sadly', 'satanic', 'seduction', 'secutive', 'sexy', 'sex', 'sexual', 'sexually', 'sexuality', 'sexist', 'sexism', 'shooter', 'shotgun', 'slavery', 'slave', 'somebody', 'someday', 'somehow', 'someone', 'sometime', 'sometimes', 'somewhat', 'somewhere',
-	'south', 'southeast', 'southern', 'southwest', 'soviet', 'suicide', 'superman', 'stripper', 'stupidity',
-	'tequila', 'terror', 'terrorism', 'terrorist', 'tho', 'thou', 'tobacco', 'torture', 'twitter', 
-	'ulcer', 'ups', 'urine', 'urinary', 'ute',
-	'vaginal', 'var', 'virgin', 'virginity', 'victim', 'violence', 'violent', 
-	'warhead', 'war', 'warlord', 'weapon', 'west', 'whiskey', 'whisky', 'wiener',
-	'yea', 'yeah', 'yes', 'yet',
-	'zee'
-}
+				'aba', 'abandon', 'abortion', 'abuse', 'abused', 'absues', 'abuser', 'abusers', 'abusive', 'addiction', 'adultery', 'alcohol', 'alcoholic', 'alexander',  'amen', 'any', 
+				'anymore', 'anyway', 'anyways', 'anywhere', 'arousal', 'arthritis', 'assault', 'atheism', 'atheist',
+				'bar', 'beer', 'berlin', 'bisexual', 'bipolar', 'bomb', 'bomber', 'bordeaux', 'boston', 'bostons', 'bra', 'bullet', 'burial',
+				'cannabis', 'cancer', 'cancerous', 'carcinoma', 'champagne', 'chit', 'christian', 'cleavage', 'cocaine', 'coffin', 'cremation',
+				'dada', 'dak', 'dal', 'dah', 'dated', 'dead', 'death', 'dementia', 'depressed', 'diarrhea', 'die', 'drug', 'dumb', 
+				'erotica', 'extremism', 'extremist', 
+				'fatal', 'fascism', 'fascist', 'fatty', 'feces', 'firearm', 'firepower', 'funeral',
+				'genital', 'genitals', 'genitalia', 'genocide', 'grave', 'graveyard', 'grief', 'gun', 'gunfire', 'gunman', 'gunpoint', 'gunpowder', 'gunshot',
+				'handgun', 'hepatitis', 'hickey', 'hindu', 'homeless', 'holocaust', 'horrible', 'horror', 'however', 'idiot', 'idiots', 'idiotic', 'ill', 'illegal', 'illness', 'islam', 'islamic', 
+				'khan', 'killer', 
+				'lewd', 'lesbian', 'likewise', 'lingerie', 'liquor', 'loser', 'lucifer', 
+				'marijuana', 'marseille', 'magnum', 'martini', 'medicaid', 'mike', 'missile', 'muslim', 
+				'nowadays', 'nudity',
+				'obese', 'obesity', 'other', 'otherwise', 'one', 'onstage',
+				'pic', 'polio',
+				'racial', 'racism', 'racist', 
+				'sad', 'sadly', 'satanic', 'seduction', 'secutive', 'sexy', 'sex', 'sexual', 'sexually', 'sexuality', 'sexist', 'sexism', 'shooter', 'shotgun', 'slavery', 'slave', 'somebody', 'someday', 'somehow', 'someone', 'sometime', 'sometimes', 'somewhat', 'somewhere',
+				'soviet', 'suicide', 'superman', 'stripper', 'stupidity',
+				'tequila', 'terror', 'terrorism', 'terrorist', 'tho', 'thou', 'tobacco', 'torture', 'twitter', 
+				'ulcer', 'ups', 'urine', 'urinary', 'ute',
+				'vaginal', 'var', 'virgin', 'virginity', 'victim', 'violence', 'violent', 
+				'warhead', 'war', 'warlord', 'weapon', 'whiskey', 'whisky', 'wiener',
+				'yea', 'yeah', 'yes', 'yet',
+				'zee'
+			}
 
 DIRECTIONAL = {
-	'north', 'south', 'east', 'west', 'northeast', 'northwest', 'southeast', 'southwest',
-	'northern', 'southern', 'eastern', 'western', 'left', 'right', 'up', 'down'
-}
+				'north', 'south', 'east', 'west', 'northeast', 'northwest', 'southeast', 'southwest',
+				'northern', 'southern', 'eastern', 'western', 'left', 'right', 'up', 'down'
+			}
 
 NUMBER_WORDS = {
-	'zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
-	'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty',
-	'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety', 'hundred', 'thousand', 
-	'first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth'
-}
+				'zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
+				'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty',
+				'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety', 'hundred', 'thousand', 
+				'first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth'
+			}
 
 FORCE_ADD = {
-				'baptize', 'bicep', 
+				'baptize', 
+				'bicep', 
 				'crooked',
 				'fulfill',
 				'internet',
@@ -75,31 +80,88 @@ def get_pos_for_lemmatizer(tag):
 		return wordnet.ADV
 	return wordnet.NOUN
 
-def get_dominant_pos(word):
-	"""Get the most common part of speech for a word across different contexts"""
-	synsets = wordnet.synsets(word)
-	if not synsets:
-		return None
-	
-	pos_counts = Counter()
-	for synset in synsets:
-		pos = synset.pos()
-		pos_counts[pos] += 1
-	
-	if not pos_counts:
-		return None
-	
-	# Map wordnet POS to readable form
-	pos_map = {
-		'n': 'noun',
-		'v': 'verb',
-		'a': 'adjective',
-		's': 'adjective',  # adjective satellite
-		'r': 'adverb'
-	}
-	
-	dominant_pos = pos_counts.most_common(1)[0][0]
-	return pos_map.get(dominant_pos, None)
+# Add this near the top, after your setup code
+print("Building POS lookup from Brown corpus...")
+brown_pos_lookup = {}
+for w, tag in brown.tagged_words():
+    w_lower = w.lower()
+    if w_lower not in brown_pos_lookup:
+        brown_pos_lookup[w_lower] = []
+    brown_pos_lookup[w_lower].append(tag)
+
+# Convert to dominant POS
+brown_dominant_pos = {}
+for word, tags in brown_pos_lookup.items():
+    tag_counts = Counter(tags)
+    most_common_tag = tag_counts.most_common(1)[0][0]
+    
+    if most_common_tag.startswith('NN'):
+        brown_dominant_pos[word] = 'noun'
+    elif most_common_tag.startswith('VB'):
+        brown_dominant_pos[word] = 'verb'
+    elif most_common_tag.startswith('JJ'):
+        brown_dominant_pos[word] = 'adjective'
+    elif most_common_tag.startswith('RB'):
+        brown_dominant_pos[word] = 'adverb'
+print("Done building lookup!")
+
+# Then replace your function with a simple lookup:
+def get_dominant_pos_from_corpus(word):
+    """Get POS based on actual corpus usage"""
+    return brown_dominant_pos.get(word.lower(), None)
+
+def get_dominant_pos_ensemble(word):
+    """Ensemble method: Brown + WordNet + morphology"""
+    votes = []
+    w = word.lower()
+    
+    # Method 1: Brown corpus (double weight)
+    brown_result = get_dominant_pos_from_corpus(w)
+    if brown_result:
+        votes.extend([brown_result, brown_result])
+    
+    # Method 2: WordNet with smart weighting
+    synsets = wordnet.synsets(w)
+    if synsets:
+        pos_counts = Counter()
+        for idx, synset in enumerate(synsets):
+            weight = 1.0 / (idx + 1)  # Earlier synsets are more common
+            pos_counts[synset.pos()] += weight
+        
+        # Noun preference for noun/verb ambiguity
+        if 'n' in pos_counts and 'v' in pos_counts:
+            if pos_counts['n'] >= pos_counts['v'] * 0.3:
+                dominant = 'n'
+            else:
+                dominant = pos_counts.most_common(1)[0][0]
+        else:
+            dominant = pos_counts.most_common(1)[0][0]
+        
+        pos_map = {'n': 'noun', 'v': 'verb', 'a': 'adjective', 
+                   's': 'adjective', 'r': 'adverb'}
+        wordnet_result = pos_map.get(dominant)
+        if wordnet_result:
+            votes.append(wordnet_result)
+    
+    # Method 3: Morphology rules
+    if w.endswith('ly') and len(w) > 4:
+        votes.append('adverb')
+    elif w.endswith(('ness', 'ment', 'tion', 'sion', 'ance', 'ence')):
+        votes.append('noun')
+    elif w.endswith(('ful', 'less', 'ous', 'ive', 'able', 'ible', 'al')):
+        votes.append('adjective')
+    elif w.endswith(('ify', 'ize', 'ate')) and len(w) > 5:
+        votes.append('verb')
+    
+    if not votes:
+        return None
+    
+    # Majority vote
+    vote_counts = Counter(votes)
+    return vote_counts.most_common(1)[0][0]
+
+# Then just use this in your main loop:
+dominant = get_dominant_pos_ensemble(w)
 
 def is_plural_or_inflected(word_lower):
 	"""Check if a word is a plural or inflected form"""
@@ -172,7 +234,7 @@ for word, tag in tagged_words:
 		# Only include words between 3-9 letters
 		if 3 <= word_len <= 9:
 			# Get dominant part of speech
-			dominant = get_dominant_pos(w)
+			dominant = get_dominant_pos_ensemble(w)
 			if not dominant:
 				if tag.startswith('N'):
 					dominant = 'noun'

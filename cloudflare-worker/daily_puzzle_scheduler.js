@@ -111,6 +111,28 @@ function organizeWordsByLength(wordsByPos) {
   return result;
 }
 
+// --- Check if word matches multiple rules ---
+function countMatchingRules(word) {
+  let count = 0;
+  
+  // Check alphabet_rule (A-I)
+  const first = word[0].toUpperCase();
+  if (first >= 'A' && first <= 'I') {
+    count++;
+  }
+  
+  // Check number_rule (O/T/F/S/E/N)
+  const validLetters = new Set(['O', 'T', 'F', 'S', 'E', 'N']);
+  if (validLetters.has(first)) {
+    count++;
+  }
+  
+  // Length rule always applies (all words have a length)
+  count++;
+  
+  return count;
+}
+
 // --- WORD PICKER ---
 function pickWord(wordDict, lengthCat, rule, usedWords, rng) {
   const words = wordDict[lengthCat];
@@ -141,6 +163,12 @@ function pickWord(wordDict, lengthCat, rule, usedWords, rng) {
       throw new Error(`No unused ${lengthCat} words starting with O/T/F/S/E/N available!`);
     }
   }
+  
+  // Filter out words that match multiple rules
+  availableWords = availableWords.filter(w => countMatchingRules(w) === 1);
+  if (availableWords.length === 0) {
+    throw new Error(`No unused ${lengthCat} words that match exactly one rule available!`);
+  }
 
   // Pick random word using seeded RNG
   const index = Math.floor(rng() * availableWords.length);
@@ -158,13 +186,13 @@ function generateDailyPuzzle(wordsByPos, usedWordsSet, puzzleDate, allowRerollCh
   const seed = hashString(dateStr);
   const rng = seededRandom(seed);
   
-  // Shuffle rule order
+  // Shuffle rule order - ensures 1 of each rule
   const ruleOrder = shuffleArray(Object.keys(numberMethods), rng);
   
-  // Shuffle and select length categories
+  // Shuffle and select length categories - ensures 1 short, 1 medium, 1 long
   const lengthCategories = shuffleArray(['short', 'medium', 'long'], rng);
   
-  // Pick words
+  // Pick words - 1 noun, 1 verb, 1 adjective
   const noun = pickWord(organized.nouns, lengthCategories[0], ruleOrder[0], usedWordsSet, rng);
   const verb = pickWord(organized.verbs, lengthCategories[1], ruleOrder[1], usedWordsSet, rng);
   const adj = pickWord(organized.adjectives, lengthCategories[2], ruleOrder[2], usedWordsSet, rng);
@@ -190,29 +218,54 @@ function generateDailyPuzzle(wordsByPos, usedWordsSet, puzzleDate, allowRerollCh
     });
   }
   
-  // Shuffle the order of the POS
+  // Shuffle the order of the clues for display
   const shuffledClues = shuffleArray(clues, rng);
 
-  // Check for distinct numbers and potentially reroll
-  const numbers = shuffledClues.map(c => c.number);
-  const uniqueNumbers = new Set(numbers);
+  // Check for distinct numbers and potentially reroll (up to 2 attempts)
+  let numbers = shuffledClues.map(c => c.number);
+  let uniqueNumbers = new Set(numbers);
   
-  if (uniqueNumbers.size < 3 && rng() < allowRerollChance) {
-    // Reroll the last word
-    const lastClue = clues[2];
-    const wtype = lastClue.type;
-    const ruleName = lastClue.rule;
-    const lengthCat = lastClue.length_category;
+  // Reroll logic that maintains POS constraints
+  // Attempt up to 2 rerolls to maximize chances of unique numbers
+  let rerollAttempts = 0;
+  const maxRerolls = 2;
+  
+  while (uniqueNumbers.size < 3 && rerollAttempts < maxRerolls && rng() < allowRerollChance) {
+    // Find which clue to reroll (prefer rerolling the one that caused the duplicate)
+    let rerollIndex = -1;
     
+    // Find the first duplicate and reroll the second occurrence
+    outerLoop: for (let i = 0; i < 3; i++) {
+      for (let j = i + 1; j < 3; j++) {
+        if (shuffledClues[i].number === shuffledClues[j].number) {
+          rerollIndex = j; // Reroll the later one
+          break outerLoop; // Break out of both loops
+        }
+      }
+    }
+    
+    // Fallback: if no duplicate found (shouldn't happen), reroll last one
+    if (rerollIndex === -1) {
+      rerollIndex = 2;
+    }
+    
+    const clueToReroll = shuffledClues[rerollIndex];
+    const wtype = clueToReroll.type;
+    const ruleName = clueToReroll.rule;
+    const lengthCat = clueToReroll.length_category;
+    
+    // Get the correct word dictionary based on POS
     let wordDict;
     if (wtype === "NOUN") wordDict = organized.nouns;
     else if (wtype === "VERB") wordDict = organized.verbs;
     else wordDict = organized.adjectives;
     
+    // Pick a new word maintaining the same POS, rule, and length category
     const newWord = pickWord(wordDict, lengthCat, ruleName, usedWordsSet, rng);
     const newNum = numberMethods[ruleName](newWord);
     
-    shuffledClues[2] = {
+    // Update the shuffledClues at the correct index
+    shuffledClues[rerollIndex] = {
       type: wtype,
       word: newWord,
       rule: ruleName,
@@ -221,7 +274,14 @@ function generateDailyPuzzle(wordsByPos, usedWordsSet, puzzleDate, allowRerollCh
       word_length: newWord.length
     };
     
-    words[2] = newWord;
+    // Update the words array - find which original word to replace
+    const originalIndex = types.indexOf(wtype);
+    words[originalIndex] = newWord;
+    
+    // Recalculate numbers and uniqueness for next iteration
+    numbers = shuffledClues.map(c => c.number);
+    uniqueNumbers = new Set(numbers);
+    rerollAttempts++;
   }
   
   // Mark words as used
@@ -248,13 +308,11 @@ function generateDailyPuzzle(wordsByPos, usedWordsSet, puzzleDate, allowRerollCh
 export default {
   // Scheduled trigger (cron job)
   async scheduled(event, env, ctx) {
-    console.log('Cron trigger fired at:', new Date().toISOString());
     
     try {
       // Load word database
       const wordsByPosJson = await env.PUZZLE_DATA.get(INPUT_FILE_KEY);
       if (!wordsByPosJson) {
-        console.error('Word database not found in KV!');
         return;
       }
       const wordsByPos = JSON.parse(wordsByPosJson);
@@ -282,8 +340,6 @@ export default {
         used_words: Array.from(usedWordsSet)
       }));
       
-      console.log(`Puzzle generated for ${puzzleDate}:`, puzzle.clues.map(c => c.word));
-      console.log(`Total words used: ${usedWordsSet.size}`);
       
     } catch (error) {
       console.error('Error generating puzzle:', error);
@@ -314,7 +370,6 @@ export default {
       // Validate date format (YYYY-MM-DD)
       if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
         return new Response(JSON.stringify({ 
-          error: 'Invalid date format. Use YYYY-MM-DD (e.g., /puzzle/2025-12-05)' 
         }), {
           status: 400,
           headers: corsHeaders
@@ -327,7 +382,6 @@ export default {
         
         if (!puzzleJson) {
           return new Response(JSON.stringify({ 
-            error: `No puzzle found for ${date}. Puzzles are only available from the day they were generated.` 
           }), {
             status: 404,
             headers: corsHeaders
@@ -380,33 +434,9 @@ export default {
         });
       }
     }
-    
-    // GET /stats - Return statistics
-    if (url.pathname === '/stats') {
-      try {
-        const usedWordsJson = await env.PUZZLE_DATA.get(USED_WORDS_KEY);
-        const usedWordsArray = usedWordsJson ? JSON.parse(usedWordsJson).used_words || [] : [];
         
-        return new Response(JSON.stringify({
-          totalUsedWords: usedWordsArray.length,
-          lastUpdate: new Date().toISOString()
-        }), { headers: corsHeaders });
-        
-      } catch (error) {
-        return new Response(JSON.stringify({ error: error.message }), {
-          status: 500,
-          headers: corsHeaders
-        });
-      }
-    }
-    
     return new Response(JSON.stringify({ 
       error: 'Not Found',
-      availableEndpoints: [
-        'GET / or GET /puzzle - Current day puzzle',
-        'GET /puzzle/YYYY-MM-DD - Historical puzzle by date',
-        'GET /stats - Usage statistics'
-      ]
     }), { 
       status: 404,
       headers: corsHeaders 

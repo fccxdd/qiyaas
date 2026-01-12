@@ -43312,6 +43312,7 @@ phoebe
 phoebes
 phoebus
 phoebuses
+phoenix
 phoenixes
 phon
 phonate
@@ -46605,6 +46606,7 @@ qadi
 qadis
 qat
 qats
+qibla
 qindarka
 qintar
 qintars
@@ -58388,6 +58390,7 @@ sweating
 sweats
 sweatshop
 sweatsuit
+sweaty
 swede
 swedes
 sweep
@@ -61267,6 +61270,7 @@ tranche
 tranches
 trancing
 tranquil
+trans
 transact
 transacts
 transcend
@@ -65112,6 +65116,7 @@ warbles
 warbling
 ward
 warded
+warden
 warder
 warders
 warding
