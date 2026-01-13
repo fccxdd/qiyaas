@@ -5,6 +5,8 @@ import QiyaasLogo from "@/components/ux/QiyaasLogo";
 import { GameConfig } from "@/lib/gameConfig";
 import PuzzleDisplay from "@/components/puzzle_data/PuzzleDisplay";
 
+export const dynamic = 'force-dynamic';
+
 interface PuzzleClue {
   type: 'NOUN' | 'VERB' | 'ADJECTIVE';
   word: string;
