@@ -1,9 +1,9 @@
-import Link from "next/link";
+import { Suspense } from 'react';
 import ThemeToggle from "@/components/themes/ThemeToggle";
 import EmailButton from "@/components/contact/EmailButton";
-import QiyaasLogo from "@/components/ux/QiyaasLogo";
 import { GameConfig } from "@/lib/gameConfig";
 import PuzzleDisplay from "@/components/puzzle_data/PuzzleDisplay";
+import QiyaasLogo from "@/components/ux/QiyaasLogo";
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'edge';
@@ -25,7 +25,7 @@ interface PuzzleData {
 async function getPuzzleData(): Promise<PuzzleData> {
   try {
     const response = await fetch(`${GameConfig.urlName}/puzzle`, {
-      cache: 'no-store' // Always fetch fresh on server
+      cache: 'no-store'
     });
     
     if (!response.ok) {
@@ -55,7 +55,9 @@ export default async function Home() {
       
       <main className="flex flex-col gap-8 sm:gap-10 row-start-2 items-center">
         
-        <QiyaasLogo className="w-[200px] h-[100px] sm:w-[400px] sm:h-[193px]"/>
+        <Suspense fallback={<div className="w-[200px] h-[100px] sm:w-[400px] sm:h-[193px]" />}>
+          <QiyaasLogo className="w-[200px] h-[100px] sm:w-[400px] sm:h-[193px]"/>
+        </Suspense>
         
         <PuzzleDisplay initialData={initialPuzzleData} />
         
