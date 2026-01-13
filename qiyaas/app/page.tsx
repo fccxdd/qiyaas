@@ -6,6 +6,7 @@ import { GameConfig } from "@/lib/gameConfig";
 import PuzzleDisplay from "@/components/puzzle_data/PuzzleDisplay";
 
 export const dynamic = 'force-dynamic';
+export const runtime = 'edge';
 
 interface PuzzleClue {
   type: 'NOUN' | 'VERB' | 'ADJECTIVE';
