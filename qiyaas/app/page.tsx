@@ -4,9 +4,6 @@ import QiyaasLogo from "@/components/ux/QiyaasLogo";
 import { GameConfig } from "@/lib/gameConfig";
 import PuzzleDisplay from "@/components/puzzle_data/PuzzleDisplay";
 
-// Revalidate every 5 minutes
-export const revalidate = 300;
-
 interface PuzzleClue {
   type: 'NOUN' | 'VERB' | 'ADJECTIVE';
   word: string;
@@ -24,7 +21,7 @@ interface PuzzleData {
 async function getPuzzleData(): Promise<PuzzleData> {
   try {
     const response = await fetch(`${GameConfig.urlName}/puzzle`, {
-      next: { revalidate: 300 }
+      cache: 'no-store'
     });
     
     if (!response.ok) {

@@ -64,17 +64,20 @@ export default function PuzzleDisplay({ initialData }: PuzzleDisplayProps) {
     
     // Calculate time until midnight EST
     const now = new Date();
-    const estTime = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
-    const tomorrow = new Date(estTime);
-    tomorrow.setHours(24, 0, 0, 0);
     
-    // Convert back to user's local time
-    const midnightEST = new Date(tomorrow.toLocaleString('en-US', { timeZone: 'America/New_York' }));
-    const msUntilMidnight = midnightEST.getTime() - now.getTime();
+    // Get current time in EST
+    const nowEST = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+    
+    // Create midnight EST for tomorrow
+    const tomorrowEST = new Date(nowEST);
+    tomorrowEST.setHours(24, 0, 0, 0);
+    
+    // Calculate milliseconds until midnight EST
+    const msUntilMidnight = tomorrowEST.getTime() - nowEST.getTime();
     
     const midnightTimer = setTimeout(() => {
       fetchPuzzle(); // Refresh at midnight EST
-      // Set up daily interval (refresh every 24 hours)
+      // Set up daily interval
       setInterval(fetchPuzzle, 24 * 60 * 60 * 1000);
     }, msUntilMidnight);
     

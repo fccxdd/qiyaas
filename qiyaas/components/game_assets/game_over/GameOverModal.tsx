@@ -3,7 +3,7 @@
 "use client"
 
 import React, { ReactNode } from 'react';
-import CloseIcon from '@mui/icons-material/Close';
+import { IoMdClose } from "react-icons/io";
 
 interface GameOverModalProps {
   onClose?: () => void;
@@ -24,10 +24,10 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
         {showCloseButton && onClose && (
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
-            aria-label="Close"
-          >
-            <CloseIcon />
+              className="cursor-pointer absolute top-2 right-2 sm:top-4 sm:right-4 rounded-full p-1.5 sm:p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              aria-label="Closing"
+            >
+              <IoMdClose className="text-xl sm:text-2xl text-black dark:text-white" />
           </button>
         )}
 
