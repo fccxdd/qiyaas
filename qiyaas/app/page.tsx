@@ -21,7 +21,7 @@ interface PuzzleData {
 async function getPuzzleData(): Promise<PuzzleData> {
   try {
     const response = await fetch(`${GameConfig.urlName}/puzzle`, {
-      cache: 'no-store'
+      next: { revalidate: 300 }
     });
     
     if (!response.ok) {
