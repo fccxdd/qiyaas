@@ -24,6 +24,7 @@ export const metadata = {
   title: GameConfig.titleName,
   description: GameConfig.shareableDescription,
   icons: {
+            icon: '/favicon.ico',
             apple: '/apple-icon.png',
         },
   openGraph: {
