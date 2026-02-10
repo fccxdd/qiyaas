@@ -1,8 +1,9 @@
-import ThemeToggle from "@/components/themes/ThemeToggle";
+import ThemeToggle from "@/components/game_assets/settings/ThemeToggle";
 import EmailButton from "@/components/contact/EmailButton";
 import QiyaasLogo from "@/components/ux/QiyaasLogo";
 import { GameConfig } from "@/lib/gameConfig";
 import PuzzleDisplay from "@/components/puzzle_data/PuzzleDisplay";
+import HomePageAd from "@/components/ads/HomePageAd";
 
 export const runtime = 'edge'; // Use Cloudflare's edge runtime
 export const dynamic = 'force-dynamic'; // Force dynamic rendering on each request
@@ -58,6 +59,7 @@ export default async function Home() {
         
         <PuzzleDisplay initialData={initialPuzzleData} />
         
+        <HomePageAd/>
       </main>
       
       <EmailButton/>
