@@ -1,7 +1,7 @@
 // /not-found.tsx
 
 import Image from "next/image";
-import ThemeToggle from "@/components/themes/ThemeToggle";
+import ThemeToggle from "@/components/game_assets/settings/ThemeToggle";
 import { GameConfig } from "@/lib/gameConfig";
 
 export default function Custom404() {

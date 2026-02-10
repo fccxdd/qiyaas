@@ -2,7 +2,7 @@
 
 import PlayMode from "@/components/game_mode/play/PlayMode";
 import GameHeader from "@/components/layouts/GameHeader";
-import ThemeToggle from "@/components/themes/ThemeToggle";
+import Settings from "@/components/game_assets/settings/Settings";
 import GoHome from "@/components/game_assets/game_walkthrough/GoHome";
 import HelpModal from "@/components/game_assets/game_walkthrough/HelpModal";
 
@@ -20,7 +20,8 @@ export default function PlayPage() {
         rightContent={
           <div className="flex items-center gap-5 sm:gap-6">
             <HelpModal />
-            <ThemeToggle/>
+            <Settings />
+            
           </div>
         }
       />
