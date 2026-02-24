@@ -280,7 +280,7 @@ export default function PlayMode() {
   }, []);
 
   return (
-    <div className="fixed inset-0 bg-white dark:bg-black overflow-hidden">
+    <div className="inset-0 bg-white dark:bg-black overflow-hidden">
       {/* Message Box */}
       <div className="z-[9999]">
         <MessageBox 
@@ -380,7 +380,7 @@ export default function PlayMode() {
               // Placeholder dashes before game starts
               <div className="flex flex-col justify-center space-y-6 sm:space-y-8 md:space-y-10">
                 {numbersForClue.map((_, index) => (
-                  <div key={index} className={`${GameConfig.wordColors.default} text-3xl md:text-5xl font-bold`}>
+                  <div key={index} className={`${GameConfig.wordColors.default} text-[clamp(1.75rem,3vw,3rem)] md:text-5xl font-bold`}>
                     _
                   </div>
                 ))}
