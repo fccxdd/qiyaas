@@ -12,68 +12,42 @@ export interface LetterStatus {
 
 interface KeyboardLetterTrackerProps {
   selectedStartingLetters: string;
-  additionalLetters: {
-    vowel?: string;
-    consonant?: string;
-  };
   cluesData: {
-    clue_1?: ClueValue; // Can be string or { word, type }
+    clue_1?: ClueValue;
     clue_2?: ClueValue;
     clue_3?: ClueValue;
   };
-  wordInputs?: Map<string, string>; // Map of verified positions -> letter
+  verified?: boolean[][];
   gameStarted: boolean;
+  submittedGuesses?: string[][];
+  completed?: boolean[];
 }
 
-/**
- * Hook to track the status of each letter on the keyboard
- * Returns a map of letter -> status ('used_up' | 'still_available' | 'unused')
- * 
- * Tracks:
- * - Starting letters: immediately when game starts
- * - Additional letters: immediately when selected
- * - New letters: only after they're verified (Enter pressed)
- */
 export function useKeyboardLetterStatus({
   selectedStartingLetters,
-  additionalLetters,
   cluesData,
-  wordInputs,
-  gameStarted
+  verified,
+  gameStarted,
+  submittedGuesses,
+  completed,
 }: KeyboardLetterTrackerProps): LetterStatus {
-  
+
   return useMemo(() => {
     const letterStatus: LetterStatus = {};
-    
-    // If game hasn't started, all letters are unused
-    if (!gameStarted) {
-      return letterStatus;
-    }
 
-    // Get all clue words using helper function to handle both string and object formats
-    const clueWords: string[] = [];
-    if (cluesData.clue_1) {
-      const word = getWordFromClue(cluesData.clue_1);
-      if (word) clueWords.push(word.toUpperCase());
-    }
-    if (cluesData.clue_2) {
-      const word = getWordFromClue(cluesData.clue_2);
-      if (word) clueWords.push(word.toUpperCase());
-    }
-    if (cluesData.clue_3) {
-      const word = getWordFromClue(cluesData.clue_3);
-      if (word) clueWords.push(word.toUpperCase());
-    }
+    if (!gameStarted) return letterStatus;
 
-    // Collect letters to track:
-    // 1. Starting letters (ALWAYS tracked, treated as pre-placed)
-    // 2. Additional letters (ALWAYS tracked once selected, treated as pre-placed)
-    // 3. Any NEW letters that have been verified (after Enter press)
-    
+    // Get all clue words
+    const clueWords: string[] = [
+      cluesData.clue_1 && getWordFromClue(cluesData.clue_1),
+      cluesData.clue_2 && getWordFromClue(cluesData.clue_2),
+      cluesData.clue_3 && getWordFromClue(cluesData.clue_3),
+    ].filter(Boolean).map(w => (w as string).toUpperCase());
+
     const trackedLettersSet = new Set<string>();
     const startingLettersSet = new Set<string>();
-    
-    // Add starting letters - these are tracked immediately and treated as already placed
+
+    // Track starting letters
     selectedStartingLetters.split('').forEach(letter => {
       if (letter) {
         const upper = letter.toUpperCase();
@@ -81,119 +55,90 @@ export function useKeyboardLetterStatus({
         startingLettersSet.add(upper);
       }
     });
-    
-    // Add additional vowel - treated as pre-placed
-    if (additionalLetters.vowel) {
-      const upper = additionalLetters.vowel.toUpperCase();
-      trackedLettersSet.add(upper);
-      startingLettersSet.add(upper);
-    }
-    
-    // Add additional consonant - treated as pre-placed
-    if (additionalLetters.consonant) {
-      const upper = additionalLetters.consonant.toUpperCase();
-      trackedLettersSet.add(upper);
-      startingLettersSet.add(upper);
-    }
 
-    // Add any NEW letters that have been verified (from wordInputs)
-    if (wordInputs) {
-      wordInputs.forEach((letter) => {
-        trackedLettersSet.add(letter.toUpperCase());
+    // Track letters from verified positions
+    if (verified) {
+      clueWords.forEach((word, clueIndex) => {
+        word.split('').forEach((char, pos) => {
+          if (verified[clueIndex]?.[pos]) {
+            trackedLettersSet.add(char.toUpperCase());
+          }
+        });
       });
     }
-    
-    const trackedLetters = Array.from(trackedLettersSet);
+
+    // Track letters from submitted guesses (recorded after Enter, not while typing)
+    if (submittedGuesses) {
+      submittedGuesses.forEach((guesses, clueIndex) => {
+        guesses.forEach(word => {
+          word.toUpperCase().split('').forEach(letter => {
+            if (letter) trackedLettersSet.add(letter);
+          });
+        });
+      });
+    }
 
     // For each tracked letter, determine its status
-    trackedLetters.forEach(letter => {
+    Array.from(trackedLettersSet).forEach(letter => {
       const isStartingLetter = startingLettersSet.has(letter);
       let totalNeeded = 0;
-      let totalVerified = 0;
+      let totalPlaced = 0;
       let appearsInAnyClue = false;
 
       clueWords.forEach((word, clueIndex) => {
-        
-        // Count how many times this letter appears in this clue word
-        const neededCount = word.split('').filter(l => l === letter).length;
-                
-        if (neededCount === 0) {
-          // This letter isn't in this clue at all
-          return;
-        }
+        const neededCount = word.split('').filter(c => c === letter).length;
+        if (neededCount === 0) return;
 
         appearsInAnyClue = true;
         totalNeeded += neededCount;
 
-        // Count verified letters from wordInputs (letters confirmed via Enter)
+        // Count verified positions containing this letter
         let verifiedCount = 0;
-        if (wordInputs) {
-          wordInputs.forEach((inputLetter, key) => {
-            if (key.startsWith(`clue${clueIndex}-`) && inputLetter.toUpperCase() === letter) {
+        if (verified?.[clueIndex]) {
+          word.split('').forEach((char, pos) => {
+            if (char === letter && verified[clueIndex][pos]) {
               verifiedCount++;
             }
           });
         }
 
-        // If this is a starting letter (or additional letter), count how many positions it auto-fills in this clue
-        let autoPlacedCount = 0;
-        if (isStartingLetter) {
-          
-          // Count positions where this starting/additional letter appears in the clue
-          for (let i = 0; i < word.length; i++) {
-            if (word[i] === letter) {
-              autoPlacedCount++;
-            }
-          }
-        }
+        // Starting letters auto-fill every matching position
+        const autoPlacedCount = isStartingLetter
+          ? word.split('').filter(c => c === letter).length
+          : 0;
 
-        const totalInThisClue = verifiedCount + autoPlacedCount;
-        totalVerified += totalInThisClue;
-        
+        totalPlaced += Math.max(verifiedCount, autoPlacedCount);
       });
 
-      // Determine the letter's status
       if (!appearsInAnyClue) {
-        // Letter is tracked but doesn't appear in any clue
         letterStatus[letter] = 'unused';
-      } else if (totalVerified >= totalNeeded) {
-        // Letter has been placed in all positions where it's needed
+      } else if (totalPlaced >= totalNeeded) {
         letterStatus[letter] = 'used_up';
       } else {
-        // Letter is still needed in at least one position
         letterStatus[letter] = 'still_available';
       }
     });
 
     return letterStatus;
-  }, [selectedStartingLetters, additionalLetters, cluesData, wordInputs, gameStarted]);
+  }, [selectedStartingLetters, cluesData, verified, gameStarted, submittedGuesses, completed]);
 }
 
-/**
- * Get the CSS class for a keyboard key based on its status
- */
 export function getKeyboardKeyClass(letter: string, letterStatus: LetterStatus): string {
-  // Special keys always use default color
   if (letter === 'ENTER' || letter === 'BACKSPACE') {
     return GameConfig.keyboardColors.default;
   }
-  
+
   const status = letterStatus[letter.toUpperCase()];
-  
-  // No status = letter hasn't been selected/tracked yet
-  if (!status) {
-    return GameConfig.keyboardColors.default;
-  }
-  
-  // Unused (not in any clue) or used_up (all positions filled) both = gray
+
+  if (!status) return GameConfig.keyboardColors.default;
+
   if (status === 'unused' || status === 'used_up') {
     return GameConfig.keyboardColors.used_up;
   }
-  
-  // Still available = yellow
+
   if (status === 'still_available') {
     return GameConfig.keyboardColors.still_available;
   }
-  
+
   return GameConfig.keyboardColors.default;
 }

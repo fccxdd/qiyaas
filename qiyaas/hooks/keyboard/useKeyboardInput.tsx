@@ -1,198 +1,201 @@
 // hooks/keyboard/useKeyboardInput.ts
+//
+// Handles all keyboard input for the game.
+// Collapses useKeyboardArrowNavigation, useLetterInput,
+// useLetterReplacement, and useEnterKeyHandler into one file.
 
 'use client';
 
-import { useEffect, useRef } from 'react';
-import { useKeyboardArrowNavigation } from './useKeyboardArrowNavigation';
-import { useLetterInput } from '@/hooks/clues/useLetterInput';
+import { useEffect, useRef, useCallback } from 'react';
 import { useBackspaceHandler } from './useBackspaceHandler';
-import { useEnterKeyHandler } from './useEnterKeyHandler';
+import { GameConfig } from '@/lib/gameConfig';
 
 interface CursorPosition {
-  clueIndex: number;
-  position: number;
+	clueIndex: number;
+	position: number;
 }
 
 interface UseKeyboardInputProps {
-  isEnabled: boolean;
-  activeClues: string[];
-  userInputs: Map<string, Map<number, string>>;
-  setUserInputs: React.Dispatch<React.SetStateAction<Map<string, Map<number, string>>>>;
-  completedWords: Set<string>;
-  verifiedPositions: Map<string, Set<number>>;
-  cursorPosition: CursorPosition | null;
-  setCursorPosition: (position: CursorPosition) => void;
-  startingLettersSet: React.MutableRefObject<Set<string> | null>;
-  submitWord: (clue: string, clueIndex: number) => void;
-  onShowMessage: (msg: string, type?: 'error' | 'success' | 'info') => void;
-  moveToNextPosition: () => void;
-  moveToPreviousPosition: () => void;
-  moveToClueAbove: () => void;
-  moveToClueBelow: () => void;
-  additionalLetters?: { vowel?: string; consonant?: string; };
-  additionalLetterPositions: Map<string, Set<number>>;
-  isWordComplete: (clue: string, wordInputs: Map<number, string>) => boolean;
-  autoRevealedPositions?: Map<string, Set<number>>;
+	isEnabled: boolean;
+	activeClues: string[];
+	wordInputs: (string | null)[][];
+	verified: boolean[][];
+	completed: boolean[];
+	cursorPosition: CursorPosition | null;
+	setCursorPosition: (position: CursorPosition | null) => void;
+	startingLettersRef: React.RefObject<Set<string>>;
+	submitWord: (clue: string, clueIndex: number) => void;
+	onWordInputsChange: (inputs: (string | null)[][]) => void;
+	onShowMessage: (msg: string, type?: 'error' | 'success' | 'info') => void;
+	moveToNextPosition: (allowClueJump?: boolean) => void;
+	moveToPreviousPosition: (allowClueJump?: boolean) => void;
+	moveToClueAbove: () => void;
+	moveToClueBelow: () => void;
+	isPositionEditable: (clueIndex: number, position: number) => boolean;
 }
 
 export function useKeyboardInput({
-  isEnabled,
-  activeClues,
-  userInputs,
-  setUserInputs,
-  completedWords,
-  verifiedPositions,
-  cursorPosition,
-  setCursorPosition,
-  startingLettersSet,
-  submitWord,
-  onShowMessage,
-  moveToNextPosition,
-  moveToPreviousPosition,
-  moveToClueAbove,
-  moveToClueBelow,
-  additionalLetters,
-  additionalLetterPositions,
-  isWordComplete,
-  autoRevealedPositions = new Map(),
+	isEnabled,
+	activeClues,
+	wordInputs,
+	verified,
+	completed,
+	cursorPosition,
+	setCursorPosition,
+	startingLettersRef,
+	submitWord,
+	onWordInputsChange,
+	onShowMessage,
+	moveToNextPosition,
+	moveToPreviousPosition,
+	moveToClueAbove,
+	moveToClueBelow,
+	isPositionEditable,
 }: UseKeyboardInputProps) {
-  
-  // Track composition state for mobile keyboards (important for iOS/Android)
-  const isComposingRef = useRef(false);
-  
-  // Arrow key navigation
-  useKeyboardArrowNavigation({
-    isEnabled,
-    moveToNextPosition,
-    moveToPreviousPosition,
-    moveToClueAbove,
-    moveToClueBelow
-  });
 
-  // Letter input handler
-  const { handleLetterInput } = useLetterInput({
-    activeClues,
-    userInputs,
-    setUserInputs,
-    cursorPosition,
-    setCursorPosition,
-    verifiedPositions,
-    startingLettersSet,
-    moveToNextPosition
-  });
+	const isComposingRef = useRef(false);
+	const pendingMoveRef = useRef(false);
 
-  // Backspace handler
-  const { handleBackspace } = useBackspaceHandler({
-    activeClues,
-    userInputs,
-    setUserInputs,
-    completedWords,
-    verifiedPositions,
-    cursorPosition,
-    setCursorPosition,
-    startingLettersSet,
-    additionalLetterPositions
-  });
+	// ── Backspace ─────────────────────────────────────────────────────────────
 
-  // Enter key handler
-  const { handleEnter } = useEnterKeyHandler({
-    activeClues,
-    userInputs,
-    cursorPosition,
-    submitWord,
-    onShowMessage,
-    isWordComplete
-  });
+	const { handleBackspace } = useBackspaceHandler({
+		activeClues,
+		wordInputs,
+		verified,
+		completed,
+		cursorPosition,
+		setCursorPosition,
+		onWordInputsChange,
+		startingLettersRef,
+	});
 
-  // Main keyboard event listener - optimized for mobile
-  useEffect(() => {
-    if (!isEnabled || !cursorPosition) return;
+	// ── Letter input ──────────────────────────────────────────────────────────
+	// Inlined from useLetterInput + useLetterReplacement
 
-    // Check if current position is locked
-    const currentClue = activeClues[cursorPosition.clueIndex];
-    const autoRevealed = autoRevealedPositions.get(currentClue);
-    const isCurrentPositionLocked = autoRevealed?.has(cursorPosition.position) || false;
+	const handleLetterInput = useCallback((key: string) => {
+		if (!cursorPosition || !/^[A-Z]$/.test(key)) return;
+		if (!isPositionEditable(cursorPosition.clueIndex, cursorPosition.position)) return;
+		if (pendingMoveRef.current) return;
 
-    // Handle composition events for mobile keyboards
-    const handleCompositionStart = () => {
-      isComposingRef.current = true;
-    };
+		pendingMoveRef.current = true;
 
-    const handleCompositionEnd = (e: CompositionEvent) => {
-      isComposingRef.current = false;
-      
-      // Don't process if position is locked
-      if (isCurrentPositionLocked) return;
-      
-      // Process the composed character immediately
-      const key = e.data?.toUpperCase();
-      if (key && /^[A-Z]$/.test(key)) {
-        handleLetterInput(key);
-      }
-    };
+		const newInputs = wordInputs.map((row, i) => {
+			if (i !== cursorPosition.clueIndex) return row;
+			const next = [...row];
+			next[cursorPosition.position] = key;
+			return next;
+		});
+		onWordInputsChange(newInputs);
 
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't process keys during composition (mobile IME)
-      if (isComposingRef.current) return;
+		// queueMicrotask for better mobile performance —
+		// executes before next render but after current execution context
+		queueMicrotask(() => {
+			moveToNextPosition(false);
+			pendingMoveRef.current = false;
+		});
+	}, [cursorPosition, wordInputs, isPositionEditable, onWordInputsChange, moveToNextPosition]);
 
-      // Arrow keys are handled by useKeyboardArrowNavigation
-      if (['ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
-        return;
-      }
+	// ── Enter ─────────────────────────────────────────────────────────────────
+	// Inlined from useEnterKeyHandler
 
-      // Handle Enter
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        handleEnter();
-        return;
-      }
+	const handleEnter = useCallback(() => {
+		if (!cursorPosition) return;
 
-      // Handle Backspace
-      if (e.key === 'Backspace') {
-        e.preventDefault();
-        
-        // If current position is locked, move to previous instead of deleting
-        if (isCurrentPositionLocked) {
-          moveToPreviousPosition();
-          return;
-        }
-        
-        handleBackspace();
-        return;
-      }
+		const { clueIndex } = cursorPosition;
+		const clue = activeClues[clueIndex];
+		const inputs = wordInputs[clueIndex];
 
-      // Handle letter input
-      const key = e.key.toUpperCase();
-      if (/^[A-Z]$/.test(key)) {
-        e.preventDefault();
-        
-        // Don't allow input on locked positions
-        if (isCurrentPositionLocked) {
-          return;
-        }
-        
-        handleLetterInput(key);
-      }
-    };
+		if (!inputs) return;
 
-    // Add all event listeners
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('compositionstart', handleCompositionStart);
-    window.addEventListener('compositionend', handleCompositionEnd);
-    
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('compositionstart', handleCompositionStart);
-      window.removeEventListener('compositionend', handleCompositionEnd);
-    };
-  }, [
-    isEnabled,
-    cursorPosition,
-    activeClues,
-    autoRevealedPositions,
-    handleEnter,
-    handleBackspace,
-    handleLetterInput,
-    moveToPreviousPosition
-  ]);
+		const isComplete = inputs.length === clue.length && inputs.every(l => l !== null);
+
+		if (isComplete) {
+			submitWord(clue, clueIndex);
+		} else {
+			onShowMessage(GameConfig.messages.wordNotComplete, 'info');
+		}
+	}, [cursorPosition, activeClues, wordInputs, submitWord, onShowMessage]);
+
+	// ── Main event listener ───────────────────────────────────────────────────
+
+	useEffect(() => {
+		if (!isEnabled || !cursorPosition) return;
+
+		const { clueIndex, position } = cursorPosition;
+		const isLocked = !isPositionEditable(clueIndex, position);
+
+		const handleCompositionStart = () => {
+			isComposingRef.current = true;
+		};
+
+		const handleCompositionEnd = (e: CompositionEvent) => {
+			isComposingRef.current = false;
+			if (isLocked) return;
+			const key = e.data?.toUpperCase();
+			if (key && /^[A-Z]$/.test(key)) handleLetterInput(key);
+		};
+
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if (isComposingRef.current) return;
+
+			switch (e.key) {
+				case 'ArrowRight':
+					e.preventDefault();
+					moveToNextPosition();
+					break;
+				case 'ArrowLeft':
+					e.preventDefault();
+					moveToPreviousPosition();
+					break;
+				case 'ArrowUp':
+					e.preventDefault();
+					moveToClueAbove();
+					break;
+				case 'ArrowDown':
+					e.preventDefault();
+					moveToClueBelow();
+					break;
+				case 'Enter':
+					e.preventDefault();
+					handleEnter();
+					break;
+				case 'Backspace':
+					e.preventDefault();
+					if (isLocked) {
+						moveToPreviousPosition();
+					} else {
+						handleBackspace();
+					}
+					break;
+				default: {
+					const key = e.key.toUpperCase();
+					if (/^[A-Z]$/.test(key)) {
+						e.preventDefault();
+						if (!isLocked) handleLetterInput(key);
+					}
+				}
+			}
+		};
+
+		window.addEventListener('keydown', handleKeyDown);
+		window.addEventListener('compositionstart', handleCompositionStart);
+		window.addEventListener('compositionend', handleCompositionEnd);
+
+		return () => {
+			window.removeEventListener('keydown', handleKeyDown);
+			window.removeEventListener('compositionstart', handleCompositionStart);
+			window.removeEventListener('compositionend', handleCompositionEnd);
+		};
+	}, [
+		isEnabled,
+		cursorPosition,
+		isPositionEditable,
+		handleLetterInput,
+		handleEnter,
+		handleBackspace,
+		moveToNextPosition,
+		moveToPreviousPosition,
+		moveToClueAbove,
+		moveToClueBelow,
+	]);
 }

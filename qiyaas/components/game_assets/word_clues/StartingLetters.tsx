@@ -9,15 +9,15 @@ interface StartingLettersProps {
   onLettersChange?: (letters: string) => void;
   onShowMessage?: (message: string) => void;
   gameStarted?: boolean;
-  lettersInClues?: Set<string>;
-  revealedColors?: Set<number>;
+  lettersInClues?: string[];
+  revealedColors?: number[];
 }
 
 export default function StartingLetters({ 
   letters, 
   gameStarted = false,
-  lettersInClues = new Set(),
-  revealedColors = new Set(),
+  lettersInClues = [],
+  revealedColors = [],
 }: StartingLettersProps) {
 
   // If game hasn't started, don't show colors
@@ -99,9 +99,9 @@ export default function StartingLetters({
           
           {/* Filled letter slots */}
           {letters.split('').map((letter, index) => {
-            const hasRevealedColor = revealedColors.has(index);
+            const hasRevealedColor = revealedColors.includes(index);
             const letterUpper = letter.toUpperCase();
-            const isInClue = lettersInClues.has(letterUpper);
+            const isInClue = lettersInClues.includes(letterUpper);
             
             // Determine background color
             const bgColor = hasRevealedColor
@@ -109,8 +109,7 @@ export default function StartingLetters({
               : GameConfig.startingColors.default;
 
             // Check if this is the letter currently being revealed
-            const isCurrentlyRevealing = hasRevealedColor && 
-              revealedColors.size === index + 1;
+            const isCurrentlyRevealing = hasRevealedColor && revealedColors.length === index + 1; 
 
             // Calculate delay for staggered reveal (in milliseconds)
             const revealDelay = index * GameConfig.duration.startingLetterBounceDelay;

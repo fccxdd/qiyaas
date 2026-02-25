@@ -15,10 +15,9 @@ interface KeyboardProps {
   disabled?: boolean;
   gameStarted?: boolean;
   letterStatus?: LetterStatus | Record<string, 'correct' | 'partial' | 'incorrect' | 'unused'>;
-  awaitingLetterType?: 'vowel' | 'consonant' | null;
-  clueLettersComplete?: boolean;
   isGameOver?: boolean;
   hasLostLifeForNoStartingLetters?: boolean;
+  isRevealing?: boolean;
 }
 
 export default function Keyboard({ 
@@ -28,10 +27,9 @@ export default function Keyboard({
   disabled = false,
   gameStarted = false,
   letterStatus = {},
-  awaitingLetterType = null,
-  clueLettersComplete = false,
   isGameOver = false,
   hasLostLifeForNoStartingLetters = false,
+  isRevealing = false,
 }: KeyboardProps) {
   const { pressedKey, handleKeyClick, handleBackspaceClick, handleEnterClick, isActuallyDisabled } = useKeyPress({
     onKeyPress,
@@ -39,10 +37,9 @@ export default function Keyboard({
     onEnter,
     disabled,
     gameStarted,
-    awaitingLetterType,
-    clueLettersComplete,
     isGameOver,
-    hasLostLifeForNoStartingLetters
+    hasLostLifeForNoStartingLetters,
+    isRevealing
   });
 
   const rows = GameConfig.keyboardLayout;
@@ -82,8 +79,6 @@ export default function Keyboard({
   return (
     <>
       <style jsx>{`
-        /* Standard Breakpoints for keyboard sizing */
-        
         /* Mobile devices (320px — 480px) */
         :global(.keyboard-key) {
           height: 3rem;
@@ -122,7 +117,7 @@ export default function Keyboard({
           }
         }
         
-        /* Small screens, laptops - 13-inch (769px — 1024px) */
+        /* Small screens, laptops (769px — 1024px) */
         @media screen and (min-width: 769px) and (max-width: 1024px) {
           :global(.keyboard-key) {
             height: 2.75rem;
@@ -142,7 +137,7 @@ export default function Keyboard({
           }
         }
         
-        /* Desktops, large screens - 15-inch+ (1025px — 1200px) */
+        /* Desktops (1025px — 1200px) */
         @media screen and (min-width: 1025px) and (max-width: 1200px) {
           :global(.keyboard-key) {
             height: 3rem;
@@ -162,7 +157,7 @@ export default function Keyboard({
           }
         }
         
-        /* Extra large screens (1201px and more) */
+        /* Extra large screens (1201px+) */
         @media screen and (min-width: 1201px) {
           :global(.keyboard-key) {
             height: 3.5rem;
@@ -182,7 +177,7 @@ export default function Keyboard({
           }
         }
         
-        /* High-DPI 13-inch laptops (Yoga, etc.) - needs smaller sizing */
+        /* High-DPI 13-inch laptops (1201px — 1400px) */
         @media screen and (min-width: 1201px) and (max-width: 1400px) {
           :global(.keyboard-key) {
             height: 2.5rem;

@@ -2,158 +2,150 @@
 
 "use client";
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import hintMap from '@/data/hint_map.json';
 import { GameConfig } from '@/lib/gameConfig';
 import PulseGlow from '@/hooks/hint_toggle/pulseGlow';
-import { usePuzzleData } from '@/components/game_assets/word_clues/ExtractAnswer';
 import HintHighlighter from '@/hooks/hint_toggle/useHintHighlighter';
 import HintVisibilityManager from '@/hooks/hint_toggle/useHintVisibility';
 
 interface HintToggleProps {
 	hintsEnabled?: boolean;
-	onToggle?: (enabled: boolean) => void;
 	solvedClues?: boolean[];
-	gameOver?: boolean;
+	isGameOver?: boolean;
+	onHintsRevealed?: () => void;
+	// Data props — pass from API (PlayMode) or from tutorialGames.js (TutorialMode)
+	numbersForClue: number[];
+	wordTypes: string[];
+	ruleTypes: string[];
+	puzzleDate?: string;
 }
 
 const HintToggle: React.FC<HintToggleProps> = ({ 
 	hintsEnabled = true, 
-	onToggle,
 	solvedClues = [false, false, false],
-	gameOver
+	isGameOver,
+	onHintsRevealed,
+	numbersForClue,
+	wordTypes,
+	ruleTypes,
+	puzzleDate = '',
 }) => { 
-	// Get puzzle data from API
-	const { puzzle, loading } = usePuzzleData();
+	const [revealedHints, setRevealedHints] = useState<boolean[]>([false, false, false]);
 	
-	// Extract numbers and word types from puzzle
-	const numbersForClue = puzzle.numbers_for_clue;
-	const wordTypes = [
-		puzzle.clue_1.type,
-		puzzle.clue_2.type,
-		puzzle.clue_3.type
-	];
-	
-	// Extract rule types for highlighting
-	const ruleTypes = [
-		puzzle.clue_1.rule,
-		puzzle.clue_2.rule,
-		puzzle.clue_3.rule
-	];
+	useEffect(() => {
+		if (isGameOver) {
+			setRevealedHints([false, false, false]);
 
-	// Get background color based on word type
+			const TRANSITION_DURATION = 400;
+			const STAGGER = [1400, 2600, 3900];
+			const LAST_HINT_DONE = STAGGER[2] + TRANSITION_DURATION;
+
+			const timers = [
+				setTimeout(() => setRevealedHints(prev => [true, prev[1], prev[2]]), STAGGER[0]),
+				setTimeout(() => setRevealedHints(prev => [prev[0], true, prev[2]]), STAGGER[1]),
+				setTimeout(() => setRevealedHints(prev => [prev[0], prev[1], true]), STAGGER[2]),
+				setTimeout(() => onHintsRevealed?.(), LAST_HINT_DONE + 100),
+			];
+			
+			return () => timers.forEach(timer => clearTimeout(timer));
+		} else {
+			setRevealedHints([false, false, false]);
+		}
+	}, [isGameOver, onHintsRevealed]);
+
 	const getBackgroundColor = (type?: string) => {
 		if (!type) return '';
-		
 		switch (type.toUpperCase()) {
-			case 'NOUN':
-				return GameConfig.wordColors_bg.noun;
-			case 'VERB':
-				return GameConfig.wordColors_bg.verb;
-			case 'ADJECTIVE':
-				return GameConfig.wordColors_bg.adjective;
-			default:
-				return '';
+			case 'NOUN':      return GameConfig.wordColors_bg.noun;
+			case 'VERB':      return GameConfig.wordColors_bg.verb;
+			case 'ADJECTIVE': return GameConfig.wordColors_bg.adjective;
+			default:          return '';
 		}
 	};
 
-	// Get color class based on word type
-	const getWordTypeColor = (type?: string, isSolved?: boolean) => {
-		if (!type) return `${GameConfig.wordColors.default}`;
-		
-		// Don't override color for solved clues - let them keep their word type color
+	const getWordTypeColor = (type?: string) => {
+		if (!type) return GameConfig.wordColors.default;
 		switch (type.toUpperCase()) {
-			case 'NOUN':
-				return GameConfig.wordColors.noun;
-			case 'VERB':
-				return GameConfig.wordColors.verb;
-			case 'ADJECTIVE':
-				return GameConfig.wordColors.adjective;
-			default:
-				return `${GameConfig.wordColors.default}`;
+			case 'NOUN':      return GameConfig.wordColors.noun;
+			case 'VERB':      return GameConfig.wordColors.verb;
+			case 'ADJECTIVE': return GameConfig.wordColors.adjective;
+			default:          return GameConfig.wordColors.default;
 		}
 	};
 
-	// Get hover color based on word type
 	const getHoverColor = (type?: string) => {
 		if (!type) return 'hover:text-green-700 dark:hover:text-green-400';
 		return 'hover:opacity-80';
 	};
 
-return (
-	<HintVisibilityManager
-		numbersForClue={numbersForClue}
-		puzzleDate={puzzle.date}
-		hintsEnabled={hintsEnabled}
-	>
-		{({ hintsVisible, hintsOpacity, toggleHint }) => (
-			<div className="hint-container flex flex-col justify-center items-start relative">
-				{numbersForClue.map((number, index) => {
-					// Get the word type and rule type for this hint
-					const wordType = wordTypes[index];
-					const ruleType = ruleTypes[index];
-					const isSolved = solvedClues[index];
-					const colorClass = getWordTypeColor(wordType, isSolved);
-					const hoverClass = getHoverColor(wordType);
-					const hintText = hintMap[number.toString() as keyof typeof hintMap] || '';
+	return (
+		<HintVisibilityManager
+			numbersForClue={numbersForClue}
+			puzzleDate={puzzleDate}
+			hintsEnabled={hintsEnabled}
+		>
+			{({ hintsVisible, hintsOpacity, toggleHint }) => (
+				<div className="hint-container flex flex-col justify-center items-start relative">
+					{numbersForClue.map((number, index) => {
+						const wordType = wordTypes[index];
+						const ruleType = ruleTypes[index];
+						const isSolved = solvedClues[index];
+						const colorClass = getWordTypeColor(wordType);
+						const hoverClass = getHoverColor(wordType);
+						const hintText = hintMap[number.toString() as keyof typeof hintMap] || '';
 
-					// Force hints visible when game is over
-					const isHintVisible = gameOver || hintsVisible[index];
-					const isHintOpaque = gameOver || hintsOpacity[index];
+						const isHintVisible = (isGameOver && revealedHints[index]) || hintsVisible[index];
+						const isHintOpaque = (isGameOver && revealedHints[index]) || hintsOpacity[index];
 
-					return (
-						<div key={index} className="flex items-center relative">
-							
-							{/* Number always visible - with PulseGlow only when hint is hidden */}
-							<PulseGlow
-								enabled={hintsEnabled && !isHintVisible && !gameOver}
-								onInteraction={() => !gameOver && toggleHint(index)}
-								className={`hint-number relative z-10 transition-all duration-500 ease-in-out rounded-lg ${
-									// Add background highlight if it's a length_rule and solved (regardless of hint visibility)
-									(ruleType === 'length_rule' && isSolved) 
-										? `${getBackgroundColor(wordType)} ${GameConfig.hintMappingColors} px-2 py-1 rounded font-bold`
-										: `${colorClass} font-bold`
-								} ${
-									(hintsEnabled || isSolved) && !gameOver
-										? `${hoverClass} hover:scale-110 active:scale-95 cursor-pointer` 
-										: gameOver 
-											? 'cursor-default'
-											: 'cursor-not-allowed'
-								}`}
-								style={{ fontFamily: 'Indie Flower' }}
-							>
-								{number}
-							</PulseGlow>
-
-							{/* Show hint text (without number) when visible */}
-							{isHintVisible && (
-								<div 
-									onClick={() => !gameOver && toggleHint(index)}
-									className={`hint-text rounded backdrop-blur-sm z-50 whitespace-nowrap transition-all duration-500 ease-in-out tracking-tighter sm:tracking-normal ${
-										gameOver ? 'cursor-default' : 'cursor-pointer'
+						return (
+							<div key={index} className="flex items-center relative">
+								
+								<PulseGlow
+									enabled={hintsEnabled && !isHintVisible && !isGameOver}
+									onInteraction={() => !isGameOver && toggleHint(index)}
+									className={`hint-number relative z-10 transition-all duration-500 ease-in-out rounded-lg ${
+										(ruleType === 'length_rule' && isSolved) 
+											? `${getBackgroundColor(wordType)} ${GameConfig.hintMappingColors} px-2 py-1 rounded font-bold`
+											: `${colorClass} font-bold`
 									} ${
-										colorClass
-									} ${
-										isHintOpaque ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'
+										(hintsEnabled || isSolved) && !isGameOver
+											? `${hoverClass} hover:scale-110 active:scale-95 cursor-pointer` 
+											: 'cursor-default'
 									}`}
-									style={{ fontFamily: 'Indie Flower', fontWeight: 'bold' }}
+									style={{ fontFamily: 'Indie Flower' }}
 								>
-									<HintHighlighter
-										hintText={hintText}
-										ruleType={ruleType}
-										wordType={wordType}
-										isSolved={isSolved}
-										hintNumber={number.toString()}
-									/>
-								</div>
-							)}
-						</div>
-					);
-				})}
-			</div>
-		)}
-	</HintVisibilityManager>
-);
+									{number}
+								</PulseGlow>
+
+								{isHintVisible && (
+									<div 
+										onClick={() => !isGameOver && toggleHint(index)}
+										className={`hint-text rounded backdrop-blur-sm z-50 whitespace-nowrap tracking-tighter sm:tracking-normal ${
+											isGameOver
+												? 'cursor-default duration-[400ms] ease-[cubic-bezier(0.34,1.56,0.64,1)]'
+												: 'cursor-pointer duration-500 ease-out'
+										} transition-all ${colorClass} ${
+											isHintOpaque ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-6'
+										}`}
+										style={{ fontFamily: 'Indie Flower', fontWeight: 'bold' }}
+									>
+										<HintHighlighter
+											hintText={hintText}
+											ruleType={ruleType}
+											wordType={wordType}
+											isSolved={isSolved}
+											hintNumber={number.toString()}
+										/>
+									</div>
+								)}
+							</div>
+						);
+					})}
+				</div>
+			)}
+		</HintVisibilityManager>
+	);
 };
 
 export default HintToggle;

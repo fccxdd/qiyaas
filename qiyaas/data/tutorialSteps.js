@@ -4,7 +4,6 @@ import { Clue1Example, Clue2Example, Clue3Example } from '@/components/game_asse
 import NVADisplay from '@/components/game_assets/game_walkthrough/components/NVADisplay';
 import NumberCluesDisplay from '@/components/game_assets/game_walkthrough/components/NumberCluesDisplay';
 import EmptyStartingLetters from '@/components/game_assets/game_walkthrough/components/EmptyStartingLetters';
-import PendingAdditionalLetters from '@/components/game_assets/game_walkthrough/components/PendingAdditionalLetters';
 import ExampleWordsDisplay from '@/components/game_assets/game_walkthrough/components/ExampleWordsDisplay';
 
 export const tutorialSteps = [
@@ -70,18 +69,12 @@ export const tutorialSteps = [
 
   {
     id: 8,
-    title: `You may guess 1 additional <span style="color:#CC00FF">consonant</span> and <span style="color:#CC00FF">vowel</span> at any point throughout the game`,
-    content: `If you guess wrong you will <span style="color:#CC00FF">lose a life</span>`,
-    component: PendingAdditionalLetters
-  },
-  {
-    id: 9,
     title: `<span style="text-decoration: underline;">Keyboard Rules</span>`,
     content: ``
   },
 
   {
-    id: 10,
+    id: 9,
     title: `You have <span style="color:#CC00FF">5 chances</span> to solve the puzzle`,
     content: `Use some reasoning and the puzzle will slowly start to reveal itself.
               Good luck 💭`,

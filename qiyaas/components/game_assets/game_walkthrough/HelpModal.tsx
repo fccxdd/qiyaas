@@ -9,6 +9,7 @@ import KeyboardPreview from '@/components/game_assets/game_walkthrough/component
 import { GameConfig } from '@/lib/gameConfig';
 
 export default function HelpModal() {
+  
   const [showModal, setShowModal] = useState(false);
 
   const handleOpenModal = () => {

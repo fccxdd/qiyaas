@@ -6,7 +6,6 @@ import { IoMdSettings } from "react-icons/io";
 import { IoMdClose } from "react-icons/io";
 import { GameConfig } from '@/lib/gameConfig';
 import { useState } from "react";
-import DarkModeToggle from "@/components/game_assets/settings/ThemeToggle";
 import HardModeToggle from "@/components/game_assets/settings/HardModeToggle";
 
 export default function Settings() {
@@ -41,7 +40,7 @@ export default function Settings() {
 				}
 			}}
 			>
-			<div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-2xl p-4 sm:p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto relative">
+			<div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-2xl p-4 sm:p-8 max-w-xl w-full max-h-[90vh] overflow-y-auto relative">
 				
 				{/* Close button */}
 				<button
@@ -59,15 +58,8 @@ export default function Settings() {
 			  </h2>
 
 			<div className="text-left space-y-3 sm:space-y-6">
-				{/* Theme Mode */}
+				{/* Hard Mode */}
 				<div>
-				  <h2 className="text-base sm:text-xl font-semibold text-black dark:text-white mb-1 sm:mb-2 text-left">
-					Dark Mode
-					<DarkModeToggle/>
-				  </h2>
-				  	<p className="text-sm sm:text-base text-black dark:text-white">
-						Toggle for Dark or Light Mode
-					</p>
 				  <h3 className="text-base sm:text-xl font-semibold text-black dark:text-white mb-1 sm:mb-2 text-left">
 					Hard Mode 
 				  </h3>

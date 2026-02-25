@@ -7,11 +7,11 @@ export const GameConfig = {
 							puzzleStartDay: "2025-12-07",
 
 							// Maximum number of lives
-							maxLives: 5,
+							maxLives: 4,
 							
 							// Description of Qiyaas
-							shareableDescription: "Qiyaas - A word game based on numbers",
-							titleName: "Qiyaas",
+							titleName: "Qiyaas - A word game based on numbers",
+							shareableDescription: "Play Qiyaas, the word game based on numbers!",
 							urlName: "https://qiyaasgame.com",
 
 							// Image Paths
@@ -21,9 +21,15 @@ export const GameConfig = {
 											wonGame: "qiyaas_glow.svg",
 											lostGameDarkMode: "qiyaas_gray_dark.svg",
 											lostGameLightMode: "qiyaas_gray_light.svg",
-											shareable: "qiyaas_glow_shareable.png"
+											shareable: "/qiyaas_glow_shareable.png"
 											
 										},
+							
+							// Settings Mode
+							settings: 	{ 
+											hardMode: "off"
+										},
+							
 							// Timing Durations
 							duration: {											
 											
@@ -38,6 +44,8 @@ export const GameConfig = {
 
 											// Game over message delay (in milliseconds)
 											gameOverMessageDelay: 2000,
+
+											// Game win screen delay (in milliseconds) TODO: Adjust this value
 											
 											// Game over screen delay (in milliseconds)
 											gameOverScreenDelay: 1500,
@@ -126,21 +134,15 @@ export const GameConfig = {
 							messages: {
 
 										// Starting Letters Messages
+										startingLettersMessage: "Please select 4 starting letters",
 										letterAlreadySelected: "Letter already selected!",
 										onlyOneVowel: "Only 1 vowel allowed!",
 										onlyThreeConsonants: "Only 3 consonants allowed!",
 										maxLettersReached: "Only 4 starting letters allowed!",
 										noSelectedLetters: "Please select 4 starting letters first!",
 										noStartingLettersMatch: "No starting letters match any clues!",
-										
-
-										// Additional Letters Messages
-										additionalLetterAlreadySelected: "You've already selected an additional {type}",
-										selectAdditionalLetter: "Select a {type}, then press Enter to confirm",
-										confirmAdditionalLetter: "Press Enter to confirm {letter}",
-										additionalLetterWrongType: "Please select a {expected}!",
-										additionalLetterAlreadyUsed: "This letter is already in use!",
-										
+										confirmStartingLetters: "Press Enter to confirm starting letters",
+																				
 										// Clue Words Messages
 										wordNotValid: "Not a playable word. Try again.",
 										wordNotComplete: "Please enter a complete word.",
@@ -163,6 +165,7 @@ export const GameConfig = {
 							cursorColor: {
 											default: 'text-purple-500',
 											inClue: 'text-green-500',
+											stillAvailable: 'text-yellow-500',
 										},
 							
 							// Starting Letters Colors
@@ -206,7 +209,7 @@ export const GameConfig = {
 											noun: 'text-[#74A8DC]',
 											verb: 'text-[#6AA84F]',
 											adjective: 'text-[#E06666]',
-											default: 'text-gray-600 dark:text-white'											
+											default: 'text-gray-600 dark:text-white'												
 										},
 							
 							wordColors_bg: {

@@ -1,3 +1,5 @@
+// qiyaas/components/game_assets/messages/MessageBox.jsx
+
 import React, { useState, useEffect, useRef } from 'react';
 import { GameConfig } from '@/lib/gameConfig';
 
@@ -5,13 +7,15 @@ const MessageBox = ({
   message, 
   type, 
   onClose, 
-  duration = GameConfig.duration.messageDelay 
+  duration = GameConfig.duration.messageDelay,
+  persist = false
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
   const timerRef = useRef(null);
 
   useEffect(() => {
+
     if (message) {
       // Clear any existing timer
       if (timerRef.current) {
@@ -22,15 +26,17 @@ const MessageBox = ({
       setShouldRender(true);
       setTimeout(() => setIsVisible(true), GameConfig.duration.messageFadeInDelay);
       
-      // Auto-hide after duration
-      timerRef.current = setTimeout(() => {
-        setIsVisible(false);
-        // Remove from DOM after animation
-        setTimeout(() => {
-          setShouldRender(false);
-          if (onClose) onClose();
-        }, GameConfig.messages.messageFadeOutDelay);
-      }, duration);
+      // Only auto-hide if not persistent
+      if (!persist) {
+        timerRef.current = setTimeout(() => {
+          setIsVisible(false);
+          // Remove from DOM after animation
+          setTimeout(() => {
+            setShouldRender(false);
+            if (onClose) onClose();
+          }, GameConfig.duration.messageFadeOutDelay);
+        }, duration);
+      }
 
       return () => {
         if (timerRef.current) {
@@ -38,10 +44,13 @@ const MessageBox = ({
         }
       };
     } else {
-      setIsVisible(false);
-      setTimeout(() => setShouldRender(false), GameConfig.duration.messageFadeOutDelay);
+      // Only hide if we're not in persist mode
+      if (!persist) {
+        setIsVisible(false);
+        setTimeout(() => setShouldRender(false), GameConfig.duration.messageFadeOutDelay);
+      }
     }
-  }, [message, duration, onClose]);
+  }, [message, duration, onClose, persist]);
 
   if (!shouldRender) return null;
 

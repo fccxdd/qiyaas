@@ -1,11 +1,11 @@
-// hooks/clues/useCursorNavigation.ts
+// hooks/clues/useCursorNavigation.tsx
+//
+// Cursor navigation for arrow keys and finding the next incomplete word.
+// Collapses useHorizontalNavigation and useVerticalNavigation into one file.
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { usePositionEditability } from './usePositionEditability';
-import { useHorizontalNavigation } from './useHorizontalNavigation';
-import { useVerticalNavigation } from './useVerticalNavigation';
+import { useCallback } from 'react';
 
 interface CursorPosition {
 	clueIndex: number;
@@ -14,153 +14,170 @@ interface CursorPosition {
 
 interface UseCursorNavigationProps {
 	activeClues: string[];
-	userInputs: Map<string, Map<number, string>>;
-	completedWords: Set<string>;
-	verifiedPositions: Map<string, Set<number>>;
-	startingLetters?: string;
-	hasAnyCorrectAdditionalLetter?: boolean;
-	additionalLetters?: { vowel?: string; consonant?: string; any?: string; };
-	additionalLetterPositions: Map<string, Set<number>>;
-	initialCursorPosition?: { clueIndex: number; position: number } | null; 
+	completed: boolean[];
+	cursorPosition: CursorPosition | null;
+	setCursorPosition: (pos: CursorPosition | null) => void;
+	isPositionEditable: (clueIndex: number, position: number) => boolean;
 }
-
-/**
- * Main cursor navigation hook
- * 
- * Combines position editability checks with horizontal and vertical navigation
- * Supports skipping over:
- * - Verified letters (correct guesses)
- * - Starting letters (pre-filled)
- * - Additional vowels and consonants (bonus letters)
- */
 
 export function useCursorNavigation({
 	activeClues,
-	userInputs,
-	completedWords,
-	verifiedPositions,
-	startingLetters,
-	hasAnyCorrectAdditionalLetter,
-	additionalLetters,
-	additionalLetterPositions,
-	initialCursorPosition = null
+	completed,
+	cursorPosition,
+	setCursorPosition,
+	isPositionEditable,
 }: UseCursorNavigationProps) {
-	
-	const [cursorPosition, setCursorPosition] = useState<CursorPosition | null>(initialCursorPosition);
 
-	// Check position editability (skips protected letters)
-	const { isPositionEditable } = usePositionEditability({
-		verifiedPositions,
-		startingLetters,
-		additionalLetters,
-		additionalLetterPositions
-	});
+	// ── Helpers ───────────────────────────────────────────────────────────────
 
-	// Set initial cursor position when clues are loaded
-	useEffect(() => {
-		if (activeClues.length > 0 && cursorPosition === null) {
-			const firstClue = activeClues[0];
-			const wordInputs = userInputs.get(firstClue);
-			
-			if (wordInputs) {
-				// Find first editable position
-				for (let i = 0; i < firstClue.length; i++) {
-					if (isPositionEditable(firstClue, i, wordInputs)) {
-						setCursorPosition({ clueIndex: 0, position: i });
-						return;
-					}
+	// First editable position in a word, or null if fully locked
+	const findFirstEditable = useCallback((clueIndex: number): CursorPosition | null => {
+		const clue = activeClues[clueIndex];
+		if (!clue) return null;
+		for (let pos = 0; pos < clue.length; pos++) {
+			if (isPositionEditable(clueIndex, pos)) return { clueIndex, position: pos };
+		}
+		return null;
+	}, [activeClues, isPositionEditable]);
+
+	// Closest editable position to a target column in a word
+	const findClosestEditable = useCallback((clueIndex: number, targetPos: number): CursorPosition | null => {
+		const clue = activeClues[clueIndex];
+		if (!clue) return null;
+
+		let closest: CursorPosition | null = null;
+		let minDistance = Infinity;
+
+		for (let pos = 0; pos < clue.length; pos++) {
+			if (isPositionEditable(clueIndex, pos)) {
+				const distance = Math.abs(pos - targetPos);
+				if (distance < minDistance) {
+					minDistance = distance;
+					closest = { clueIndex, position: pos };
 				}
 			}
 		}
-	}, [activeClues, userInputs, cursorPosition, isPositionEditable]);
+		return closest;
+	}, [activeClues, isPositionEditable]);
 
-	// Find next incomplete word
-	const findNextIncompleteWord = useCallback(() => {
-		if (!cursorPosition) {
-			// If no cursor position, start from beginning
-			for (let i = 0; i < activeClues.length; i++) {
-				const clue = activeClues[i];
-				if (!completedWords.has(clue)) {
-					const wordInputs = userInputs.get(clue);
-					if (wordInputs) {
-						// Find first editable position
-						for (let j = 0; j < clue.length; j++) {
-							if (isPositionEditable(clue, j, wordInputs)) {
-								return { clueIndex: i, position: j };
-							}
-						}
-					}
-				}
-			}
-			return null;
+	// ── Find next incomplete word ─────────────────────────────────────────────
+
+	const findNextIncompleteWord = useCallback((): CursorPosition | null => {
+		const searchFrom = cursorPosition ? cursorPosition.clueIndex + 1 : 0;
+
+		// Forward from current word
+		for (let i = searchFrom; i < activeClues.length; i++) {
+			if (completed[i]) continue;
+			const pos = findFirstEditable(i);
+			if (pos) return pos;
 		}
 
-		// Search forward from NEXT word after current position
-		for (let i = cursorPosition.clueIndex + 1; i < activeClues.length; i++) {
-			const clue = activeClues[i];
-			if (!completedWords.has(clue)) {
-				const wordInputs = userInputs.get(clue);
-				if (wordInputs) {
-					// Find first editable position
-					for (let j = 0; j < clue.length; j++) {
-						if (isPositionEditable(clue, j, wordInputs)) {
-							return { clueIndex: i, position: j };
-						}
-					}
-				}
-			}
-		}
-
-		// If nothing found forward, wrap around and search from beginning up to current
-		for (let i = 0; i < cursorPosition.clueIndex; i++) {
-			const clue = activeClues[i];
-			if (!completedWords.has(clue)) {
-				const wordInputs = userInputs.get(clue);
-				if (wordInputs) {
-					// Find first editable position
-					for (let j = 0; j < clue.length; j++) {
-						if (isPositionEditable(clue, j, wordInputs)) {
-							return { clueIndex: i, position: j };
-						}
-					}
-				}
-			}
+		// Wrap around
+		const searchTo = cursorPosition ? cursorPosition.clueIndex : activeClues.length;
+		for (let i = 0; i < searchTo; i++) {
+			if (completed[i]) continue;
+			const pos = findFirstEditable(i);
+			if (pos) return pos;
 		}
 
 		return null;
-	}, [activeClues, completedWords, userInputs, isPositionEditable, cursorPosition]);
+	}, [activeClues, completed, cursorPosition, findFirstEditable]);
 
-	// Horizontal navigation (left/right)
-	const { moveToNextPosition, moveToPreviousPosition } = useHorizontalNavigation({
-		activeClues,
-		userInputs,
-		completedWords,
-		cursorPosition,
-		setCursorPosition,
-		isPositionEditable
-	});
+	// ── Horizontal navigation ─────────────────────────────────────────────────
 
-	// Vertical navigation (up/down)
-	const { moveToClueAbove, moveToClueBelow } = useVerticalNavigation({
-		activeClues,
-		userInputs,
-		completedWords,
-		cursorPosition,
-		setCursorPosition,
-		isPositionEditable
-	});
+	const moveToNextPosition = useCallback((allowClueJump = true) => {
+		if (!cursorPosition) return;
+		const { clueIndex, position } = cursorPosition;
+		const clue = activeClues[clueIndex];
+
+		// Next editable in current word
+		for (let i = position + 1; i < clue.length; i++) {
+			if (isPositionEditable(clueIndex, i)) {
+				setCursorPosition({ clueIndex, position: i });
+				return;
+			}
+		}
+
+		if (!allowClueJump) return;
+
+		// Jump to next incomplete word
+		for (let i = clueIndex + 1; i < activeClues.length; i++) {
+			if (completed[i]) continue;
+			const pos = findFirstEditable(i);
+			if (pos) { setCursorPosition(pos); return; }
+		}
+	}, [cursorPosition, activeClues, completed, isPositionEditable, setCursorPosition, findFirstEditable]);
+
+	const moveToPreviousPosition = useCallback((allowClueJump = true) => {
+		if (!cursorPosition) return;
+		const { clueIndex, position } = cursorPosition;
+		const clue = activeClues[clueIndex];
+
+		// Previous editable in current word
+		for (let i = position - 1; i >= 0; i--) {
+			if (isPositionEditable(clueIndex, i)) {
+				setCursorPosition({ clueIndex, position: i });
+				return;
+			}
+		}
+
+		if (!allowClueJump) return;
+
+		// Jump to previous incomplete word
+		for (let i = clueIndex - 1; i >= 0; i--) {
+			if (completed[i]) continue;
+			const clueLen = activeClues[i].length;
+			// Find last editable in that word
+			for (let j = clueLen - 1; j >= 0; j--) {
+				if (isPositionEditable(i, j)) {
+					setCursorPosition({ clueIndex: i, position: j });
+					return;
+				}
+			}
+		}
+	}, [cursorPosition, activeClues, completed, isPositionEditable, setCursorPosition]);
+
+	// ── Vertical navigation ───────────────────────────────────────────────────
+
+	const moveToClueAbove = useCallback(() => {
+		if (!cursorPosition) return;
+		const { clueIndex, position } = cursorPosition;
+
+		for (let i = clueIndex - 1; i >= 0; i--) {
+			if (completed[i]) continue;
+			// Try same column first, then closest
+			if (position < activeClues[i].length && isPositionEditable(i, position)) {
+				setCursorPosition({ clueIndex: i, position });
+				return;
+			}
+			const closest = findClosestEditable(i, position);
+			if (closest) { setCursorPosition(closest); return; }
+		}
+	}, [cursorPosition, activeClues, completed, isPositionEditable, setCursorPosition, findClosestEditable]);
+
+	const moveToClueBelow = useCallback(() => {
+		if (!cursorPosition) return;
+		const { clueIndex, position } = cursorPosition;
+
+		for (let i = clueIndex + 1; i < activeClues.length; i++) {
+			if (completed[i]) continue;
+			// Try same column first, then closest
+			if (position < activeClues[i].length && isPositionEditable(i, position)) {
+				setCursorPosition({ clueIndex: i, position });
+				return;
+			}
+			const closest = findClosestEditable(i, position);
+			if (closest) { setCursorPosition(closest); return; }
+		}
+	}, [cursorPosition, activeClues, completed, isPositionEditable, setCursorPosition, findClosestEditable]);
+
+	// ── Return ────────────────────────────────────────────────────────────────
 
 	return {
-		cursorPosition,
-		setCursorPosition,
 		findNextIncompleteWord,
 		moveToNextPosition,
 		moveToPreviousPosition,
 		moveToClueAbove,
 		moveToClueBelow,
-		isPositionEditable: (clue: string, position: number) => {
-			const wordInputs = userInputs.get(clue);
-			return wordInputs ? isPositionEditable(clue, position, wordInputs) : false;
-		}
 	};
 }

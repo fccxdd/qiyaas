@@ -2,12 +2,11 @@
 
 'use client';
 
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import HintToggle from "@/components/game_assets/number_clues/HintToggle";
 import Keyboard from "@/components/game_assets/keyboard/Keyboard";
 import LifeBar from "@/components/game_assets/lives/LifeBar";
 import StartingLetters from "@/components/game_assets/word_clues/StartingLetters";
-import AdditionalLetters from "@/components/game_assets/word_clues/AdditionalLetters";
 import ClueGameManager from "@/components/game_assets/word_clues/ClueGameManager";
 import MessageBox from "@/components/game_assets/messages/MessageBox";
 import { WinScreen, LoseScreen } from '@/components/game_assets/game_over/GameOverScreen_GamePlay';
@@ -16,450 +15,395 @@ import { useAllowKeyboardShortcuts } from "@/hooks/keyboard/usePreventRefresh";
 import { useKeyboardLetterStatus } from "@/hooks/keyboard/KeyboardLetterTracker";
 import { UseRevealLetter } from '@/hooks/clues/useRevealLetter';
 import RevealUnsolvedWords from '@/components/game_assets/word_clues/RevealUnsolvedWords';
-
-// Modular imports
-import { useGameState, useKeyboardHandlers } from '@/hooks';
+import { usePuzzleData, DailyWordPuzzle } from '@/components/game_assets/word_clues/ExtractAnswer';
+import { useGameState } from '@/hooks/clues/game_state/UseGameState';
+import { useKeyboardHandlers } from '@/hooks/keyboard/UseKeyboardHandlers';
 import GameViewportLayout, { TopSection, MiddleSection, BottomSection } from '@/components/ux/GameViewPortLayout';
+import React from 'react';
 
-export default function PlayMode() {
-  const [isTransitioned, setIsTransitioned] = useState(false);
-  const [solvedClues, setSolvedClues] = useState<boolean[]>([false, false, false]);
-  const [showGameOverScreen, setShowGameOverScreen] = useState(false);
+interface PlayModeProps {
+	puzzleData?: DailyWordPuzzle;
+	onComplete?: () => void;
+	tutorialOverlay?: React.ReactNode;
+}
 
-  // Ref to store handleWordComplete from ClueGameManager
-  const handleWordCompleteRef = useRef<((clue: string) => void) | null>(null);
-  
-  // Track if we should show modal (only once per game end, and always on refresh)
-  const hasShownModalForCurrentGameOver = useRef(false);
-  
-  // Use modular game state hook
-  const gameState = useGameState();
-  const {
-    lives,
-    selectedLetters,
-    additionalLetters,
-    validatedAdditionalLetters,
-    hasAnyCorrectAdditionalLetter,
-    hasLostLifeForNoStartingLetters,
-    awaitingLetterType,
-    pendingLetter,
-    message,
-    messageType,
-    gameStarted,
-    lettersInClues,
-    isGameOver,
-    setIsGameOver,
-    hasWon,
-    verifiedInputs,
-    hintsEnabled,
-    cluesData,
-    numbersForClue,
-    clueWordsArray,
-    completedWords,
-    verifiedPositions,
-    userInputsNested,
-    revealedSequenceLetters,
-    cursorPosition,
-    silentRevealedWords,
-    autoRevealedPositions,
-    
-    // Animation states
-    revealedStartingColors,
-    hasStartingLettersAnimationCompleted,
-    hasAdditionalLettersAnimationCompleted,
-    
-    setSelectedLetters,
-    setAdditionalLetters,
-    setValidatedAdditionalLetters,
-    setHasAnyCorrectAdditionalLetter,
-    setAwaitingLetterType,
-    setPendingLetter,
-    setGameStarted,
-    setLettersInClues,
-    setWordInputs,
-    setVerifiedInputs,
-    setHintsEnabled,
-    setCompletedWords,
-    setVerifiedPositions,
-    setUserInputsNested,
-    setRevealedSequenceLetters,
-    setCursorPosition,
-    setHasLostLifeForNoStartingLetters,
-    setSilentRevealedWords,
-    setAutoRevealedPositions,
-    
-    // Animation setters
-    setRevealedStartingColors,
-    setHasStartingLettersAnimationCompleted,
-    setHasAdditionalLettersAnimationCompleted,
-    
-    handleLifeLost,
-    handleWin,
-    showMessage,
-    handleMessageClose,
-    checkLettersInClues,
-    hasRevealedOnLoss,
-    setHasRevealedOnLoss,
-  } = gameState;
+export default function PlayMode({ puzzleData: puzzleDataProp, onComplete, tutorialOverlay }: PlayModeProps) {
+	const [isTransitioned, setIsTransitioned] = useState(false);
+	const [showGameOverScreen, setShowGameOverScreen] = useState(false);
 
-  // Handle reveal completion
-  const handleRevealComplete = useCallback(() => {
-    setHasRevealedOnLoss(true);
-    // Add a delay before showing the modal
-    setTimeout(() => {
-      setShowGameOverScreen(true);
-    }, 1500); // 1.5 seconds delay after reveal completes
-  }, [setHasRevealedOnLoss]);
+	const hasShownModalForCurrentGameOver = useRef(false);
+	const hintsRevealedRef = useRef(false);
+	const wordRevealCompleteRef = useRef(false);
+	const hasSeededWordInputsRef = useRef(false);
 
-  // Handle game over screen delay and show appropriate message
-  useEffect(() => {
-    if (isGameOver && !hasShownModalForCurrentGameOver.current) {
-      hasShownModalForCurrentGameOver.current = true;
-      
-      const gameOverMessage = hasWon 
-        ? GameConfig.messages.gameWinMessage 
-        : GameConfig.messages.gameLossMessage;
-      const messageType = hasWon ? 'success' : 'error';
-      
-      // Show message after a short delay (2 seconds after losing last life)
-      // But ONLY if we haven't already revealed (to avoid showing on refresh)
-      if (!hasRevealedOnLoss) {
-        setTimeout(() => {
-          showMessage(gameOverMessage, messageType);
-        }, 2000); // 2 seconds after game over
-      }
+	const { puzzle: puzzleFromApi } = usePuzzleData();
+	const puzzle = puzzleDataProp ?? puzzleFromApi;
 
-      // If won or already revealed (refresh), show modal immediately
-      if (hasWon || hasRevealedOnLoss) {
-        setShowGameOverScreen(true);
-      }
-      // If lost and haven't revealed yet, the modal will show via handleRevealComplete
-    }
-  }, [isGameOver, hasWon, hasRevealedOnLoss, showMessage]);
+	const {
+		lives,
+		selectedLetters,
+		hasLostLifeForNoStartingLetters,
+		message,
+		messageType,
+		messagePersist,
+		gameStarted,
+		lettersInClues,
+		isGameOver,
+		hasWon,
+		hintsEnabled,
+		cluesData,
+		numbersForClue,
+		clueWordsArray,
+		cursorPosition,
+		hasRevealedOnLoss,
+		revealedStartingColors,
+		hasStartingLettersAnimationCompleted,
 
-  // Reset the "has shown" flag when game is no longer over (new game starts)
-  useEffect(() => {
-    if (!isGameOver) {
-      hasShownModalForCurrentGameOver.current = false;
-      setShowGameOverScreen(false);
-      
-      // Reset silent reveal states on new game
-      setSilentRevealedWords(new Set());
-      setAutoRevealedPositions(new Map());
-    }
-  }, [isGameOver, setSilentRevealedWords, setAutoRevealedPositions]);
+		wordInputs,
+		verified,
+		completed,
+		sequenceRevealed,
+		silentRevealed,
+		solvedClues,
+		submittedGuesses,
 
-  // handleStartingLettersSubmit to mark animation as completed
-  const handleStartingLettersSubmit = useCallback(() => {
-    // Only trigger animation if not already completed
-    if (hasStartingLettersAnimationCompleted || revealedStartingColors.size === selectedLetters.length) {
-      return;
-    }
-    
-    // Reset and trigger staggered color reveal
-    setRevealedStartingColors(new Set());
-    
-    selectedLetters.split('').forEach((_, index) => {
-      setTimeout(() => {
-        setRevealedStartingColors(prev => new Set([...prev, index]));
-      }, index * GameConfig.duration.startingLetterBounceDelay);
-    });
-    
-    // Mark as completed after all animations finish
-    const totalAnimationTime = selectedLetters.length * GameConfig.duration.startingLetterBounceDelay + 500;
-    setTimeout(() => {
-      setHasStartingLettersAnimationCompleted(true);
-    }, totalAnimationTime);
-  }, [selectedLetters, hasStartingLettersAnimationCompleted, revealedStartingColors.size, setRevealedStartingColors, setHasStartingLettersAnimationCompleted]);
+		setSelectedLetters,
+		setGameStarted,
+		setLettersInClues,
+		setWordInputs,
+		setVerified,
+		setCompleted,
+		setSequenceRevealed,
+		setSilentRevealed,
+		setCursorPosition,
+		setHasLostLifeForNoStartingLetters,
+		setRevealedStartingColors,
+		setHasStartingLettersAnimationCompleted,
+		setSolvedClues,
+		setSubmittedGuesses,
 
-  // Handler for auto-complete
-  const handleAutoComplete = useCallback((clue: string) => {
-    const clueIndex = clueWordsArray.indexOf(clue);
-    if (clueIndex !== -1) {
-      handleClueSolved(clueIndex);
-    }
-    
-    // Call the handleWordComplete from ClueGameManager
-    if (handleWordCompleteRef.current) {
-      handleWordCompleteRef.current(clue);
-    }
-  }, [clueWordsArray]);
+		handleLifeLost,
+		handleWin: handleWinInternal,
+		showMessage,
+		handleMessageClose,
+		checkLettersInClues,
+		setHasRevealedOnLoss,
+	} = useGameState();
 
-  // Use modular keyboard handlers
-  const {
-    handleKeyPress,
-    handleBackspace,
-    handleEnter,
-    handleRequestAdditionalLetter,
-  } = useKeyboardHandlers({
-    selectedLetters,
-    gameStarted,
-    message,
-    awaitingLetterType,
-    pendingLetter,
-    validatedAdditionalLetters,
-    cluesData,
-    setSelectedLetters,
-    setAwaitingLetterType,
-    setPendingLetter,
-    setValidatedAdditionalLetters,
-    setAdditionalLetters,
-    setHasAnyCorrectAdditionalLetter,
-    setGameStarted,
-    setLettersInClues,
-    onStartingLettersSubmit: handleStartingLettersSubmit,
-    showMessage,
-    handleLifeLost,
-    checkLettersInClues,
-  });
+	// ── Tutorial mode overrides ───────────────────────────────────────────────
 
-  // Track keyboard letter status based on VERIFIED inputs only
-  // Colors show ONLY after user presses Enter (when letters are added to verifiedInputs)
-  const letterStatus = useKeyboardLetterStatus({
-    selectedStartingLetters: selectedLetters,
-    additionalLetters,
-    cluesData,
-    wordInputs: verifiedInputs, // Use verifiedInputs directly
-    gameStarted
-  });
-  
-  // CRITICAL FIX: Pass revealedSequenceLetters directly (not via ref) so it updates when loaded from storage
-  const { 
-    revealedClueDashes,
-    revealedClueLetters,
-    dashesCurrentlyAnimating,
-    clueLettersComplete,
-  } = UseRevealLetter({
-    startingLetters: selectedLetters,
-    clueWords: clueWordsArray,
-    lettersInClue: lettersInClues,
-    triggered: gameStarted,
-    initialRevealedLetters: revealedSequenceLetters, // Pass directly, not via ref!
-    additionalLetters: additionalLetters,
-    config: {
-      clueDashDelay: GameConfig.duration.clueDashRevealDelay,
-      clueLetterDelay: GameConfig.duration.startingLetterBounceDelay,
-    },
-    // Pass callback to mark additional letters as completed
-    onAdditionalLetterComplete: (type: 'vowel' | 'consonant') => {
-      setHasAdditionalLettersAnimationCompleted(prev => ({
-        ...prev,
-        [type]: true
-      }));
-    },
-    // Pass current completion state to prevent re-animation
-    hasAdditionalLettersAnimationCompleted: hasAdditionalLettersAnimationCompleted,
-  });
+	const handleWin = useCallback(() => {
+		if (onComplete) onComplete();
+		else handleWinInternal();
+	}, [onComplete, handleWinInternal]);
 
-  // Sync revealed sequence letters for PERSISTENCE only (page refresh)
-  // This saves the state but we use revealedClueLetters for rendering
-  useEffect(() => {
-    if (clueLettersComplete && revealedClueLetters && revealedClueLetters.size > 0) {
-      setRevealedSequenceLetters(revealedClueLetters);
-    }
-  }, [clueLettersComplete, revealedClueLetters, setRevealedSequenceLetters]);
-  
-  // Allow keyboard shortcuts
-  useAllowKeyboardShortcuts();
+	const openModal = useCallback(() => {
+		if (onComplete) onComplete();
+		else setShowGameOverScreen(true);
+	}, [onComplete]);
 
-  // Transition effect
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsTransitioned(true);
-    }, 50);
-    return () => clearTimeout(timer);
-  }, []);
+	// ── Game over handling ────────────────────────────────────────────────────
 
-  // Add a handler for when a clue is solved
-  const handleClueSolved = useCallback((clueIndex: number) => {
-    setSolvedClues(prev => {
-      const newSolved = [...prev];
-      newSolved[clueIndex] = true;
-      return newSolved;
-    });
-  }, []);
+	const handleRevealComplete = useCallback(() => {
+		setHasRevealedOnLoss(true);
+		wordRevealCompleteRef.current = true;
+		if (hintsRevealedRef.current || hasRevealedOnLoss) openModal();
+	}, [setHasRevealedOnLoss, hasRevealedOnLoss, openModal]);
 
-  return (
-    <div className="fixed inset-0 bg-white dark:bg-black overflow-hidden">
-      {/* Message Box */}
-      <div className="z-[9999]">
-        <MessageBox 
-          message={message} 
-          type={messageType}
-          onClose={handleMessageClose}
-        />
-      </div>
+	const handleHintsRevealed = useCallback(() => {
+		hintsRevealedRef.current = true;
+		if (wordRevealCompleteRef.current) openModal();
+	}, [openModal]);
 
-      {/* Game Over Screens */}
-      {showGameOverScreen && (
-        hasWon ? (
-          <WinScreen onClose={() => setShowGameOverScreen(false)} />
-        ) : (
-          <LoseScreen onClose={() => setShowGameOverScreen(false)} />
-        )
-      )}
+	useEffect(() => {
+		if (!isGameOver || hasShownModalForCurrentGameOver.current) return;
+		hasShownModalForCurrentGameOver.current = true;
 
-      {/* Reveal Unsolved Words on Loss */}
-      <RevealUnsolvedWords
-        isGameOver={isGameOver}
-        hasWon={hasWon}
-        completedWords={completedWords}
-        clueWordsArray={clueWordsArray}
-        userInputsNested={userInputsNested}
-        onUserInputsSync={setUserInputsNested}
-        revealedSequenceLetters={revealedSequenceLetters}
-        verifiedPositions={verifiedPositions}
-        onVerifiedPositionsSync={setVerifiedPositions}
-        onSilentRevealSync={setSilentRevealedWords}
-        autoRevealedPositions={autoRevealedPositions}
-        onAutoRevealedPositionsSync={setAutoRevealedPositions}
-        onCompletedWordsChange={setCompletedWords}
-        onRevealComplete={handleRevealComplete}
-        hasRevealedOnLoss={hasRevealedOnLoss}
-      />
+		const gameOverMessage = hasWon
+			? GameConfig.messages.gameWinMessage
+			: GameConfig.messages.gameLossMessage;
+		const type = hasWon ? 'success' : 'error';
 
-      {/* Viewport-Adaptive Layout */}
-      <GameViewportLayout isTransitioned={isTransitioned}>
-        {/* Top Section - Starting Letters, Additional Letters & Word Type Hints */}
-        <TopSection isTransitioned={isTransitioned}>
-          {/* Left side - Starting Letters + Additional Letters stacked */}
-          <div className="flex flex-col gap-2 sm:gap-4">
-            <div className={`transition-all duration-700 ${
-              isTransitioned ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"
-            }`}>
-              <StartingLetters  
-                letters={selectedLetters} 
-                onLettersChange={setSelectedLetters}
-                onShowMessage={showMessage}
-                gameStarted={gameStarted}
-                lettersInClues={lettersInClues}
-                revealedColors={revealedStartingColors}
-              />
-            </div>
-            
-            {/* Additional Letters */}
-            <div className={`transition-all duration-700 mt-2 sm:mt-0 ${
-              isTransitioned ? "opacity-100" : "opacity-0"
-            }`}>
-              <AdditionalLetters
-                gameStarted={gameStarted}
-                additionalLetters={additionalLetters}
-                validatedLetters={validatedAdditionalLetters}
-                onRequestAdditionalLetter={handleRequestAdditionalLetter}
-                awaitingLetterType={awaitingLetterType}
-                pendingLetter={pendingLetter}
-                lettersInClues={lettersInClues}
-                onCancelSelection={() => {
-                  setAwaitingLetterType(null);
-                  showMessage('', 'info');
-                }}
-                isGameOver={isGameOver}
-                clueLettersComplete={clueLettersComplete}
-                hasLostLifeForNoStartingLetters={hasLostLifeForNoStartingLetters}
-              />
-            </div>
-          </div>
-          
-          {/* Noun Verb Adjective Placement - stays in top right */}
-          <div className={`transition-all duration-700 ${
-            isTransitioned ? "opacity-100 translate-x-0" : "opacity-0 translate-x-4"
-          } text-2xl sm:text-4xl md:text-4xl flex items-center gap-3`}>
-            <div className={GameConfig.wordColors.noun}> n </div>
-            <div className={GameConfig.wordColors.verb}> v </div>
-            <div className={GameConfig.wordColors.adjective}> a </div>
-          </div>
-        </TopSection>
+		if (!hasRevealedOnLoss) {
+			setTimeout(() => showMessage(gameOverMessage, type), GameConfig.duration.gameOverMessageDelay);
+		}
 
-        {/* Middle Section - Game Area */}
-        <MiddleSection isTransitioned={isTransitioned}>
-          {/* Left side - Clue Dashes */}
-          <div className={`transition-all duration-700 ${
-            isTransitioned ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"
-          }`}>
-            {!gameStarted ? (
-              // Placeholder dashes before game starts
-              <div className="flex flex-col justify-center space-y-6 sm:space-y-8 md:space-y-10">
-                {numbersForClue.map((_, index) => (
-                  <div key={index} className={`${GameConfig.wordColors.default} text-3xl md:text-5xl font-bold`}>
-                    _
-                  </div>
-                ))}
-              </div>						
-            ) : (
-              // ClueGameManager component after game starts
-              <ClueGameManager 
-                clues={cluesData}
-                selectedStartingLetters={selectedLetters}
-                additionalLetters={additionalLetters}
-                onLifeLost={handleLifeLost}
-                onWin={handleWin}
-                onShowMessage={showMessage}
-                isMessageActive={message !== ''}
-                awaitingAdditionalLetter={awaitingLetterType !== null}
-                onWordInputsChange={setWordInputs}
-                onVerifiedPositionsChange={setVerifiedInputs}
-                bothAdditionalLettersConfirmed={hasAnyCorrectAdditionalLetter}
-                revealedDashes={revealedClueDashes}
-                revealedLetters={revealedClueLetters} 
-                dashesCurrentlyAnimating={dashesCurrentlyAnimating}
-                clueLettersComplete={clueLettersComplete}
-                onClueSolved={handleClueSolved}
-                initialCompletedWords={completedWords}
-                onCompletedWordsChange={setCompletedWords}
-                initialVerifiedPositions={verifiedPositions}
-                onVerifiedPositionsSync={setVerifiedPositions}
-                initialUserInputs={userInputsNested}
-                onUserInputsSync={setUserInputsNested}
-                clueWordsArray={clueWordsArray}
-                hasLostLifeForNoStartingLetters={hasLostLifeForNoStartingLetters}
-                setHasLostLifeForNoStartingLetters={setHasLostLifeForNoStartingLetters}
-                initialCursorPosition={cursorPosition}
-                onCursorPositionChange={setCursorPosition}
-                isGameOver={isGameOver}
-                onWordAutoComplete={(handler) => {
-                  handleWordCompleteRef.current = handler;
-                }}
-                silentRevealedWords={silentRevealedWords}
-                autoRevealedPositions={autoRevealedPositions}
-              />
-            )}
-          </div>
+		if (hasWon) {
+			setTimeout(() => openModal(), GameConfig.duration.gameOverMessageDelay + GameConfig.duration.gameOverScreenDelay);
+		} else if (hasRevealedOnLoss) {
+			openModal();
+		}
+	}, [isGameOver, hasWon, hasRevealedOnLoss, showMessage, openModal]);
 
-          {/* Right side - Hints */}
-          <div className={`transition-all duration-700 ${
-            isTransitioned ? "opacity-100 translate-x-0" : "opacity-0 translate-x-4"
-          }`}>
-            <HintToggle 
-              hintsEnabled={hintsEnabled}
-              solvedClues={solvedClues}
-            />
-          </div>
-        </MiddleSection>
+	useEffect(() => {
+		if (isGameOver) return;
+		hasShownModalForCurrentGameOver.current = false;
+		hintsRevealedRef.current = false;
+		wordRevealCompleteRef.current = false;
+		setShowGameOverScreen(false);
+		setSilentRevealed([false, false, false]);
+	}, [isGameOver, setSilentRevealed]);
 
-        {/* Bottom Section - Lives & Keyboard */}
-        <BottomSection
-          isTransitioned={isTransitioned}
-          livesComponent={
-            <LifeBar lives={lives} maxLives={GameConfig.maxLives} />
-          }
-          
-          keyboardComponent={
-            <Keyboard 
-              onKeyPress={handleKeyPress}
-              onBackspace={handleBackspace}
-              onEnter={handleEnter}
-              disabled={!isGameOver && message !== '' && !awaitingLetterType}
-              gameStarted={gameStarted}
-              letterStatus={letterStatus}
-              awaitingLetterType={awaitingLetterType}
-              clueLettersComplete={clueLettersComplete}
-              hasLostLifeForNoStartingLetters={hasLostLifeForNoStartingLetters}
-              isGameOver={isGameOver}
-            />
-            
-          }
-        />
-      </GameViewportLayout>
-    </div>
-  );
+	// ── Starting letters animation ────────────────────────────────────────────
+
+	const handleStartingLettersSubmit = useCallback(() => {
+		if (hasStartingLettersAnimationCompleted || revealedStartingColors.length === selectedLetters.length) return;
+
+		setRevealedStartingColors([]);
+		selectedLetters.split('').forEach((_, index) => {
+			setTimeout(() => {
+				setRevealedStartingColors(prev => [...prev, index]);
+			}, index * GameConfig.duration.startingLetterBounceDelay);
+		});
+
+		const totalAnimationTime = selectedLetters.length * GameConfig.duration.startingLetterBounceDelay + 500;
+		setTimeout(() => setHasStartingLettersAnimationCompleted(true), totalAnimationTime);
+	}, [
+		selectedLetters,
+		hasStartingLettersAnimationCompleted,
+		revealedStartingColors.length,
+		setRevealedStartingColors,
+		setHasStartingLettersAnimationCompleted,
+	]);
+
+	// ── Keyboard handlers (pre-game: letter selection + submit) ──────────────
+
+	const { handleKeyPress, handleBackspace, handleEnter } = useKeyboardHandlers({
+		selectedLetters,
+		gameStarted,
+		message,
+		setSelectedLetters,
+		setGameStarted,
+		setLettersInClues,
+		onStartingLettersSubmit: handleStartingLettersSubmit,
+		showMessage,
+		handleLifeLost,
+		checkLettersInClues,
+	});
+
+	// ── Letter status for keyboard colors ────────────────────────────────────
+
+	const letterStatus = useKeyboardLetterStatus({
+		selectedStartingLetters: selectedLetters,
+		cluesData,
+		submittedGuesses,
+		completed,
+		verified,
+		gameStarted,
+	});
+
+	// ── Submitted guess handler ───────────────────────────────────────────────
+
+	const handleGuessSubmitted = useCallback((clueIndex: number, word: string) => {
+		setSubmittedGuesses(prev => {
+			const next = [...prev];
+			next[clueIndex] = [...next[clueIndex], word];
+			return next;
+		});
+	}, [setSubmittedGuesses]);
+
+	// ── Reveal animation ──────────────────────────────────────────────────────
+
+	const {
+		dashesRevealed,
+		dashesAnimating,
+		lettersRevealed,
+		isComplete: revealComplete,
+		lettersComplete,
+	} = UseRevealLetter({
+		startingLetters: selectedLetters,
+		clueWords: clueWordsArray,
+		triggered: gameStarted,
+		initialRevealedLetters: sequenceRevealed,
+		isAlreadyComplete: hasStartingLettersAnimationCompleted,
+	});
+
+	// Seed wordInputs with starting letter positions once per session.
+	// lettersRevealed is now initialized correctly from storage on first render,
+	// so this effect fires with the right data regardless of timing.
+	useEffect(() => {
+		if (!gameStarted) return;
+		if (hasSeededWordInputsRef.current) return;
+		if (!lettersComplete) return;
+
+		const hasLetters = lettersRevealed.some(arr => arr.some(l => l !== null));
+		if (!hasLetters) return;
+
+		hasSeededWordInputsRef.current = true;
+		setSequenceRevealed(lettersRevealed);
+		setWordInputs(prev => prev.map((row, i) =>
+			row.map((letter, pos) => letter ?? lettersRevealed[i]?.[pos] ?? null)
+		));
+
+		// Mark starting letter positions as verified
+		setVerified(prev => prev.map((row, i) =>
+			row.map((v, pos) => v || lettersRevealed[i]?.[pos] !== null)
+		));
+	}, [gameStarted, lettersComplete, lettersRevealed]);
+
+	const revealAnimation = gameStarted ? {
+		dashesRevealed,
+		dashesAnimating,
+		lettersRevealed,
+	} : undefined;
+
+	// ── Clue solved ───────────────────────────────────────────────────────────
+
+	const handleClueSolved = useCallback((clueIndex: number) => {
+		setSolvedClues(prev => {
+			const next = [...prev];
+			next[clueIndex] = true;
+			return next;
+		});
+	}, [setSolvedClues]);
+
+	useAllowKeyboardShortcuts();
+
+	useEffect(() => {
+		const t = setTimeout(() => setIsTransitioned(true), 50);
+		return () => clearTimeout(t);
+	}, []);
+
+	// ── Render ────────────────────────────────────────────────────────────────
+
+	return (
+		<div className="fixed inset-0 bg-white dark:bg-black overflow-hidden">
+
+			<div className="z-[9999]">
+				<MessageBox
+					message={message}
+					type={messageType}
+					onClose={handleMessageClose}
+					persist={messagePersist}
+				/>
+			</div>
+
+			{showGameOverScreen && !onComplete && (
+				hasWon
+					? <WinScreen onClose={() => setShowGameOverScreen(false)} />
+					: <LoseScreen onClose={() => setShowGameOverScreen(false)} />
+			)}
+
+			<RevealUnsolvedWords
+				isGameOver={isGameOver}
+				hasWon={hasWon}
+				completed={completed}
+				clueWordsArray={clueWordsArray}
+				wordInputs={wordInputs}
+				onWordInputsSync={setWordInputs}
+				sequenceRevealed={sequenceRevealed}
+				verified={verified}
+				onVerifiedSync={setVerified}
+				onSilentRevealSync={setSilentRevealed}
+				onCompletedChange={setCompleted}
+				onRevealComplete={handleRevealComplete}
+				hasRevealedOnLoss={hasRevealedOnLoss}
+			/>
+
+			<GameViewportLayout isTransitioned={isTransitioned}>
+
+				<TopSection isTransitioned={isTransitioned}>
+					<div className="flex flex-col gap-2 sm:gap-4">
+						<div className={`transition-all duration-700 ${
+							isTransitioned ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"
+						}`}>
+							<StartingLetters
+								letters={selectedLetters}
+								onLettersChange={setSelectedLetters}
+								onShowMessage={showMessage}
+								gameStarted={gameStarted}
+								lettersInClues={lettersInClues}
+								revealedColors={revealedStartingColors}
+							/>
+						</div>
+					</div>
+
+					<div className={`transition-all duration-700 ${
+						isTransitioned ? "opacity-100 translate-x-0" : "opacity-0 translate-x-4"
+					} text-2xl sm:text-4xl md:text-4xl flex items-center gap-3`}>
+						<div className={GameConfig.wordColors.noun}> n </div>
+						<div className={GameConfig.wordColors.verb}> v </div>
+						<div className={GameConfig.wordColors.adjective}> a </div>
+					</div>
+				</TopSection>
+
+				<MiddleSection isTransitioned={isTransitioned}>
+					<div className={`transition-all duration-700 ${
+						isTransitioned ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"
+					}`}>
+						{!gameStarted ? (
+							<div className="flex flex-col justify-center space-y-6 sm:space-y-8 md:space-y-10">
+								{numbersForClue.map((_, index) => (
+									<div key={index} className={`${GameConfig.wordColors.default} text-3xl md:text-5xl font-bold`}>
+										_
+									</div>
+								))}
+							</div>
+						) : (
+							<ClueGameManager
+								clues={cluesData}
+								selectedStartingLetters={selectedLetters}
+								wordInputs={wordInputs}
+								verified={verified}
+								completed={completed}
+								cursorPosition={cursorPosition}
+								onWordInputsChange={setWordInputs}
+								onVerifiedChange={setVerified}
+								onCompletedChange={setCompleted}
+								onCursorChange={setCursorPosition}
+								onLifeLost={handleLifeLost}
+								onWin={handleWin}
+								onShowMessage={showMessage}
+								isMessageActive={message !== ''}
+								isGameOver={isGameOver}
+								revealAnimation={revealAnimation}
+								onClueSolved={handleClueSolved}
+								letterStatus={letterStatus}
+								hasLostLifeForNoStartingLetters={hasLostLifeForNoStartingLetters}
+								setHasLostLifeForNoStartingLetters={setHasLostLifeForNoStartingLetters}
+								onGuessSubmitted={handleGuessSubmitted}
+							/>
+						)}
+					</div>
+
+					<div className={`transition-all duration-700 ${
+						isTransitioned ? "opacity-100 translate-x-0" : "opacity-0 translate-x-4"
+					}`}>
+						<HintToggle
+							hintsEnabled={hintsEnabled}
+							solvedClues={solvedClues}
+							isGameOver={isGameOver}
+							onHintsRevealed={handleHintsRevealed}
+							numbersForClue={puzzle?.numbers_for_clue ?? numbersForClue}
+							wordTypes={[puzzle?.clue_1?.type, puzzle?.clue_2?.type, puzzle?.clue_3?.type]}
+							ruleTypes={[puzzle?.clue_1?.rule, puzzle?.clue_2?.rule, puzzle?.clue_3?.rule]}
+							puzzleDate={puzzle?.date}
+						/>
+					</div>
+				</MiddleSection>
+
+				<BottomSection
+					isTransitioned={isTransitioned}
+					livesComponent={<LifeBar lives={lives} maxLives={GameConfig.maxLives} />}
+					keyboardComponent={
+						<>
+							{tutorialOverlay}
+							<Keyboard
+								onKeyPress={handleKeyPress}
+								onBackspace={handleBackspace}
+								onEnter={handleEnter}
+								disabled={!isGameOver && message !== '' && message !== GameConfig.messages.startingLettersMessage}
+								gameStarted={gameStarted}
+								letterStatus={letterStatus}
+								hasLostLifeForNoStartingLetters={hasLostLifeForNoStartingLetters}
+								isGameOver={isGameOver}
+								isRevealing={gameStarted && !lettersComplete}
+							/>
+						</>
+					}
+				/>
+
+			</GameViewportLayout>
+		</div>
+	);
 }

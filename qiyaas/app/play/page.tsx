@@ -5,6 +5,7 @@ import GameHeader from "@/components/layouts/GameHeader";
 import Settings from "@/components/game_assets/settings/Settings";
 import GoHome from "@/components/game_assets/game_walkthrough/GoHome";
 import HelpModal from "@/components/game_assets/game_walkthrough/HelpModal";
+import Loading from "@/components/game_assets/game_walkthrough/loading";
 
 export const runtime = 'edge';
 
@@ -25,6 +26,7 @@ export default function PlayPage() {
           </div>
         }
       />
+      <Loading/>
       <PlayMode/>
     </div>
   );
