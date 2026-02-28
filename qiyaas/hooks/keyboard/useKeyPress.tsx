@@ -8,10 +8,9 @@ interface UseKeyPressProps {
 	onEnter?: () => void;
 	disabled?: boolean;
 	gameStarted?: boolean;
-	awaitingLetterType?: 'vowel' | 'consonant' | null;
-	clueLettersComplete?: boolean;
 	isGameOver?: boolean;
 	hasLostLifeForNoStartingLetters?: boolean;
+	isRevealing?: boolean;
 }
 
 export function useKeyPress({ 
@@ -20,60 +19,48 @@ export function useKeyPress({
 	onEnter, 
 	disabled = false,
 	gameStarted = false,
-	awaitingLetterType = null,
-	clueLettersComplete = false,
 	isGameOver = false,
 	hasLostLifeForNoStartingLetters = false,
+	isRevealing = false,
 }: UseKeyPressProps) {
 	const [pressedKey, setPressedKey] = useState<string | null>(null);
 
-	// Determine if keyboard should be actually disabled
-	// Disable if:
-	// - disabled=true AND we're NOT waiting for additional letter
-	// - OR (game has started AND letters are still revealing)
-	const isRevealingLetters = gameStarted && !clueLettersComplete && !hasLostLifeForNoStartingLetters;
-	const isActuallyDisabled = !isGameOver && (disabled && !awaitingLetterType && !hasLostLifeForNoStartingLetters) || isRevealingLetters ;
-	
-// Handle physical keyboard events
+	// Keyboard is disabled only when explicitly told to be (e.g. message showing)
+	// and the game is not over. useKeyboardInput owns all post-game-start gating.
+	const isActuallyDisabled = !isGameOver && (disabled || isRevealing);
+
+	// Handle physical keyboard events — only pre-game (starting letter selection).
+	// Once game starts, useKeyboardInput takes over physical key handling.
 	useEffect(() => {
 		const handleKeyDown = (event: KeyboardEvent) => {
-			// Ignore key presses with modifier keys
-			if (event.ctrlKey || event.metaKey || event.altKey) {
-				return;
-			}
-			
+			if (event.ctrlKey || event.metaKey || event.altKey) return;
+
 			const key = event.key.toUpperCase();
-			
-			// Check if this is a game-related key
 			const isGameKey = /^[A-Z]$/.test(key) || key === 'BACKSPACE' || key === 'ENTER';
-			
-			// If disabled and it's a game key, prevent it and stop
+
 			if (isActuallyDisabled && isGameKey) {
 				event.preventDefault();
 				event.stopPropagation();
 				event.stopImmediatePropagation();
 				return;
-			}			
-		
-			// Check if disabled and return if so
-			if (isActuallyDisabled) return;
-			
-			// During active gameplay, let ClueWords handle it
-			const isActiveGameplay = gameStarted && !awaitingLetterType;
-				
-			// Prevent default behavior for game keys
-			if (!isActiveGameplay) {
-				event.preventDefault();
-				event.stopPropagation();
-				event.stopImmediatePropagation();
 			}
+
+			if (isActuallyDisabled) return;
+
+			// Once game has started, useKeyboardInput owns physical key events.
+			// Don't intercept here — let them propagate.
+			if (gameStarted) return;
+
+			event.preventDefault();
+			event.stopPropagation();
+			event.stopImmediatePropagation();
 
 			if (key === 'BACKSPACE' && onBackspace) {
 				setPressedKey('BACKSPACE');
 				onBackspace();
 				return;
 			}
-			
+
 			if (key === 'ENTER' && onEnter) {
 				setPressedKey('ENTER');
 				onEnter();
@@ -93,7 +80,6 @@ export function useKeyPress({
 			}
 		};
 
-		// Use capture phase to run BEFORE parent's listener
 		window.addEventListener('keydown', handleKeyDown, true);
 		window.addEventListener('keyup', handleKeyUp);
 
@@ -101,9 +87,10 @@ export function useKeyPress({
 			window.removeEventListener('keydown', handleKeyDown, true);
 			window.removeEventListener('keyup', handleKeyUp);
 		};
-	}, [onKeyPress, onBackspace, onEnter, isActuallyDisabled, awaitingLetterType, gameStarted]);
+	}, [onKeyPress, onBackspace, onEnter, isActuallyDisabled, gameStarted]);
 
-	// Helper function to dispatch a keyboard event
+	// Dispatch synthetic keyboard event — used by on-screen keyboard clicks
+	// so that useKeyboardInput picks them up via its window listener.
 	const dispatchKeyboardEvent = useCallback((key: string) => {
 		const event = new KeyboardEvent('keydown', {
 			key: key,
@@ -111,53 +98,45 @@ export function useKeyPress({
 			keyCode: key === 'Backspace' ? 8 : key === 'Enter' ? 13 : key.charCodeAt(0),
 			which: key === 'Backspace' ? 8 : key === 'Enter' ? 13 : key.charCodeAt(0),
 			bubbles: true,
-			cancelable: true
+			cancelable: true,
 		});
 		window.dispatchEvent(event);
 	}, []);
 
-	// Handle click events
 	const handleKeyClick = useCallback((key: string) => {
 		if (isActuallyDisabled) return;
-		
 		setPressedKey(key);
-		onKeyPress?.(key);
-		
-		// ONLY dispatch synthetic keyboard event if NOT waiting for additional letter
-		if (gameStarted && !awaitingLetterType) {
+		if (gameStarted) {
+			// Post-game: dispatch synthetic event for useKeyboardInput to handle
 			dispatchKeyboardEvent(key);
+		} else {
+			// Pre-game: call handler directly (starting letter selection)
+			onKeyPress?.(key);
 		}
-		
 		setTimeout(() => setPressedKey(null), 150);
-	}, [isActuallyDisabled, onKeyPress, gameStarted, dispatchKeyboardEvent, awaitingLetterType]);
+	}, [isActuallyDisabled, gameStarted, dispatchKeyboardEvent, onKeyPress]);
 
 	const handleBackspaceClick = useCallback(() => {
 		if (isActuallyDisabled) return;
-		
 		setPressedKey('BACKSPACE');
-		onBackspace?.();
-		
-		// Only dispatch keyboard event if NOT waiting for additional letter
-		if (gameStarted && !awaitingLetterType) {
+		if (gameStarted) {
 			dispatchKeyboardEvent('Backspace');
+		} else {
+			onBackspace?.();
 		}
-		
 		setTimeout(() => setPressedKey(null), 150);
-	}, [isActuallyDisabled, onBackspace, gameStarted, dispatchKeyboardEvent, awaitingLetterType]);
+	}, [isActuallyDisabled, gameStarted, dispatchKeyboardEvent, onBackspace]);
 
 	const handleEnterClick = useCallback(() => {
 		if (isActuallyDisabled) return;
-		
 		setPressedKey('ENTER');
-		onEnter?.();
-		
-		// Only dispatch keyboard event if NOT waiting for additional letter
-		if (gameStarted && !awaitingLetterType) {
+		if (gameStarted) {
 			dispatchKeyboardEvent('Enter');
+		} else {
+			onEnter?.();
 		}
-		
 		setTimeout(() => setPressedKey(null), 150);
-	}, [isActuallyDisabled, onEnter, gameStarted, dispatchKeyboardEvent, awaitingLetterType]);
+	}, [isActuallyDisabled, gameStarted, dispatchKeyboardEvent, onEnter]);
 
 	return {
 		pressedKey,

@@ -714,18 +714,24 @@ h1, h2, h3, h4, h5, h6, .title-text {
 .flash-wrapper.flash-active.flash-red .dash-text,
 .flash-wrapper.flash-active.flash-red .letter-text {
 	color: #ef4444 !important;
+    animation: pulseGlow 6000ms ease-in-out forwards;
+    display: inline-block !important;	
 }
 
 /* Partially Correct Word */
 .flash-wrapper.flash-active.flash-yellow .dash-text,
 .flash-wrapper.flash-active.flash-yellow .letter-text {
 	color: #eab308 !important;
+	animation: pulseGlow 6000ms ease-in-out forwards;
+    display: inline-block !important;
 }
 
 /* Correct Noun */
 .flash-wrapper.flash-active.flash-green-noun .dash-text,
 .flash-wrapper.flash-active.flash-green-noun .letter-text {
 	color: #74A8DC !important;
+	animation: pulseGlowDelayed 6000ms ease-in-out forwards;
+    display: inline-block !important;
 }
 
 /* Correct Verb */
@@ -776,4 +782,14 @@ h1, h2, h3, h4, h5, h6, .title-text {
 .completed-word-glow.flash-green-default .dash-text,
 .completed-word-glow.flash-green-default .letter-text {
 	color: #22c55e !important;
+}
+
+@keyframes pop-in {
+  0%   { transform: scale(0.75); opacity: 0; }
+  70%  { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1);    opacity: 1; }
+}
+
+@utility animate-pop-in {
+  animation: pop-in 0.25s ease-out forwards;
 }

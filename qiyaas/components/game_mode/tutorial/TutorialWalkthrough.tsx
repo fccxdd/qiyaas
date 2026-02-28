@@ -55,8 +55,8 @@ export default function TutorialWalkthrough() {
               )}
            
 
-              {/* Step 9 keyboard preview */}
-              {index === 9 && (
+              {/* Step 8 keyboard preview */}
+              {index === 8 && (
                 <div className="mt-6">
                   <KeyboardPreview />
                 </div>

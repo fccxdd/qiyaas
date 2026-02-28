@@ -284,6 +284,16 @@ function generateDailyPuzzle(wordsByPos, usedWordsSet, puzzleDate, allowRerollCh
   };
 }
 
+// --- UTILITY: Eastern hour check ---
+function getEasternHour(date) {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York',
+    hour: 'numeric',
+    hour12: false,
+  }).formatToParts(date);
+  const hour = parts.find(p => p.type === 'hour')?.value;
+  return parseInt(hour);
+}
 // --- CLOUDFLARE WORKER EXPORT ---
 // 
 // CACHING STRATEGY:
@@ -300,6 +310,10 @@ export default {
   // Scheduled trigger (cron job)
   async scheduled(event, env, ctx) {
     
+    // Only run at midnight Eastern — handles Daylight Savings Time (DST) automatically
+    const now = new Date(event.scheduledTime);
+    if (getEasternHour(now) !== 0) return;
+
     try {
       // Load word database
       const wordsByPosJson = await env.PUZZLE_DATA.get(INPUT_FILE_KEY);

@@ -1,3 +1,2 @@
-export { useGameState } from '@/hooks/clues/UseGameState';
-export type { AdditionalLettersState, ValidatedLetterState, GameState } from '@/hooks/clues/UseGameState';
+export { useGameState } from '@/hooks/clues/game_state/UseGameState';
 export { useKeyboardHandlers } from '@/hooks/keyboard/UseKeyboardHandlers';

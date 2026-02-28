@@ -15,10 +15,9 @@ interface KeyboardProps {
   disabled?: boolean;
   gameStarted?: boolean;
   letterStatus?: LetterStatus | Record<string, 'correct' | 'partial' | 'incorrect' | 'unused'>;
-  awaitingLetterType?: 'vowel' | 'consonant' | null;
-  clueLettersComplete?: boolean;
   isGameOver?: boolean;
   hasLostLifeForNoStartingLetters?: boolean;
+  isRevealing?: boolean;
 }
 
 export default function Keyboard({ 
@@ -28,10 +27,9 @@ export default function Keyboard({
   disabled = false,
   gameStarted = false,
   letterStatus = {},
-  awaitingLetterType = null,
-  clueLettersComplete = false,
   isGameOver = false,
   hasLostLifeForNoStartingLetters = false,
+  isRevealing = false,
 }: KeyboardProps) {
   const { pressedKey, handleKeyClick, handleBackspaceClick, handleEnterClick, isActuallyDisabled } = useKeyPress({
     onKeyPress,
@@ -39,10 +37,9 @@ export default function Keyboard({
     onEnter,
     disabled,
     gameStarted,
-    awaitingLetterType,
-    clueLettersComplete,
     isGameOver,
-    hasLostLifeForNoStartingLetters
+    hasLostLifeForNoStartingLetters,
+    isRevealing
   });
 
   const rows = GameConfig.keyboardLayout;

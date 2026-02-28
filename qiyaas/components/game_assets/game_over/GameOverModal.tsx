@@ -17,7 +17,14 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
   children 
 }) => {
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
+    <div
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in"
+      onClick={(e) => {
+        if (e.target === e.currentTarget && onClose) {
+          onClose();
+        }
+      }}
+    >
       <div className="relative text-center px-4 py-8 sm:px-8 sm:py-12 bg-white dark:bg-black rounded-3xl shadow-2xl max-w-[280px] sm:max-w-md mx-4 animate-scale-in">
         
         {/* Close Button */}
