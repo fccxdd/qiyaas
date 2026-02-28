@@ -2,19 +2,27 @@
 
 import TutorialWalkthrough from "@/components/game_mode/tutorial/TutorialWalkthrough";
 import GameHeader from "@/components/layouts/GameHeader";
-import ThemeToggle from "@/components/game_assets/settings/ThemeToggle";
 import Loading from "@/components/game_assets/game_walkthrough/loading";
 import GoHome from "@/components/game_assets/game_walkthrough/GoHome";
+import TutorialMode from "@/components/game_mode/tutorial/TutorialMode";
 
 export default function HowToPlayPage() {
   return (
     <div>
       <GameHeader
-        leftContent={ <GoHome/>}
-        rightContent={<ThemeToggle/>}
+        leftContent={ 
+                        <div className="flex items-center gap-3 sm:gap-4">
+                        <GoHome/> 
+                        </div>}
+        rightContent={
+                        <div className="flex items-center gap-5 sm:gap-6">
+                        {/* TODO: Put the Read Mode */}
+                         </div>
+                        }
       />
       <Loading/>
-      <TutorialWalkthrough/>
+      <TutorialMode/>
+      {/* <TutorialWalkthrough/> */}
     </div>
   );
 }

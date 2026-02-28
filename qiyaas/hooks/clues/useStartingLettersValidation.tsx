@@ -12,6 +12,7 @@ interface UseStartingLettersValidationProps {
   onShowMessage: (msg: string, type?: 'error' | 'success' | 'info') => void;
   hasLostLifeForNoStartingLetters: boolean;
   setHasLostLifeForNoStartingLetters: (value: boolean) => void;
+  setCursorPosition: (pos: { clueIndex: number; position: number } | null) => void;
 }
 
 export function useStartingLettersValidation({
@@ -20,7 +21,8 @@ export function useStartingLettersValidation({
   onLifeLost,
   onShowMessage,
   hasLostLifeForNoStartingLetters,
-  setHasLostLifeForNoStartingLetters
+  setHasLostLifeForNoStartingLetters,
+  setCursorPosition
 }: UseStartingLettersValidationProps) {
   
   // Check if starting letters appear in any of the clues
@@ -42,6 +44,15 @@ export function useStartingLettersValidation({
         onLifeLost();
         onShowMessage(GameConfig.messages.noStartingLettersMatch);
         setHasLostLifeForNoStartingLetters(true);
+
+        // Move cursor to first available position
+        for (let clueIndex = 0; clueIndex < activeClues.length; clueIndex++) {
+          const word = activeClues[clueIndex];
+          for (let pos = 0; pos < word.length; pos++) {
+            setCursorPosition({ clueIndex, position: pos });
+            return;
+          }
+        }
       }, 300);
       
       return () => clearTimeout(timeoutId);

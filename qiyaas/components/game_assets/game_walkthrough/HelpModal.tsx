@@ -9,6 +9,7 @@ import KeyboardPreview from '@/components/game_assets/game_walkthrough/component
 import { GameConfig } from '@/lib/gameConfig';
 
 export default function HelpModal() {
+  
   const [showModal, setShowModal] = useState(false);
 
   const handleOpenModal = () => {
@@ -23,7 +24,7 @@ export default function HelpModal() {
     <>
       <button
         onClick={handleOpenModal}
-        className="cursor-pointer rounded-full shadow-xl border border-solid border-transparent transition-all flex items-center justify-center bg-foreground text-background hover:bg-[#383838] dark:hover:bg-[#ccc] hover:-translate-y-1 hover:shadow-2xl h-8 w-8 sm:h-9 sm:w-9"
+        className="cursor-pointer rounded-full shadow-xl border border-solid border-transparent transform transition-transform flex items-center justify-center bg-foreground text-background hover:bg-[#383838] dark:hover:bg-[#ccc] hover:-translate-y-1 hover:shadow-2xl h-8 w-8 sm:h-9 sm:w-9"
         aria-label="Help"
       >
         <IoHelp className="text-xl sm:text-2xl" />

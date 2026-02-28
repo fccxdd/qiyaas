@@ -5,7 +5,7 @@
  */
 
 // Base clue value - can be either a string (Tutorial) or an object (GamePlay)
-export type ClueValue = { word: string; type: string }; // string |  TODO: Change Tutorial Mode to be object as well
+export type ClueValue = { word: string; type: string }; // string
 
 // Base clues data structure used by both modes
 export interface BaseCluesData {

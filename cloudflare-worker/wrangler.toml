@@ -7,7 +7,7 @@ compatibility_date = "2024-01-01"
 # EDT (Mar-Nov): midnight = 4 AM UTC
 # EST (Nov-Mar): midnight = 5 AM UTC
 [triggers]
-crons = ["0 5 * * *"]
+crons = ["0 4,5 * * *"]
 
 # Enable Logs
 [observability]

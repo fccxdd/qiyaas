@@ -1,432 +1,255 @@
 // components/game_assets/word_clues/ClueWord.tsx
-// Uses revealedSequenceLetters prop as source of truth for animation
+
+'use client';
 
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { GameConfig } from '@/lib/gameConfig';
 import FlashOverlay from '@/hooks/clues/FlashOverlay';
-import ClueLetter from './ClueLetter';
-import { useAdditionalLetterValidation } from '@/hooks/clues/useAdditionalLetterValidation';
+
+type LetterStatus = { [letter: string]: 'used_up' | 'still_available' | 'unused' };
+
+interface RevealAnimation {
+	dashesRevealed: Set<number>;
+	dashesAnimating: Set<number>;
+	lettersRevealed: (string | null)[];
+}
 
 interface ClueWordProps {
 	word: string;
-	startingLetters: string;
+	wordType?: string;
 	cursorPosition: number | null;
 	onCursorClick: (position: number) => void;
 	flashState: 'none' | 'red' | 'yellow' | 'green';
 	isComplete: boolean;
-	userInputs: Map<number, string>;
-	verifiedPositions?: Set<number>;
+	inputs: (string | null)[];
+	verified: boolean[];
 	shouldShake?: boolean;
 	isLocked?: boolean;
-	additionalLetters?: { vowel?: string; consonant?: string; any?: string };
-	onAdditionalLettersFilled?: (positions: Map<number, string>) => void;
-	wordType?: string;
-	revealedDashIndices?: Set<number>;
-	revealedSequenceLetters?: Map<number, string>;
-	dashesCurrentlyAnimating?: Set<number>;
-	clueLettersComplete?: boolean;
-	findNextEditablePosition?: (clue: string, wordInputs: Map<number, string>, currentPosition?: number) => number;
-	autoRevealedPositions?: Map<string, Set<number>>;
-	silentRevealedWords?: Set<string>;
+	silentReveal?: boolean;
+	revealAnimation?: RevealAnimation;
+	letterStatus?: LetterStatus;
 }
 
-export default function ClueWord({ 
-	
-	word, 
-	startingLetters, 
+export default function ClueWord({
+	word,
+	wordType,
 	cursorPosition,
 	onCursorClick,
 	flashState,
 	isComplete,
-	userInputs,
-	verifiedPositions = new Set(),
+	inputs,
+	verified,
 	shouldShake = false,
 	isLocked = false,
-	additionalLetters = {},
-	onAdditionalLettersFilled,
-	wordType,
-	revealedDashIndices = new Set(),
-	revealedSequenceLetters = new Map(),
-	dashesCurrentlyAnimating = new Set(),
-	clueLettersComplete = false,
-	findNextEditablePosition,
-	autoRevealedPositions = new Map(),
-	silentRevealedWords = new Set(),
+	silentReveal = false,
+	revealAnimation,
+	letterStatus = {},
 }: ClueWordProps) {
-	
-	const [bouncingIndices, setBouncingIndices] = useState<Set<number>>(new Set());
-	
-	// Track which positions have been processed for bounce animation
-	const processedForBounce = useRef<Set<number>>(new Set());
-	const prevUserInputsRef = useRef<Map<number, string>>(new Map());
-	
-	// Track ALL bounce timeouts for proper cleanup
-	const bounceTimeoutsRef = useRef<Map<number, NodeJS.Timeout>>(new Map());
-	
-	// ADDED: Track previous additional letters to detect when they change
-	const prevAdditionalLettersRef = useRef<{ vowel?: string; consonant?: string }>({});
-	
-	// ADDED: Track positions that should be hidden because they're about to be animated
-	const [hiddenForAnimation, setHiddenForAnimation] = useState<Set<number>>(new Set());
-	
-	// ADDED: Spam detection - track input rate
-	const lastInputTimeRef = useRef<number>(Date.now());
-	const inputCountRef = useRef<number>(0);
-	const spamCooldownRef = useRef<NodeJS.Timeout | null>(null);
-	const [isSpamming, setIsSpamming] = useState(false);
-	
-	// Memoize the cursor click handler
-	const handleCursorClick = useCallback((position: number) => {
 
-		// Check if this position is auto-revealed (locked)
-  		const autoRevealed = autoRevealedPositions.get(word);
-  		const isLocked = autoRevealed?.has(position) || false;
-  
-		// Don't allow clicking on locked positions
-		if (isLocked) {
-			return;
-		}
-		onCursorClick(position);
-	}, [onCursorClick, autoRevealedPositions, word]);
-	
-	// Function to move cursor to next editable position after validation
-	const moveToNextEditablePosition = useCallback(() => {
-		if (findNextEditablePosition) {
-			const nextPosition = findNextEditablePosition(word, userInputs, cursorPosition ?? undefined);
-			onCursorClick(nextPosition);
-		} else {
-			for (let i = 0; i < word.length; i++) {
-				if (!userInputs.has(i)) {
-					onCursorClick(i);
-					return;
-				}
-			}
-			onCursorClick(0);
-		}
-	}, [findNextEditablePosition, word, userInputs, cursorPosition, onCursorClick]);
-	
-	// Use the validation hook to handle additional letter auto-fill
-	const additionalLettersPositions = useAdditionalLetterValidation({
-		word,
-		userInputs,
-		additionalLetters,
-		clueLettersComplete,
-		isComplete,
-		onAdditionalLettersFilled,
-		setUserTypedIndices: () => {}, // No longer needed
-		onValidationComplete: moveToNextEditablePosition,
-	});
-	
-	// Get color class based on word type
+	const [bouncingIndices, setBouncingIndices] = useState<Set<number>>(new Set());
+	const bounceTimeoutsRef = useRef<Map<number, NodeJS.Timeout>>(new Map());
+	const processedForBounce = useRef<Set<number>>(new Set());
+	const prevInputsRef = useRef<(string | null)[]>([]);
+
+	// ── Word type color ───────────────────────────────────────────────────────
+
 	const wordTypeColor = useMemo(() => {
 		if (!wordType) return GameConfig.wordColors.default;
-		
 		switch (wordType.toUpperCase()) {
-			case 'NOUN':
-				return GameConfig.wordColors.noun;
-			case 'VERB':
-				return GameConfig.wordColors.verb;
-			case 'ADJECTIVE':
-				return GameConfig.wordColors.adjective;
-			default:
-				return GameConfig.wordColors.default;
+			case 'NOUN': return GameConfig.wordColors.noun;
+			case 'VERB': return GameConfig.wordColors.verb;
+			case 'ADJECTIVE': return GameConfig.wordColors.adjective;
+			default: return GameConfig.wordColors.default;
 		}
 	}, [wordType]);
 
-	// ADDED: Detect when additional letters change and preemptively hide matching positions
-	useEffect(() => {
-		const prev = prevAdditionalLettersRef.current;
-		const current = additionalLetters;
-		
-		// Check if vowel or consonant changed
-		const vowelChanged = current.vowel && current.vowel !== prev.vowel;
-		const consonantChanged = current.consonant && current.consonant !== prev.consonant;
-		
-		if (vowelChanged || consonantChanged) {
-			console.log('🎯 Additional letter changed, hiding positions for animation');
-			
-			// Find all positions in this word that match the new letter
-			const newLetter = vowelChanged ? current.vowel : current.consonant;
-			const positionsToHide = new Set<number>();
-			
-			if (newLetter) {
-				word.split('').forEach((char, index) => {
-					if (char.toUpperCase() === newLetter.toUpperCase()) {
-						positionsToHide.add(index);
-					}
-				});
-			}
-			
-			console.log('🎯 Hiding positions:', Array.from(positionsToHide));
-			setHiddenForAnimation(positionsToHide);
-			
-			// Update the ref
-			prevAdditionalLettersRef.current = { ...current };
-		}
-	}, [additionalLetters, word]);
+	// ── Bounce helpers ────────────────────────────────────────────────────────
 
-	// ADDED: Clear hidden positions when letters are revealed via animation
-	useEffect(() => {
-		if (revealedSequenceLetters.size > 0) {
-			// Remove positions from hiddenForAnimation once they appear in revealedSequenceLetters
-			setHiddenForAnimation(prev => {
-				const newSet = new Set(prev);
-				revealedSequenceLetters.forEach((_, position) => {
-					newSet.delete(position);
-				});
-				return newSet.size !== prev.size ? newSet : prev;
-			});
-		}
-	}, [revealedSequenceLetters]);
-
-	// Trigger bounce animation for sequence letters
-	useEffect(() => {
-		if (!revealedSequenceLetters || revealedSequenceLetters.size === 0) return;
-		
-		const newlyRevealed = new Set<number>();
-		
-		revealedSequenceLetters.forEach((letter, position) => {
-			if (!processedForBounce.current.has(position)) {
-				newlyRevealed.add(position);
-				processedForBounce.current.add(position);
-			}
+	const triggerBounce = useCallback((indices: number[]) => {
+		if (indices.length === 0) return;
+		setBouncingIndices(prev => new Set([...prev, ...indices]));
+		indices.forEach(idx => {
+			const existing = bounceTimeoutsRef.current.get(idx);
+			if (existing) clearTimeout(existing);
+			const t = setTimeout(() => {
+				setBouncingIndices(prev => { const s = new Set(prev); s.delete(idx); return s; });
+				bounceTimeoutsRef.current.delete(idx);
+			}, GameConfig.duration.greencursorDuration);
+			bounceTimeoutsRef.current.set(idx, t);
 		});
-		
-		if (newlyRevealed.size > 0) {
-			// Add to bouncing set (sequence letters always bounce, even during spam)
-			setBouncingIndices(prev => new Set([...prev, ...newlyRevealed]));
-			
-			// Create a timeout for EACH newly revealed index
-			newlyRevealed.forEach(idx => {
-				const existingTimeout = bounceTimeoutsRef.current.get(idx);
-				if (existingTimeout) {
-					clearTimeout(existingTimeout);
-				}
-				
-				const timeout = setTimeout(() => {
-					setBouncingIndices(prev => {
-						const newSet = new Set(prev);
-						newSet.delete(idx);
-						return newSet;
-					});
-					bounceTimeoutsRef.current.delete(idx);
-				}, GameConfig.duration.greencursorDuration);
-				
-				bounceTimeoutsRef.current.set(idx, timeout);
-			});
-		}
-	}, [revealedSequenceLetters]);
+	}, []);
 
-	// SPAM DETECTION: Monitor input rate
-	useEffect(() => {
-		const prevInputs = prevUserInputsRef.current;
-		const currentTime = Date.now();
-		const timeDiff = currentTime - lastInputTimeRef.current;
-		
-		// Count new inputs
-		let newInputCount = 0;
-		userInputs.forEach((letter, index) => {
-			if (!prevInputs.has(index) || prevInputs.get(index) !== letter) {
-				newInputCount++;
-			}
-		});
-		
-		if (newInputCount > 0) {
-			// Update input tracking
-			lastInputTimeRef.current = currentTime;
-			
-			// Detect spam: more than 3 inputs within 150ms = spam
-			if (timeDiff < 150) {
-				inputCountRef.current += newInputCount;
-				
-				if (inputCountRef.current > 3) {
-					// SPAM DETECTED
-					if (!isSpamming) {
-						setIsSpamming(true);
-					}
-					
-					// Clear existing cooldown
-					if (spamCooldownRef.current) {
-						clearTimeout(spamCooldownRef.current);
-					}
-					
-					// Set cooldown to exit spam mode
-					spamCooldownRef.current = setTimeout(() => {
-						setIsSpamming(false);
-						inputCountRef.current = 0;
-					}, 300); // 300ms of no spam = exit spam mode
-				}
-			} else {
-				// Reset counter if inputs are slow enough
-				inputCountRef.current = newInputCount;
-			}
-		}
-		
-		prevUserInputsRef.current = new Map(userInputs);
-	}, [userInputs, isSpamming]);
+	// ── Bounce for sequence-revealed letters ──────────────────────────────────
 
-	// Handle user-typed bounce animation - DISABLED during spam
 	useEffect(() => {
-		// SKIP bounce animation entirely if spamming
-		if (isSpamming) {
-			return;
-		}
-		
-		const prevInputs = prevUserInputsRef.current;
-		const newlyTypedIndices = new Set<number>();
-		
-		userInputs.forEach((letter, index) => {
-			// Skip positions that are sequence letters
-			if (revealedSequenceLetters.has(index)) return;
-			// Skip positions that are additional letter positions
-			if (additionalLettersPositions.current.has(index)) return;
-			
-			if (!prevInputs.has(index) || prevInputs.get(index) !== letter) {
-				newlyTypedIndices.add(index);
+		if (!revealAnimation?.lettersRevealed) return;
+
+		const newlyRevealed: number[] = [];
+		revealAnimation.lettersRevealed.forEach((letter, pos) => {
+			if (letter && !processedForBounce.current.has(pos)) {
+				newlyRevealed.push(pos);
+				processedForBounce.current.add(pos);
 			}
 		});
 
-		// Bounce animation for user-typed letters
-		if (newlyTypedIndices.size > 0) {
-			setBouncingIndices(prev => new Set([...prev, ...newlyTypedIndices]));
-			
-			// Create a timeout for EACH newly typed index
-			newlyTypedIndices.forEach(idx => {
-				const existingTimeout = bounceTimeoutsRef.current.get(idx);
-				if (existingTimeout) {
-					clearTimeout(existingTimeout);
-				}
-				
-				const timeout = setTimeout(() => {
-					setBouncingIndices(prev => {
-						const newSet = new Set(prev);
-						newSet.delete(idx);
-						return newSet;
-					});
-					bounceTimeoutsRef.current.delete(idx);
-				}, GameConfig.duration.greencursorDuration);
-				
-				bounceTimeoutsRef.current.set(idx, timeout);
-			});
-		}
-	}, [userInputs, revealedSequenceLetters, additionalLettersPositions, isSpamming]);
+		triggerBounce(newlyRevealed);
+	}, [revealAnimation?.lettersRevealed, triggerBounce]);
 
-	// Cleanup ALL timeouts on unmount
+	// ── Bounce for user-typed letters ─────────────────────────────────────────
+
+	useEffect(() => {
+		const prev = prevInputsRef.current;
+		const newlyTyped: number[] = [];
+
+		inputs.forEach((letter, pos) => {
+			if (revealAnimation?.lettersRevealed[pos]) return;
+			if (letter && letter !== prev[pos]) newlyTyped.push(pos);
+		});
+
+		triggerBounce(newlyTyped);
+		prevInputsRef.current = [...inputs];
+	}, [inputs, revealAnimation?.lettersRevealed, triggerBounce]);
+
+	// ── Cleanup on unmount ────────────────────────────────────────────────────
+
 	useEffect(() => {
 		return () => {
-			bounceTimeoutsRef.current.forEach(timeout => clearTimeout(timeout));
-			bounceTimeoutsRef.current.clear();
-			if (spamCooldownRef.current) {
-				clearTimeout(spamCooldownRef.current);
-			}
+			bounceTimeoutsRef.current.forEach(t => clearTimeout(t));
 		};
 	}, []);
 
-	// Build the letters array for rendering
-	const letters = useMemo(() => {
-		return word.split('').map((_, index) => {
-			const isCursor = cursorPosition === index && !isLocked;
-			const isVerified = verifiedPositions.has(index);
-			const isDashRevealed = revealedDashIndices.has(index);
-			const isCurrentlyAnimating = dashesCurrentlyAnimating.has(index);
-			
-			// DISABLE bouncing during spam to prevent glitches
-			const isBouncing = isSpamming ? false : bouncingIndices.has(index);
-			
-			// Check if this is a sequence letter position (from animation)
-			const isSequenceLetterPosition = revealedSequenceLetters.has(index);
-			
-			// Check if this position was auto-revealed (on loss)
-			const isAutoRevealed = autoRevealedPositions.get(word)?.has(index) || false;
-			
-			// Check if this position has a dash revealed but letter not yet shown
-			const isWaitingForLetterReveal = isDashRevealed && !isSequenceLetterPosition;
-			
-			// CRITICAL FIX: Check if this position is hidden for upcoming animation
-			const isHiddenForAnimation = hiddenForAnimation.has(index);
-			
-			// Compute isUserTyped DIRECTLY to prevent race condition
-			// Hide user-typed letter if:
-			// 1. We're waiting for the reveal animation, OR
-			// 2. This position is marked as hidden for animation
-			const isUserTyped = userInputs.has(index) && 
-			                   !revealedSequenceLetters.has(index) && 
-			                   !additionalLettersPositions.current.has(index) &&
-			                   !isWaitingForLetterReveal &&
-			                   !isHiddenForAnimation; // HIDE before animation starts!
-			
-			// For sequence letters: letter comes from revealedSequenceLetters
-			// For user input: letter comes from userInputs (but only if not hidden)
-			const sequenceLetter = revealedSequenceLetters.get(index);
-			const userLetter = (isWaitingForLetterReveal || isHiddenForAnimation) ? undefined : userInputs.get(index);
-			const letter = sequenceLetter || userLetter;
-			
-			// isRevealed = should we show the letter?
-			// Don't reveal if waiting for animation OR hidden for animation
-			const isRevealed = isSequenceLetterPosition 
-				? !!sequenceLetter 
-				: (!!userLetter && !isWaitingForLetterReveal && !isHiddenForAnimation);
-			
-			const isSequenceLetterRevealed = isSequenceLetterPosition && !!sequenceLetter;
+	// ── Click handler ─────────────────────────────────────────────────────────
 
-			return {
-				index,
-				letter,
-				isRevealed,
-				isCursor,
-				isVerified,
-				isSequenceLetterRevealed,
-				isDashRevealed,
-				isCurrentlyAnimating,
-				isUserTyped,
-				isBouncing,
-				isAutoRevealed,
-			};
-		});
-	}, [
-		word,
-		userInputs,
-		cursorPosition,
-		isLocked,
-		verifiedPositions,
-		revealedDashIndices,
-		revealedSequenceLetters,
-		dashesCurrentlyAnimating,
-		bouncingIndices,
-		autoRevealedPositions,
-		additionalLettersPositions,
-		isSpamming,
-		hiddenForAnimation, // Added dependency
-	]);
+	const handleClick = useCallback((position: number) => {
+		if (isLocked) return;
+		onCursorClick(position);
+	}, [isLocked, onCursorClick]);
+
+	// ── Render ────────────────────────────────────────────────────────────────
 
 	return (
-		<FlashOverlay
-			flashState={flashState} 
-			wordType={wordType}
-			isComplete={isComplete}
-			silentReveal={silentRevealedWords.has(word)}
-		>
-			<div className={`word-dash-wrapper flex my-2 relative ${shouldShake ? 'animate-shake' : ''} justify-start`}>
-				{letters.map((letterData) => (
-					<ClueLetter
-						key={letterData.index}
-						letter={letterData.letter}
-						isRevealed={letterData.isRevealed}
-						isCursor={letterData.isCursor}
-						isVerified={letterData.isVerified}
-						isSequenceLetterRevealed={letterData.isSequenceLetterRevealed}
-						isDashRevealed={letterData.isDashRevealed}
-						isCurrentlyAnimating={letterData.isCurrentlyAnimating}
-						isComplete={isComplete}
-						isUserTyped={letterData.isUserTyped}
-						isBouncing={letterData.isBouncing}
-						clueLettersComplete={clueLettersComplete}
-						wordTypeColor={wordTypeColor}
-						onClick={() => handleCursorClick(letterData.index)}
-						isAutoRevealed={letterData.isAutoRevealed}
-					/>
-				))}
-			</div>
-		</FlashOverlay>
+		<>
+			<style jsx>{`
+				.dash-container { width: 24px; height: 36px; }
+				.dash-text { font-size: 1.5rem; }
+				.letter-text { font-size: 1.25rem; }
+
+				@media (min-width: 481px) and (max-width: 768px) {
+					.dash-container { width: 26px; height: 38px; }
+					.dash-text { font-size: 1.75rem; }
+					.letter-text { font-size: 1.375rem; }
+				}
+				@media (min-width: 769px) and (max-width: 1024px) {
+					.dash-container { width: 28px; height: 40px; }
+					.dash-text { font-size: 2rem; }
+					.letter-text { font-size: 1.5rem; }
+				}
+				@media (min-width: 1025px) and (max-width: 1200px) {
+					.dash-container { width: 30px; height: 42px; }
+					.dash-text { font-size: 2.25rem; }
+					.letter-text { font-size: 1.625rem; }
+				}
+				@media (min-width: 1201px) {
+					.dash-container { width: 32px; height: 44px; }
+					.dash-text { font-size: 2.5rem; }
+					.letter-text { font-size: 1.75rem; }
+				}
+				@media (min-width: 1201px) and (max-width: 1400px) {
+					.dash-container { width: 24px; height: 36px; }
+					.dash-text { font-size: 1.75rem; }
+					.letter-text { font-size: 1.25rem; }
+				}
+
+				@keyframes bounce {
+					0%, 100% { transform: translateY(0); }
+					50% { transform: translateY(-10px); }
+				}
+				@keyframes dash-to-green {
+					0%, 100% { transform: scale(1); }
+					50% { transform: scale(1.2); }
+				}
+			`}</style>
+
+			<FlashOverlay
+				flashState={flashState}
+				wordType={wordType}
+				isComplete={isComplete}
+				silentReveal={silentReveal}
+			>
+				<div className={`word-dash-wrapper flex my-2 relative ${shouldShake ? 'animate-shake' : ''} justify-start`}>
+					{word.split('').map((char, i) => {
+						const isVerified = verified[i] ?? false;
+						const isDashRevealed = revealAnimation?.dashesRevealed.has(i) ?? false;
+						const isAnimating = revealAnimation?.dashesAnimating.has(i) ?? false;
+						const sequenceLetter = revealAnimation?.lettersRevealed[i] ?? null;
+						const isSequenceRevealed = !!sequenceLetter;
+						const isWaitingForReveal = isDashRevealed && !isSequenceRevealed;
+						const userLetter = isWaitingForReveal ? null : (inputs[i] ?? null);
+						const letter = sequenceLetter ?? userLetter;
+						const isRevealed = isSequenceRevealed ? true : (!!userLetter && !isWaitingForReveal);
+						const isCursor = cursorPosition === i && !isLocked;
+						const isUserTyped = !!inputs[i] && !isSequenceRevealed && !isWaitingForReveal;
+						const isBouncing = bouncingIndices.has(i);
+						const charStatus = letterStatus[char.toUpperCase()];
+
+						// Dash color
+						let dashColor: string;
+						if (flashState !== 'none') {
+							dashColor = ''; // let .flash-active CSS handle it
+						}
+						else if (isComplete) {
+							dashColor = wordTypeColor;
+						} else if (isDashRevealed && !isRevealed) {
+							dashColor = GameConfig.cursorColor.inClue;
+						} else if (charStatus === 'still_available' && !isVerified) {
+							dashColor = isCursor
+								? `${GameConfig.cursorColor.stillAvailable} animate-pulse`
+								: GameConfig.cursorColor.stillAvailable;
+						} else if (isCursor) {
+							dashColor = GameConfig.cursorColor.default;
+						} else {
+							dashColor = GameConfig.wordColors.default;
+						}
+
+						// Letter color
+						let letterColor: string;
+						if (flashState !== 'none') {
+							letterColor = ''; // let .flash-active CSS handle it
+						} else if (isComplete) {
+							letterColor = wordTypeColor;
+						} else if (isVerified || isSequenceRevealed) {
+							letterColor = GameConfig.wordColors.default;
+						} else if (isUserTyped) {
+							letterColor = GameConfig.cursorColor.default;
+						} else {
+							letterColor = GameConfig.wordColors.default;
+						}
+
+						return (
+							<div
+								key={i}
+								className="dash-container relative flex items-end justify-center cursor-pointer"
+								onClick={() => handleClick(i)}
+							>
+								<span
+									className={`dash-text font-bold leading-none transition-all duration-300 ${dashColor}`}
+									style={isAnimating ? { animation: 'dash-to-green 0.3s ease-out' } : undefined}
+								>
+									_
+								</span>
+								{isRevealed && (
+									<span
+										className={`letter-text absolute bottom-4 left-1/2 -translate-x-1/2 font-bold leading-none transition-all duration-300 cursor-pointer ${letterColor}`}
+										style={isBouncing ? { animation: `bounce ${GameConfig.duration.greencursorDuration}ms ease-out` } : undefined}
+									>
+										{letter?.toUpperCase()}
+									</span>
+								)}
+							</div>
+						);
+					})}
+				</div>
+			</FlashOverlay>
+		</>
 	);
 }
