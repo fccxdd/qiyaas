@@ -2,7 +2,6 @@
 
 import PlayMode from "@/components/game_mode/play/PlayMode";
 import GameHeader from "@/components/layouts/GameHeader";
-import Settings from "@/components/game_assets/settings/Settings";
 import GoHome from "@/components/game_assets/game_walkthrough/GoHome";
 import HelpModal from "@/components/game_assets/game_walkthrough/HelpModal";
 import Loading from "@/components/game_assets/game_walkthrough/loading";
@@ -20,9 +19,7 @@ export default function PlayPage() {
         }
         rightContent={
           <div className="flex items-center gap-5 sm:gap-6">
-            <HelpModal />
-            <Settings />
-            
+            <HelpModal />            
           </div>
         }
       />

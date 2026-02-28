@@ -23,6 +23,7 @@ interface RevealUnsolvedWordsProps {
 	onCompletedChange: (completed: boolean[]) => void;
 	onRevealComplete: () => void;
 	hasRevealedOnLoss: boolean;
+	onClueSolved: (clueIndex: number) => void;
 }
 
 export default function RevealUnsolvedWords({
@@ -39,6 +40,7 @@ export default function RevealUnsolvedWords({
 	onCompletedChange,
 	onRevealComplete,
 	hasRevealedOnLoss,
+	onClueSolved,
 }: RevealUnsolvedWordsProps) {
 	const hasRevealed = useRef(false);
 
@@ -123,6 +125,7 @@ export default function RevealUnsolvedWords({
 						newCompleted[clueIndex] = true;
 						completedRef.current = newCompleted;
 						onCompletedChange(newCompleted);
+						onClueSolved(clueIndex);    // ← enables highlighting
 					}
 
 					// Last letter — fire complete

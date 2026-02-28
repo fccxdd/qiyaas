@@ -33,6 +33,7 @@ export interface StoredGameState {
   lettersInClues: string[];
   revealedStartingColors: number[];
   hasStartingLettersAnimationCompleted: boolean;
+  hintsRevealComplete: boolean;
 
   // Puzzle data
   cluesData: DailyWordPuzzle;

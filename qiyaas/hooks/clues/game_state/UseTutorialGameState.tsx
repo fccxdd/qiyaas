@@ -31,6 +31,7 @@ export function useTutorialGameState({ cluesData }: UseTutorialGameStateProps) {
   const [message, setMessage]               = useState('');
   const [messageType, setMessageType]       = useState<'error' | 'success' | 'info'>('info');
   const [messagePersist, setMessagePersist] = useState(false);
+  const [hasMounted, setHasMounted] = useState(false);
 
   // ── Word state — parallel arrays ──────────────────────────────────────────
 
@@ -89,6 +90,26 @@ export function useTutorialGameState({ cluesData }: UseTutorialGameStateProps) {
     }
   }, [lives, isGameOver]);
 
+  // ── Starting message ──────────────────────────────────────────────────────
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hasMounted || gameStarted) return;
+
+    if (selectedLetters.length < GameConfig.startingLettersNumber) {
+      setMessage(GameConfig.messages.startingLettersMessage);
+      setMessageType('info');
+      setMessagePersist(true);
+    } else if (selectedLetters.length === GameConfig.startingLettersNumber) {
+      setMessage(GameConfig.messages.confirmStartingLetters);
+      setMessageType('info');
+      setMessagePersist(true);
+    }
+  }, [hasMounted, gameStarted, selectedLetters.length]);
+
   // ── Handlers ─────────────────────────────────────────────────────────────
 
   const handleLifeLost = useCallback(() => {
@@ -110,17 +131,16 @@ export function useTutorialGameState({ cluesData }: UseTutorialGameStateProps) {
     setMessage(msg);
     setMessageType(type);
     setMessagePersist(persist);
-    
-    if (!persist) {
-    setTimeout(() => {
-        setMessage('');
-        }, 1500);
-    }
   }, []);
 
   const handleMessageClose = useCallback(() => {
+    if (
+      message === GameConfig.messages.startingLettersMessage &&
+      !gameStarted &&
+      selectedLetters.length < GameConfig.startingLettersNumber
+    ) return;
     setMessage('');
-  }, []);
+  }, [message, gameStarted, selectedLetters.length]);
 
   const checkLettersInClues = useCallback((letters: string): string[] => {
     const clueWords = [

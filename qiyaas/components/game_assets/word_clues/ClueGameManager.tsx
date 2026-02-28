@@ -6,12 +6,13 @@ import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import ClueWord from './ClueWord';
 import { useCursorNavigation } from '@/hooks/clues/useCursorNavigation';
 import { useWordValidation } from '@/hooks/clues/useWordValidation';
-import { useWinCondition } from '@/hooks/game_wins/useWinCondition';
+import { useWinCondition } from '@/hooks/game_over/useWinCondition';
 import { useKeyboardInput } from '@/hooks/keyboard/useKeyboardInput';
 import { useStartingLettersValidation } from '@/hooks/clues/useStartingLettersValidation';
 import { useFlashState } from '@/hooks/clues/useFlashState';
 import { normalizeCluesData, getClueWordsArray, BaseCluesData } from '@/hooks/clues/clueTypes';
 import { GameConfig } from '@/lib/gameConfig';
+import { useAutoCompleteWords } from '@/hooks/clues/useAutoCompleteShortWords';
 
 type LetterStatus = { [letter: string]: 'used_up' | 'still_available' | 'unused' };
 
@@ -43,6 +44,8 @@ interface ClueGameManagerProps {
 	hasLostLifeForNoStartingLetters: boolean;
 	setHasLostLifeForNoStartingLetters: (value: boolean) => void;
   	onGuessSubmitted?: (clueIndex: number, word: string) => void;
+	silentRevealed?: boolean[];
+	sequenceRevealed: (string | null)[][];
 }
 
 export default function ClueGameManager({
@@ -66,7 +69,8 @@ export default function ClueGameManager({
 	letterStatus = {},
 	hasLostLifeForNoStartingLetters,
 	setHasLostLifeForNoStartingLetters,
-  	onGuessSubmitted = () => {}
+  	onGuessSubmitted = () => {},
+	silentRevealed = [false, false, false]
 }: ClueGameManagerProps) {
 
 	const [shakeWord, setShakeWord] = useState<string | null>(null);
@@ -200,6 +204,16 @@ export default function ClueGameManager({
     	onGuessSubmitted
 	});
 
+	// ── Auto-Complete the Word if all Starting Letters are Present ─────────────────
+	useAutoCompleteWords({
+		activeClues,
+		wordInputs,
+		sequenceRevealed: revealAnimation?.lettersRevealed ?? activeClues.map(() => []),
+		completed,
+		verified,
+		onWordComplete: handleWordComplete,
+	});
+
 	// ── Keyboard ──────────────────────────────────────────────────────────────
 
 	useKeyboardInput({
@@ -230,6 +244,7 @@ export default function ClueGameManager({
 		onShowMessage,
 		hasLostLifeForNoStartingLetters,
 		setHasLostLifeForNoStartingLetters,
+		setCursorPosition
 	});
 
 	// ── Win condition ─────────────────────────────────────────────────────────
@@ -269,6 +284,7 @@ export default function ClueGameManager({
 						lettersRevealed: revealAnimation.lettersRevealed[index] ?? [],
 					} : undefined}
 					letterStatus={letterStatus}
+					silentReveal={silentRevealed[index]}
 				/>
 			))}
 		</div>

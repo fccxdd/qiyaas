@@ -18,15 +18,12 @@ import { useTutorialGameState } from '@/hooks/clues/game_state/UseTutorialGameSt
 import { useKeyboardHandlers } from '@/hooks/keyboard/UseKeyboardHandlers';
 import GameViewportLayout, { TopSection, MiddleSection, BottomSection } from '@/components/ux/GameViewPortLayout';
 import { useRouter } from 'next/navigation';
-
-interface TutorialModeProps {
-  onComplete?: () => void;
-}
+import { GameOverModal } from '@/components/game_assets/game_over/GameOverModal';
 
 const PHASE_INTRO = 0;
 const PHASE_GAME2 = 1;
 
-export default function TutorialMode({ onComplete }: TutorialModeProps) {
+export default function TutorialMode() {
   const router = useRouter();
   const [phase, setPhase] = useState(PHASE_INTRO);
   const [isTransitioned, setIsTransitioned] = useState(false);
@@ -39,10 +36,12 @@ export default function TutorialMode({ onComplete }: TutorialModeProps) {
   const handlePhaseComplete = useCallback(() => {
     setPhase(prev => {
       if (prev < PHASE_GAME2) return prev + 1;
-      router.push('/play');  // Redirect to main game after tutorial
       return prev;
     });
-  }, [router]);
+    if (phase >= PHASE_GAME2) {
+      router.push('/play');
+    }
+  }, [router, phase]);
 
   if (phase === PHASE_GAME2) {
     return (
@@ -94,6 +93,7 @@ function Game1Tutorial({ isTransitioned, onPhaseComplete }: Game1TutorialProps) 
     revealedStartingColors,
     solvedClues,
     submittedGuesses,
+    sequenceRevealed,
 
     setSelectedLetters,
     setGameStarted,
@@ -167,7 +167,6 @@ function Game1Tutorial({ isTransitioned, onPhaseComplete }: Game1TutorialProps) 
     });
   }, [setSolvedClues]);
 
-  // lettersInClues is string[] in new model — useKeyboardHandlers expects string[]
   const { handleKeyPress, handleBackspace, handleEnter } = useKeyboardHandlers({
     selectedLetters,
     gameStarted,
@@ -233,14 +232,6 @@ function Game1Tutorial({ isTransitioned, onPhaseComplete }: Game1TutorialProps) 
   return (
     <div className="fixed inset-0 bg-white dark:bg-black overflow-hidden">
       
-      {/* <div className="z-[9999]">
-				<MessageBox
-					message={message}
-					type={messageType}
-					onClose={handleMessageClose}
-					persist={messagePersist}
-				/>
-			</div> */}
       <GameViewportLayout isTransitioned={isTransitioned}>
 
         <TopSection isTransitioned={isTransitioned}>
@@ -293,13 +284,14 @@ function Game1Tutorial({ isTransitioned, onPhaseComplete }: Game1TutorialProps) 
               onLifeLost={handleLifeLost}
               onWin={handleWin}
               onShowMessage={showMessage}
-              isMessageActive={message !== ''}
+              isMessageActive={false}
               isGameOver={false}
               onClueSolved={handleClueSolved}
               letterStatus={mergedLetterStatus}
               hasLostLifeForNoStartingLetters={hasLostLifeForNoStartingLetters}
               setHasLostLifeForNoStartingLetters={setHasLostLifeForNoStartingLetters}
               onGuessSubmitted={handleGuessSubmitted}
+              sequenceRevealed={sequenceRevealed}
               
             />
           </div>
@@ -379,6 +371,14 @@ function Game2Tutorial({ isTransitioned, onComplete, onRestartTutorial }: Game2T
     if (lives - 1 <= 0) handleLose();
   }, [handleLifeLost, lives, handleLose]);
 
+  const wrappedShowMessage = useCallback((msg: string, type: 'error' | 'success' | 'info' = 'error', persist = false) => {
+    if (msg === GameConfig.messages.startingLettersMessage || msg === GameConfig.messages.confirmStartingLetters) {
+      showMessage(msg, type, true);
+    } else {
+      showMessage(msg, type, persist);
+    }
+  }, [showMessage]);
+
   const handleStartingLettersSubmit = useCallback(() => {
     if (hasStartingLettersAnimationCompleted || revealedStartingColors.length === selectedLetters.length) return;
     setRevealedStartingColors([]);
@@ -393,10 +393,16 @@ function Game2Tutorial({ isTransitioned, onComplete, onRestartTutorial }: Game2T
       setRevealedStartingColors, setHasStartingLettersAnimationCompleted]);
 
   const { handleKeyPress, handleBackspace, handleEnter } = useKeyboardHandlers({
-    selectedLetters, gameStarted, message,
-    setSelectedLetters, setGameStarted, setLettersInClues,
+    selectedLetters, 
+    gameStarted, 
+    message,
+    setSelectedLetters, 
+    setGameStarted, 
+    setLettersInClues,
     onStartingLettersSubmit: handleStartingLettersSubmit,
-    showMessage, handleLifeLost: wrappedHandleLifeLost, checkLettersInClues,
+    showMessage: wrappedShowMessage, 
+    handleLifeLost: wrappedHandleLifeLost, 
+    checkLettersInClues,
   });
 
   const handleGuessSubmitted = useCallback((clueIndex: number, word: string) => {
@@ -494,35 +500,50 @@ function Game2Tutorial({ isTransitioned, onComplete, onRestartTutorial }: Game2T
 
   if (showEndScreen === 'win') {
     return (
-      <div className="fixed inset-0 bg-white dark:bg-black flex flex-col items-center justify-center gap-6">
-        <h2 className="text-2xl font-bold text-green-500">Youre ready to play! 🎉</h2>
-        <p className="text-gray-600 dark:text-gray-400 text-center px-8">Youve completed the tutorial. Time to play the real game!</p>
-        <button onClick={onComplete} className="px-6 py-3 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700 transition-colors">
-          Play Qiyaas →
-        </button>
-        <button onClick={onRestartTutorial} className="text-sm text-gray-500 hover:text-gray-700 underline">
-          Restart tutorial
-        </button>
-      </div>
+      <GameOverModal showCloseButton={false}>
+        <h2 className="text-2xl font-bold text-green-500">READY TO PLAY!</h2>
+        <p className="text-gray-600 dark:text-gray-400 text-center px-8 mt-3">You completed the tutorial. Time to play the real game!</p>
+        <div className="flex flex-col gap-3 mt-6 items-center">
+          <button
+            onClick={onComplete}
+            className="rounded-full shadow-xl border border-solid border-transparent transition-all flex items-center text-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] hover:-translate-y-1 hover:shadow-2xl font-medium text-base sm:text-lg h-11 px-5 w-[140px] whitespace-nowrap"
+          >
+            Play Qiyaas
+          </button>
+          <button
+            onClick={onRestartTutorial}
+            className="rounded-full shadow-xl border border-solid border-black/[.08] dark:border-white/[.145] transition-all flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent hover:-translate-y-1 hover:shadow-2xl font-medium text-base sm:text-lg h-11 px-5 w-[140px] whitespace-nowrap"
+          >
+            Restart Tutorial
+          </button>
+        </div>
+      </GameOverModal>
     );
   }
 
   if (showEndScreen === 'lose') {
     return (
-      <div className="fixed inset-0 bg-white dark:bg-black flex flex-col items-center justify-center gap-6">
-        <h2 className="text-2xl font-bold text-red-500">Not quite yet...</h2>
-        <p className="text-gray-600 dark:text-gray-400 text-center px-8">Lets go through the tutorial again to get you ready.</p>
-        <button onClick={onRestartTutorial} className="px-6 py-3 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700 transition-colors">
-          Restart Tutorial
-        </button>
-        <button onClick={onComplete} className="text-sm text-gray-500 hover:text-gray-700 underline">
-          Skip to game anyway
-        </button>
-      </div>
+      <GameOverModal showCloseButton={false}>
+        <h2 className="text-2xl font-bold text-red-500">NOT QUITE YET...</h2>
+        <p className="text-gray-600 dark:text-gray-400 text-center px-8 mt-3">Lets go through the tutorial again to get you ready.</p>
+        <div className="flex flex-col gap-3 mt-6 items-center">
+          <button
+            onClick={onRestartTutorial}
+            className="rounded-full shadow-xl border border-solid border-transparent transition-all flex items-center text-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] hover:-translate-y-1 hover:shadow-2xl font-medium text-base sm:text-lg h-11 px-5 w-[140px] whitespace-nowrap"
+          >
+            Restart Tutorial
+          </button>
+          <button
+            onClick={onComplete}
+            className="rounded-full shadow-xl border border-solid border-black/[.08] dark:border-white/[.145] transition-all flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent hover:-translate-y-1 hover:shadow-2xl font-medium text-base sm:text-lg h-11 px-5 w-[140px] whitespace-nowrap"
+          >
+            Skip To Qiyaas
+          </button>
+        </div>
+      </GameOverModal>
     );
-  }
-
-  return (
+  }  
+return (
     <div className="fixed inset-0 bg-white dark:bg-black overflow-hidden">
       <div className="z-[9999]">
         <MessageBox
@@ -603,6 +624,7 @@ function Game2Tutorial({ isTransitioned, onComplete, onRestartTutorial }: Game2T
                 hasLostLifeForNoStartingLetters={hasLostLifeForNoStartingLetters}
                 setHasLostLifeForNoStartingLetters={setHasLostLifeForNoStartingLetters}
                 onGuessSubmitted={handleGuessSubmitted}
+                sequenceRevealed={sequenceRevealed}
                 
               />
             )}
@@ -634,6 +656,12 @@ function Game2Tutorial({ isTransitioned, onComplete, onRestartTutorial }: Game2T
               hasLostLifeForNoStartingLetters={hasLostLifeForNoStartingLetters}
               isGameOver={isGameOver}
               isRevealing={gameStarted && !lettersComplete}
+              disabled={
+                          !isGameOver &&
+                          message !== '' &&
+                          message !== GameConfig.messages.startingLettersMessage &&
+                          message !== GameConfig.messages.confirmStartingLetters
+                        }
             />
           }
         />

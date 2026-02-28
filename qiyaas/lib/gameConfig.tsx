@@ -24,12 +24,7 @@ export const GameConfig = {
 											shareable: "/qiyaas_glow_shareable.png"
 											
 										},
-							
-							// Settings Mode
-							settings: 	{ 
-											hardMode: "off"
-										},
-							
+														
 							// Timing Durations
 							duration: {											
 											
@@ -45,8 +40,9 @@ export const GameConfig = {
 											// Game over message delay (in milliseconds)
 											gameOverMessageDelay: 2000,
 
-											// Game win screen delay (in milliseconds) TODO: Adjust this value
-											
+											// Hint Reveal Complete Duration (in milliseconds)
+											hintRevealComplete: 4400,
+
 											// Game over screen delay (in milliseconds)
 											gameOverScreenDelay: 1500,
 
@@ -134,7 +130,7 @@ export const GameConfig = {
 							messages: {
 
 										// Starting Letters Messages
-										startingLettersMessage: "Please select 4 starting letters",
+										startingLettersMessage: "Please input your 4 starting letters",
 										letterAlreadySelected: "Letter already selected!",
 										onlyOneVowel: "Only 1 vowel allowed!",
 										onlyThreeConsonants: "Only 3 consonants allowed!",

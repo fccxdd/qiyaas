@@ -1,5 +1,3 @@
-// components/game_mode/play/PlayMode.tsx
-
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -58,6 +56,7 @@ export default function PlayMode({ puzzleData: puzzleDataProp, onComplete, tutor
 		hasRevealedOnLoss,
 		revealedStartingColors,
 		hasStartingLettersAnimationCompleted,
+		hasLoadedFromStorage,
 
 		wordInputs,
 		verified,
@@ -88,6 +87,8 @@ export default function PlayMode({ puzzleData: puzzleDataProp, onComplete, tutor
 		handleMessageClose,
 		checkLettersInClues,
 		setHasRevealedOnLoss,
+		hintsRevealComplete,
+		setHintsRevealComplete,
 	} = useGameState();
 
 	// ── Tutorial mode overrides ───────────────────────────────────────────────
@@ -111,12 +112,14 @@ export default function PlayMode({ puzzleData: puzzleDataProp, onComplete, tutor
 	}, [setHasRevealedOnLoss, hasRevealedOnLoss, openModal]);
 
 	const handleHintsRevealed = useCallback(() => {
+		setHintsRevealComplete(true);
 		hintsRevealedRef.current = true;
 		if (wordRevealCompleteRef.current) openModal();
-	}, [openModal]);
+	}, [openModal, setHintsRevealComplete]);
 
 	useEffect(() => {
 		if (!isGameOver || hasShownModalForCurrentGameOver.current) return;
+		if (hintsRevealComplete) return;
 		hasShownModalForCurrentGameOver.current = true;
 
 		const gameOverMessage = hasWon
@@ -129,11 +132,11 @@ export default function PlayMode({ puzzleData: puzzleDataProp, onComplete, tutor
 		}
 
 		if (hasWon) {
-			setTimeout(() => openModal(), GameConfig.duration.gameOverMessageDelay + GameConfig.duration.gameOverScreenDelay);
+			setTimeout(() => openModal(), GameConfig.duration.hintRevealComplete);
 		} else if (hasRevealedOnLoss) {
 			openModal();
 		}
-	}, [isGameOver, hasWon, hasRevealedOnLoss, showMessage, openModal]);
+	}, [isGameOver, hasWon, hasRevealedOnLoss, hintsRevealComplete, showMessage, openModal]);
 
 	useEffect(() => {
 		if (isGameOver) return;
@@ -142,7 +145,16 @@ export default function PlayMode({ puzzleData: puzzleDataProp, onComplete, tutor
 		wordRevealCompleteRef.current = false;
 		setShowGameOverScreen(false);
 		setSilentRevealed([false, false, false]);
-	}, [isGameOver, setSilentRevealed]);
+		setHintsRevealComplete(false);
+	}, [isGameOver, setSilentRevealed, setHintsRevealComplete]);
+
+	// ── Open modal immediately on refresh if already completed ───────────────
+
+	useEffect(() => {
+		if (!hasLoadedFromStorage) return;
+		if (!isGameOver || !hasWon || !hintsRevealComplete) return;
+		openModal();
+	}, [hasLoadedFromStorage]); // eslint-disable-line react-hooks/exhaustive-deps
 
 	// ── Starting letters animation ────────────────────────────────────────────
 
@@ -165,6 +177,22 @@ export default function PlayMode({ puzzleData: puzzleDataProp, onComplete, tutor
 		setRevealedStartingColors,
 		setHasStartingLettersAnimationCompleted,
 	]);
+
+	useEffect(() => {
+		if (!hasLoadedFromStorage) return;
+		if (!gameStarted) return;
+		if (hasStartingLettersAnimationCompleted) return;
+
+		setRevealedStartingColors([]);
+		selectedLetters.split('').forEach((_, index) => {
+			setTimeout(() => {
+				setRevealedStartingColors(prev => [...prev, index]);
+			}, index * GameConfig.duration.startingLetterBounceDelay);
+		});
+
+		const totalAnimationTime = selectedLetters.length * GameConfig.duration.startingLetterBounceDelay + 500;
+		setTimeout(() => setHasStartingLettersAnimationCompleted(true), totalAnimationTime);
+	}, [hasLoadedFromStorage]); // eslint-disable-line react-hooks/exhaustive-deps
 
 	// ── Keyboard handlers (pre-game: letter selection + submit) ──────────────
 
@@ -218,9 +246,6 @@ export default function PlayMode({ puzzleData: puzzleDataProp, onComplete, tutor
 		isAlreadyComplete: hasStartingLettersAnimationCompleted,
 	});
 
-	// Seed wordInputs with starting letter positions once per session.
-	// lettersRevealed is now initialized correctly from storage on first render,
-	// so this effect fires with the right data regardless of timing.
 	useEffect(() => {
 		if (!gameStarted) return;
 		if (hasSeededWordInputsRef.current) return;
@@ -235,10 +260,21 @@ export default function PlayMode({ puzzleData: puzzleDataProp, onComplete, tutor
 			row.map((letter, pos) => letter ?? lettersRevealed[i]?.[pos] ?? null)
 		));
 
-		// Mark starting letter positions as verified
 		setVerified(prev => prev.map((row, i) =>
 			row.map((v, pos) => v || lettersRevealed[i]?.[pos] !== null)
 		));
+
+		// Set cursor to first empty position after reveal
+		const startingSet = new Set(selectedLetters.toUpperCase().split(''));
+		for (let clueIndex = 0; clueIndex < clueWordsArray.length; clueIndex++) {
+			const word = clueWordsArray[clueIndex];
+			for (let pos = 0; pos < word.length; pos++) {
+				if (!startingSet.has(word[pos].toUpperCase())) {
+					setCursorPosition({ clueIndex, position: pos });
+					return;
+				}
+			}
+		}
 	}, [gameStarted, lettersComplete, lettersRevealed]);
 
 	const revealAnimation = gameStarted ? {
@@ -298,6 +334,7 @@ export default function PlayMode({ puzzleData: puzzleDataProp, onComplete, tutor
 				onCompletedChange={setCompleted}
 				onRevealComplete={handleRevealComplete}
 				hasRevealedOnLoss={hasRevealedOnLoss}
+				onClueSolved={handleClueSolved}
 			/>
 
 			<GameViewportLayout isTransitioned={isTransitioned}>
@@ -362,6 +399,8 @@ export default function PlayMode({ puzzleData: puzzleDataProp, onComplete, tutor
 								hasLostLifeForNoStartingLetters={hasLostLifeForNoStartingLetters}
 								setHasLostLifeForNoStartingLetters={setHasLostLifeForNoStartingLetters}
 								onGuessSubmitted={handleGuessSubmitted}
+								silentRevealed={silentRevealed}
+								sequenceRevealed={sequenceRevealed}
 							/>
 						)}
 					</div>
@@ -370,9 +409,11 @@ export default function PlayMode({ puzzleData: puzzleDataProp, onComplete, tutor
 						isTransitioned ? "opacity-100 translate-x-0" : "opacity-0 translate-x-4"
 					}`}>
 						<HintToggle
+							hasWon={hasWon}
 							hintsEnabled={hintsEnabled}
 							solvedClues={solvedClues}
 							isGameOver={isGameOver}
+							hintsRevealComplete={hintsRevealComplete}
 							onHintsRevealed={handleHintsRevealed}
 							numbersForClue={puzzle?.numbers_for_clue ?? numbersForClue}
 							wordTypes={[puzzle?.clue_1?.type, puzzle?.clue_2?.type, puzzle?.clue_3?.type]}
@@ -392,7 +433,12 @@ export default function PlayMode({ puzzleData: puzzleDataProp, onComplete, tutor
 								onKeyPress={handleKeyPress}
 								onBackspace={handleBackspace}
 								onEnter={handleEnter}
-								disabled={!isGameOver && message !== '' && message !== GameConfig.messages.startingLettersMessage}
+								disabled={
+									!isGameOver &&
+									message !== '' &&
+									message !== GameConfig.messages.startingLettersMessage &&
+									message !== GameConfig.messages.confirmStartingLetters
+								}
 								gameStarted={gameStarted}
 								letterStatus={letterStatus}
 								hasLostLifeForNoStartingLetters={hasLostLifeForNoStartingLetters}

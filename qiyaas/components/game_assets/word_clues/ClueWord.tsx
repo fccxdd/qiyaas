@@ -194,7 +194,10 @@ export default function ClueWord({
 
 						// Dash color
 						let dashColor: string;
-						if (isComplete) {
+						if (flashState !== 'none') {
+							dashColor = ''; // let .flash-active CSS handle it
+						}
+						else if (isComplete) {
 							dashColor = wordTypeColor;
 						} else if (isDashRevealed && !isRevealed) {
 							dashColor = GameConfig.cursorColor.inClue;
@@ -210,7 +213,9 @@ export default function ClueWord({
 
 						// Letter color
 						let letterColor: string;
-						if (isComplete) {
+						if (flashState !== 'none') {
+							letterColor = ''; // let .flash-active CSS handle it
+						} else if (isComplete) {
 							letterColor = wordTypeColor;
 						} else if (isVerified || isSequenceRevealed) {
 							letterColor = GameConfig.wordColors.default;

@@ -32,6 +32,16 @@ export function useKeyboardHandlers({
   checkLettersInClues,
 }: UseKeyboardHandlersProps) {
 
+  const restoreStartingMessage = useCallback(() => {
+    setTimeout(() => {
+      if (selectedLetters.length < GameConfig.startingLettersNumber) {
+        showMessage(GameConfig.messages.startingLettersMessage, 'info', true);
+      } else {
+        showMessage(GameConfig.messages.confirmStartingLetters, 'info', true);
+      }
+    }, GameConfig.duration.messageDelay+ GameConfig.duration.messageFadeOutDelay + 50);
+  }, [selectedLetters.length, showMessage]);
+
   const handleKeyPress = useCallback((key: string) => {
     const upperKey = key.toUpperCase();
     const VOWELS = GameConfig.vowels;
@@ -39,18 +49,16 @@ export function useKeyboardHandlers({
 
     if (!gameStarted) {
       const currentLettersArray = selectedLetters.split('');
-
-      if (selectedLetters.length === 0 && message === GameConfig.messages.startingLettersMessage) {
-        showMessage('', 'info', false);
-      }
-
+      
       if (currentLettersArray.includes(upperKey)) {
         showMessage(GameConfig.messages.letterAlreadySelected, 'error');
+        restoreStartingMessage();
         return;
       }
 
       if (currentLettersArray.length >= 4) {
         showMessage(GameConfig.messages.maxLettersReached, 'error');
+        restoreStartingMessage();
         return;
       }
 
@@ -59,11 +67,13 @@ export function useKeyboardHandlers({
 
       if (isVowel && vowelCount >= 1) {
         showMessage(GameConfig.messages.onlyOneVowel, 'error');
+        restoreStartingMessage();
         return;
       }
 
       if (!isVowel && consonantCount >= 3) {
         showMessage(GameConfig.messages.onlyThreeConsonants, 'error');
+        restoreStartingMessage();
         return;
       }
 
@@ -82,9 +92,11 @@ export function useKeyboardHandlers({
       const inClues = checkLettersInClues(selectedLetters);
       setLettersInClues(inClues);
       setGameStarted(true);
+      showMessage(''); 
       onStartingLettersSubmit?.();
     } else if (!gameStarted && selectedLetters.length < GameConfig.startingLettersNumber) {
       showMessage(GameConfig.messages.noSelectedLetters, 'info');
+      restoreStartingMessage();
     }
   }, [gameStarted, selectedLetters, showMessage, checkLettersInClues, setLettersInClues, setGameStarted, onStartingLettersSubmit]);
 

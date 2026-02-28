@@ -13,6 +13,7 @@ interface UseAutoCompleteWordsProps {
 	sequenceRevealed: (string | null)[][];  // letters placed by reveal animation
 	completed: boolean[];
 	onWordComplete: (clueIndex: number) => void;
+	verified: boolean[][];
 }
 
 export function useAutoCompleteWords({
@@ -20,6 +21,7 @@ export function useAutoCompleteWords({
 	wordInputs,
 	sequenceRevealed,
 	completed,
+	verified,
 	onWordComplete,
 }: UseAutoCompleteWordsProps) {
 
@@ -30,25 +32,20 @@ export function useAutoCompleteWords({
 			// Skip already completed or already auto-completed
 			if (completed[clueIndex] || autoCompletedRef.current.has(clueIndex)) return;
 
-			const revealed = sequenceRevealed[clueIndex];
 			const inputs = wordInputs[clueIndex];
+			const verifiedRow = verified[clueIndex];
 
-			if (!revealed || !inputs) return;
 
-			// Every position must have been filled by the reveal animation
-			const allFromReveal = clue.split('').every((_, pos) =>
-				revealed[pos] !== null && revealed[pos] !== undefined
-			);
-			if (!allFromReveal) return;
+			if (!inputs || !verifiedRow) return;
 
-			// Every position must match the clue
-			const allMatch = clue.split('').every((char, pos) =>
-				inputs[pos]?.toUpperCase() === char.toUpperCase()
-			);
-			if (!allMatch) return;
+            // All positions must be filled, correct, and verified (i.e. from reveal)
+            const allVerifiedAndCorrect = clue.split('').every((char, pos) =>
+                inputs[pos]?.toUpperCase() === char.toUpperCase() && verifiedRow[pos] === true
+            );
+            if (!allVerifiedAndCorrect) return;
 
-			autoCompletedRef.current.add(clueIndex);
-			onWordComplete(clueIndex);
+            autoCompletedRef.current.add(clueIndex);
+            onWordComplete(clueIndex);
 		});
-	}, [activeClues, wordInputs, sequenceRevealed, completed, onWordComplete]);
+	}, [activeClues, wordInputs, verified, completed, onWordComplete]);
 }

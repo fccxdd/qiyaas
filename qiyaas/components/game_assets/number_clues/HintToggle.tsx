@@ -1,8 +1,6 @@
-// components/game_assets/number_clues/HintToggle.tsx
-
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import hintMap from '@/data/hint_map.json';
 import { GameConfig } from '@/lib/gameConfig';
 import PulseGlow from '@/hooks/hint_toggle/pulseGlow';
@@ -14,6 +12,8 @@ interface HintToggleProps {
 	solvedClues?: boolean[];
 	isGameOver?: boolean;
 	onHintsRevealed?: () => void;
+	hintsRevealComplete?: boolean;
+	hasWon?: boolean;
 	// Data props — pass from API (PlayMode) or from tutorialGames.js (TutorialMode)
 	numbersForClue: number[];
 	wordTypes: string[];
@@ -22,37 +22,76 @@ interface HintToggleProps {
 }
 
 const HintToggle: React.FC<HintToggleProps> = ({ 
-	hintsEnabled = true, 
+	hintsEnabled = true,
 	solvedClues = [false, false, false],
 	isGameOver,
 	onHintsRevealed,
+	hintsRevealComplete = false,
+	hasWon = false,
 	numbersForClue,
 	wordTypes,
 	ruleTypes,
 	puzzleDate = '',
 }) => { 
 	const [revealedHints, setRevealedHints] = useState<boolean[]>([false, false, false]);
-	
+	const hasRevealedRef = useRef(hintsRevealComplete);
+
 	useEffect(() => {
-		if (isGameOver) {
-			setRevealedHints([false, false, false]);
+		hasRevealedRef.current = hintsRevealComplete;
+	}, [hintsRevealComplete]);
 
-			const TRANSITION_DURATION = 400;
-			const STAGGER = [1400, 2600, 3900];
-			const LAST_HINT_DONE = STAGGER[2] + TRANSITION_DURATION;
+	// ── Win: stagger all hints at once ────────────────────────────────────────
 
-			const timers = [
-				setTimeout(() => setRevealedHints(prev => [true, prev[1], prev[2]]), STAGGER[0]),
-				setTimeout(() => setRevealedHints(prev => [prev[0], true, prev[2]]), STAGGER[1]),
-				setTimeout(() => setRevealedHints(prev => [prev[0], prev[1], true]), STAGGER[2]),
-				setTimeout(() => onHintsRevealed?.(), LAST_HINT_DONE + 100),
-			];
-			
-			return () => timers.forEach(timer => clearTimeout(timer));
-		} else {
+	useEffect(() => {
+		if (!isGameOver || !hasWon) return;
+
+		// Already revealed before refresh — restore instantly
+		if (hasRevealedRef.current || hintsRevealComplete) {
+			setRevealedHints([true, true, true]);
+			return;
+		}
+
+		setRevealedHints([false, false, false]);
+
+		const TRANSITION_DURATION = 400;
+		const STAGGER = [1400, 2600, 3900];
+		const LAST_HINT_DONE = STAGGER[2] + TRANSITION_DURATION;
+
+		const timers = [
+			setTimeout(() => setRevealedHints(prev => [true, prev[1], prev[2]]), STAGGER[0]),
+			setTimeout(() => setRevealedHints(prev => [prev[0], true, prev[2]]), STAGGER[1]),
+			setTimeout(() => setRevealedHints(prev => [prev[0], prev[1], true]), STAGGER[2]),
+			setTimeout(() => {
+				hasRevealedRef.current = true;
+				onHintsRevealed?.();
+			}, LAST_HINT_DONE + 100),
+		];
+
+		return () => timers.forEach(t => clearTimeout(t));
+	}, [isGameOver, hasWon]);
+
+	// ── Loss: fire onHintsRevealed once all solvedClues are true ─────────────
+	// Hint opening on loss is handled by HintVisibilityManager watching solvedClues.
+	// We just need to fire onHintsRevealed when all are solved so the modal can open.
+
+	useEffect(() => {
+		if (!isGameOver || hasWon) return;
+		if (hasRevealedRef.current || hintsRevealComplete) return;
+		if (!solvedClues.every(s => s)) return;
+
+		setTimeout(() => {
+			hasRevealedRef.current = true;
+			onHintsRevealed?.();
+		}, 500);
+	}, [isGameOver, hasWon, solvedClues, hintsRevealComplete]);
+
+	// ── Reset on new game ─────────────────────────────────────────────────────
+
+	useEffect(() => {
+		if (!isGameOver) {
 			setRevealedHints([false, false, false]);
 		}
-	}, [isGameOver, onHintsRevealed]);
+	}, [isGameOver]);
 
 	const getBackgroundColor = (type?: string) => {
 		if (!type) return '';
@@ -84,6 +123,8 @@ const HintToggle: React.FC<HintToggleProps> = ({
 			numbersForClue={numbersForClue}
 			puzzleDate={puzzleDate}
 			hintsEnabled={hintsEnabled}
+			solvedClues={solvedClues}
+			isGameOver={isGameOver}
 		>
 			{({ hintsVisible, hintsOpacity, toggleHint }) => (
 				<div className="hint-container flex flex-col justify-center items-start relative">
@@ -95,8 +136,9 @@ const HintToggle: React.FC<HintToggleProps> = ({
 						const hoverClass = getHoverColor(wordType);
 						const hintText = hintMap[number.toString() as keyof typeof hintMap] || '';
 
-						const isHintVisible = (isGameOver && revealedHints[index]) || hintsVisible[index];
-						const isHintOpaque = (isGameOver && revealedHints[index]) || hintsOpacity[index];
+						// For win: use revealedHints. For loss + during game: use hintsVisible from HintVisibilityManager
+						const isHintVisible = (isGameOver && hasWon && revealedHints[index]) || hintsVisible[index];
+						const isHintOpaque = (isGameOver && hasWon && revealedHints[index]) || hintsOpacity[index];
 
 						return (
 							<div key={index} className="flex items-center relative">

@@ -41,7 +41,7 @@ export default function TutorialBox({
   const isFirst = currentStep === 0;
   const isLast = currentStep === steps.length - 1;
   const isLocked = !!step?.waitForAction && !actionCompleted;
-   const isCollapsed = forceCollapsed || collapsed;
+  const isCollapsed = forceCollapsed || collapsed;
 
   const transitionTo = useCallback((nextIndex: number) => {
     setAnimating(true);
@@ -84,12 +84,13 @@ export default function TutorialBox({
   }
 
   return (
-    <div className="w-full px-4 py-2">
-      <div className="mx-auto w-full max-w-[350px] sm:max-w-[350px] max-w-[260px] rounded-xl bg-gray-50 backdrop-blur-sm p-2 sm:p-3">
+    <div className="w-full px-4 py-2 flex justify-center">
 
-        {/* Collapse button */}
+      <div className="w-full max-w-[260px] sm:max-w-[350px] flex flex-col gap-2 sm:gap-3 rounded-xl bg-gray-50 backdrop-blur-sm p-2 sm:p-3">
+
+        {/* Collapse button — FIX: flex + justify-end (was already correct, kept as-is) */}
         {collapsible && !forceCollapsed && (
-          <div className="flex justify-end mb-1">
+          <div className="flex justify-end">
             <button
               onClick={() => setCollapsed(true)}
               className="text-gray-400 hover:text-gray-600 text-[11px] sm:text-xs transition-colors"
@@ -100,41 +101,41 @@ export default function TutorialBox({
           </div>
         )}
 
-        <div className={`transition-opacity duration-200 ${animating ? 'opacity-0' : 'opacity-100'}`}>
+        {/* Content block — flex-col + items-center replaces text-center on every child */}
+        <div className={`flex flex-col items-center gap-1.5 transition-opacity duration-200 ${animating ? 'opacity-0' : 'opacity-100'}`}>
           {step.title && (
-            <h3 className="text-black font-bold text-[13px] sm:text-[16px] text-center leading-snug mb-1.5">
+            <h3 className="text-black font-bold text-[clamp(14px,3.8vw,16px)] text-center leading-snug">
               <RichText html={step.title} />
             </h3>
           )}
           {step.content && (
-            <p className="text-black text-[12px] sm:text-[20px] text-center leading-relaxed whitespace-pre-line">
+            <p className="text-black text-[clamp(13px,3.2vw,15px)] text-center leading-relaxed whitespace-pre-line">
               <RichText html={step.content} />
             </p>
           )}
         </div>
 
-        <div className="flex items-center justify-between mt-3 sm:mt-4 gap-2">
-          <div className="flex gap-2 shrink-0">
-            {!isFirst && (
-              <button
-                onClick={handleBack}
-                className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-purple-700 text-purple-400 text-[11px] sm:text-xs font-semibold hover:bg-purple-900/30 transition-colors"
-              >
-                ← Back
-              </button>
-            )}
+        <div className="flex flex-row items-center gap-2">
+          {!isFirst && (
             <button
-              onClick={handleNext}
-              disabled={isLocked}
-              className={`px-3 sm:px-4 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs font-bold tracking-wide transition-colors ${
-                isLocked
-                  ? 'bg-purple-950 text-purple-800 cursor-not-allowed'
-                  : 'bg-purple-600 text-white hover:bg-purple-700 cursor-pointer'
-              }`}
+              onClick={handleBack}
+              className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-purple-700 text-purple-400 text-[11px] sm:text-xs font-semibold hover:bg-purple-900/30 transition-colors"
             >
-              {isLocked ? '...' : isLast ? 'Done ✓' : 'Next →'}
+              ← Back
             </button>
-          </div>
+          )}
+
+          <button
+            onClick={handleNext}
+            disabled={isLocked}
+            className={`ml-auto px-3 sm:px-4 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs font-bold tracking-wide transition-colors ${
+              isLocked
+                ? 'bg-purple-950 text-purple-800 cursor-not-allowed'
+                : 'bg-purple-600 text-white hover:bg-purple-700 cursor-pointer'
+            }`}
+          >
+            {isLocked ? '...' : isLast ? 'Done ✓' : 'Next →'}
+          </button>
         </div>
 
       </div>

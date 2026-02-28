@@ -13,15 +13,16 @@ const MessageBox = ({
   const [isVisible, setIsVisible] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
   const timerRef = useRef(null);
+  const fadeOutRef = useRef(null);
 
   useEffect(() => {
 
     if (message) {
       // Clear any existing timer
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-      }
-
+      if (timerRef.current) clearTimeout(timerRef.current);
+      
+      if (fadeOutRef.current) clearTimeout(fadeOutRef.current);
+      
       // Show the message
       setShouldRender(true);
       setTimeout(() => setIsVisible(true), GameConfig.duration.messageFadeInDelay);
@@ -30,24 +31,26 @@ const MessageBox = ({
       if (!persist) {
         timerRef.current = setTimeout(() => {
           setIsVisible(false);
-          // Remove from DOM after animation
-          setTimeout(() => {
-            setShouldRender(false);
-            if (onClose) onClose();
-          }, GameConfig.duration.messageFadeOutDelay);
-        }, duration);
-      }
+          fadeOutRef.current = setTimeout(() => {
+                      setShouldRender(false);
+                      if (onClose) onClose();
+                    }, GameConfig.duration.messageFadeOutDelay);
+                  }, duration);      }
 
       return () => {
         if (timerRef.current) {
           clearTimeout(timerRef.current);
+        }
+        if (fadeOutRef.current) {
+          clearTimeout(fadeOutRef.current);
         }
       };
     } else {
       // Only hide if we're not in persist mode
       if (!persist) {
         setIsVisible(false);
-        setTimeout(() => setShouldRender(false), GameConfig.duration.messageFadeOutDelay);
+        fadeOutRef.current = setTimeout(() => setShouldRender(false), GameConfig.duration.messageFadeOutDelay);
+        return () => clearTimeout(fadeOutRef.current);
       }
     }
   }, [message, duration, onClose, persist]);

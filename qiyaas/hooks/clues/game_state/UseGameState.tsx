@@ -41,7 +41,7 @@ export function useGameState() {
   const [completed, setCompleted] = useState<boolean[]>([false, false, false]);
   const [sequenceRevealed, setSequenceRevealed] = useState<(string | null)[][]>([[], [], []]);
   const [silentRevealed, setSilentRevealed] = useState<boolean[]>([false, false, false]);
-
+  const [hintsRevealComplete, setHintsRevealComplete] = useState(false);
   // submittedGuesses[clueIndex] = all valid words the user has submitted for that clue.
   // Persisted so keyboard colors survive refresh.
   const [submittedGuesses, setSubmittedGuesses] = useState<string[][]>([[], [], []]);
@@ -113,6 +113,7 @@ export function useGameState() {
       setHasStartingLettersAnimationCompleted(saved.hasStartingLettersAnimationCompleted);
       setCluesData(saved.cluesData);
       setSubmittedGuesses(saved.submittedGuesses ?? [[], [], []]);
+      setHintsRevealComplete(saved.hintsRevealComplete ?? false);
     } else {
       setCluesData(apiPuzzle);
       const words = [
@@ -127,28 +128,21 @@ export function useGameState() {
     setHasLoadedFromStorage(true);
   }, [puzzleLoading, apiPuzzle, loadGameState]);
 
-  // ── Starting message ──────────────────────────────────────────────────────
+// ── Starting message ──────────────────────────────────────────────────────
 
-  useEffect(() => {
-    if (!hasLoadedFromStorage) return;
-    if (!gameStarted && selectedLetters.length < GameConfig.startingLettersNumber) {
-      if (message === '') {
-        setMessage(GameConfig.messages.startingLettersMessage);
-        setMessageType('info');
-        setMessagePersist(true);
-      }
-    }
-  }, [hasLoadedFromStorage, gameStarted, selectedLetters.length, message]);
+useEffect(() => {
+  if (!hasLoadedFromStorage || gameStarted) return;
 
-  useEffect(() => {
-    if (
-      selectedLetters.length === GameConfig.startingLettersNumber &&
-      message === GameConfig.messages.startingLettersMessage
-    ) {
-      setMessage('');
-      setMessagePersist(false);
-    }
-  }, [selectedLetters.length, message]);
+  if (selectedLetters.length < GameConfig.startingLettersNumber) {
+    setMessage(GameConfig.messages.startingLettersMessage);
+    setMessageType('info');
+    setMessagePersist(true);
+  } else if (selectedLetters.length === GameConfig.startingLettersNumber) {
+    setMessage(GameConfig.messages.confirmStartingLetters);
+    setMessageType('info');
+    setMessagePersist(true);
+  }
+}, [hasLoadedFromStorage, gameStarted, selectedLetters.length]);
 
   // ── Auto-save ─────────────────────────────────────────────────────────────
 
@@ -178,6 +172,7 @@ export function useGameState() {
       hasStartingLettersAnimationCompleted,
       cluesData,
       submittedGuesses,
+      hintsRevealComplete
     });
   }, [
     hasLoadedFromStorage, puzzleLoading, puzzleDate,
@@ -186,7 +181,7 @@ export function useGameState() {
     wordInputs, verified, completed, sequenceRevealed, silentRevealed,
     cursorPosition, hintsEnabled, solvedClues, lettersInClues,
     revealedStartingColors, hasStartingLettersAnimationCompleted,
-    cluesData, saveGameState, submittedGuesses,
+    cluesData, saveGameState, submittedGuesses, hintsRevealComplete
   ]);
 
   // ── Game over on 0 lives ──────────────────────────────────────────────────
@@ -262,7 +257,9 @@ export function useGameState() {
     hasWon,
     hasRevealedOnLoss,
     setHasRevealedOnLoss,
-
+    hintsRevealComplete,
+    setHintsRevealComplete,
+    
     // Letters
     selectedLetters,
     setSelectedLetters,

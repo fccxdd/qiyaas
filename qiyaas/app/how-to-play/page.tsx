@@ -5,7 +5,6 @@ import GameHeader from "@/components/layouts/GameHeader";
 import Loading from "@/components/game_assets/game_walkthrough/loading";
 import GoHome from "@/components/game_assets/game_walkthrough/GoHome";
 import TutorialMode from "@/components/game_mode/tutorial/TutorialMode";
-import Settings from "@/components/game_assets/settings/Settings";
 
 export default function HowToPlayPage() {
   return (
@@ -17,8 +16,7 @@ export default function HowToPlayPage() {
                         </div>}
         rightContent={
                         <div className="flex items-center gap-5 sm:gap-6">
-                        
-                        <Settings/>
+                        {/* TODO: Put the Read Mode */}
                          </div>
                         }
       />
