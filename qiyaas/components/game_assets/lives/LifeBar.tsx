@@ -104,7 +104,7 @@ const LifeBar: React.FC<LifeBarProps> = ({
         }
       `}</style>
       
-      <div className="flex justify-center w-full mt-4 mb-2 z-20">
+      <div className="flex justify-center w-full z-20">
         <div className={`life-container flex ${isShaking ? 'animate-shake' : ''}`}>
           {Array.from({ length: maxLives }, (_, index) => (
             <div
