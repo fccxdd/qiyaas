@@ -41,8 +41,8 @@ const LifeBar: React.FC<LifeBarProps> = ({
         /* Mobile devices (320px — 480px) */
          @media (max-width: 480px) {
           .life-dot {
-            width: 0.75rem;
-            height: 0.75rem;
+            width: 1rem;
+            height: 1rem;
           }
           .life-container {
             gap: 0.5rem;

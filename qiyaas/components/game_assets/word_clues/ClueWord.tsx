@@ -129,36 +129,7 @@ export default function ClueWord({
 
 	return (
 		<>
-			<style jsx>{`
-				.dash-container { width: 24px; height: 36px; }
-				.dash-text { font-size: 1.5rem; }
-				.letter-text { font-size: 1.25rem; }
-
-				@media (min-width: 481px) and (max-width: 768px) {
-					.dash-container { width: 26px; height: 38px; }
-					.dash-text { font-size: 1.75rem; }
-					.letter-text { font-size: 1.375rem; }
-				}
-				@media (min-width: 769px) and (max-width: 1024px) {
-					.dash-container { width: 28px; height: 40px; }
-					.dash-text { font-size: 2rem; }
-					.letter-text { font-size: 1.5rem; }
-				}
-				@media (min-width: 1025px) and (max-width: 1200px) {
-					.dash-container { width: 30px; height: 42px; }
-					.dash-text { font-size: 2.25rem; }
-					.letter-text { font-size: 1.625rem; }
-				}
-				@media (min-width: 1201px) {
-					.dash-container { width: 32px; height: 44px; }
-					.dash-text { font-size: 2.5rem; }
-					.letter-text { font-size: 1.75rem; }
-				}
-				@media (min-width: 1201px) and (max-width: 1400px) {
-					.dash-container { width: 24px; height: 36px; }
-					.dash-text { font-size: 1.75rem; }
-					.letter-text { font-size: 1.25rem; }
-				}
+			<style>{`
 
 				@keyframes bounce {
 					0%, 100% { transform: translateY(0); }

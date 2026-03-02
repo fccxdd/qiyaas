@@ -44,9 +44,9 @@ export default function StartingLetters({
             {letters.split('').map((letter, index) => (
               <div
                 key={index}
-                className={`w-7 h-7 sm:w-8 sm:h-8 md:w-12 md:h-12 rounded-full ${GameConfig.startingColors.default} flex items-center justify-center animate-[scale-in_0.2s_ease-out]`}
+                className={`starting-letter-slot rounded-full ${GameConfig.startingColors.default} flex items-center justify-center animate-[scale-in_0.2s_ease-out]`}
               >
-                <span className={`${GameConfig.startingColors.lettersText} text-xl sm:text-2xl md:text-3xl font-bold uppercase`}>
+                <span className={`${GameConfig.startingColors.lettersText} starting-letter-text font-bold uppercase`}>
                   {letter}
                 </span>
               </div>
@@ -56,7 +56,7 @@ export default function StartingLetters({
             {Array.from({ length: GameConfig.startingLettersNumber - letters.length }).map((_, index) => (
               <div
                 key={`empty-${index}`}
-                className={`w-7 h-7 sm:w-8 sm:h-8 md:w-12 md:h-12 rounded-full border-2 border-dashed ${GameConfig.startingColors.beforeGameBegins} flex items-center justify-center`}
+                className={`starting-letter-slot rounded-full border-2 border-dashed ${GameConfig.startingColors.beforeGameBegins} flex items-center justify-center`}
               />
             ))}
           </div>
@@ -117,7 +117,7 @@ export default function StartingLetters({
             return (
               <div
                 key={index}
-                className={`w-7 h-7 sm:w-8 sm:h-8 md:w-12 md:h-12 rounded-full ${bgColor} flex items-center justify-center`}
+                className={`starting-letter-slot rounded-full ${bgColor} flex items-center justify-center`}
                 style={{
                   transitionProperty: 'background-color',
                   transitionDuration: `${GameConfig.duration.startingLetterColorReveal}ms`,
@@ -127,7 +127,7 @@ export default function StartingLetters({
                     : undefined
                 }}
               >
-                <span className={`${GameConfig.startingColors.lettersText} text-xl sm:text-2xl md:text-3xl font-bold`}>
+                <span className={`${GameConfig.startingColors.lettersText} starting-letter-text font-bold uppercase`}>
                   {letter}
                 </span>
               </div>

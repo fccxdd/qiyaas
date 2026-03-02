@@ -36,7 +36,7 @@ interface TopSectionProps {
 export function TopSection({ children, isTransitioned }: TopSectionProps) {
   return (
     <div className="relative px-4 sm:px-6 lg:px-8 pt-4 md:pt-6 shrink-0">
-      <div className="w-full max-w-[720px] mx-auto flex justify-between items-start">
+      <div className="w-full max-w-[550px] 2xl:max-w-[720px]  mx-auto flex flex-col gap-2">
         {children}
       </div>
     </div>
@@ -50,8 +50,8 @@ interface MiddleSectionProps {
 
 export function MiddleSection({ children, isTransitioned }: MiddleSectionProps) {
   return (
-    <div className="flex-[1.3] min-h-0 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
-      <div className="h-full w-full max-w-[720px] mx-auto flex items-center justify-between">
+    <div className="flex-[1.3] [@media(max-height:667px)]:flex-[0.8] min-h-0 overflow-hidden px-2 sm:px-3 flex items-center justify-center">
+      <div className="h-full w-full max-w-[550px] 2xl:max-w-[720px] mx-auto flex items-center justify-between">
         {children}
       </div>
     </div>
@@ -70,8 +70,8 @@ export function BottomSection({
   isTransitioned 
 }: BottomSectionProps) {
   return (
-    <div className="flex-[0.7] flex flex-col justify-end">
-      <div className="flex flex-col items-center gap-6 sm:px-6 lg:px-8">
+    <div className="flex-[0.7] [@media(max-height:667px)]:flex-[0.55] flex flex-col justify-end">
+      <div className="flex flex-col items-center gap-2 sm:gap-4 [@media(max-height:667px)]:gap-1 sm:px-6 lg:px-8">
         
         {/* Lives */}
         <div
@@ -79,7 +79,9 @@ export function BottomSection({
             isTransitioned ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
           }`}
         >
+          <div className="mb-1 sm:mb-0">
           {livesComponent}
+          </div>
         </div>
 
         {/* Keyboard */}
