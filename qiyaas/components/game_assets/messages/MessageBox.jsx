@@ -59,7 +59,7 @@ const MessageBox = ({
 
   // Style of the Messages
   const getMessageStyles = () => {
-    const baseStyles = "px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-medium title-text text-center shadow-lg transition-all duration-300 transform w-[90vw] sm:max-w-md mx-auto text-xs sm:text-base";
+    const baseStyles = "px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-medium title-text text-center shadow-lg transition-all duration-300 transform w-[90vw] sm:max-w-md mx-auto message-text";
     
     switch (type) {
       case 'error':
@@ -78,34 +78,34 @@ const MessageBox = ({
       <style jsx>{`
         /* Mobile devices (320px — 480px) */
         .message-box {
-          top: 23%;
+          top: 19%;
         }
         
         /* iPads, Tablets (481px — 768px) */
         @media screen and (min-width: 481px) and (max-width: 768px) {
           .message-box {
-            top: 30%;
+            top: 18%;
           }
         }
         
         /* Small screens, laptops - 13-inch (769px — 1024px) */
         @media screen and (min-width: 769px) and (max-width: 1024px) {
           .message-box {
-            top: 32%;
+            top: 19%;
           }
         }
         
         /* Desktops, large screens - 15-inch+ (1025px — 1280px) */
         @media screen and (min-width: 1025px) and (max-width: 1280px) {
           .message-box {
-            top: 25%;
+            top: 19%;
           }
         }
         
         /* Extra large screens, TV (1281px and more) */
         @media screen and (min-width: 1281px) {
           .message-box {
-            top: 25%;
+            top: 19%;
           }
         }
       `}</style>
