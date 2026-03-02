@@ -150,13 +150,15 @@ export default function PlayMode({ puzzleData: puzzleDataProp, onComplete, tutor
 
 	// ── Open modal immediately on refresh if already completed ───────────────
 
-	useEffect(() => {
-		if (!hasLoadedFromStorage) return;
-		if (!isGameOver || !hasWon || !hintsRevealComplete) return;
-		openModal();
-	}, [hasLoadedFromStorage]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+      if (!hasLoadedFromStorage) return;
+      if (!isGameOver) return;
+      if (hasWon && !hintsRevealComplete) return;     // win: wait for hints
+      if (!hasWon && !hasRevealedOnLoss) return;      // loss: wait for reveal
+      openModal();
+  }, [hasLoadedFromStorage]); // eslint-disable-line react-hooks/exhaustive-deps
 
-	// ── Starting letters animation ────────────────────────────────────────────
+  // ── Starting letters animation ────────────────────────────────────────────
 
 	const handleStartingLettersSubmit = useCallback(() => {
 		if (hasStartingLettersAnimationCompleted || revealedStartingColors.length === selectedLetters.length) return;
@@ -340,7 +342,7 @@ export default function PlayMode({ puzzleData: puzzleDataProp, onComplete, tutor
 			<GameViewportLayout isTransitioned={isTransitioned}>
 
 				<TopSection isTransitioned={isTransitioned}>
-					<div className="flex flex-col gap-2 sm:gap-4">
+					<div className="w-full flex justify-between items-start">
 						<div className={`transition-all duration-700 ${
 							isTransitioned ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"
 						}`}>
@@ -353,7 +355,7 @@ export default function PlayMode({ puzzleData: puzzleDataProp, onComplete, tutor
 								revealedColors={revealedStartingColors}
 							/>
 						</div>
-					</div>
+					
 
 					<div className={`transition-all duration-700 ${
 						isTransitioned ? "opacity-100 translate-x-0" : "opacity-0 translate-x-4"
@@ -361,6 +363,8 @@ export default function PlayMode({ puzzleData: puzzleDataProp, onComplete, tutor
 						<div className={GameConfig.wordColors.noun}> n </div>
 						<div className={GameConfig.wordColors.verb}> v </div>
 						<div className={GameConfig.wordColors.adjective}> a </div>
+					</div>
+
 					</div>
 				</TopSection>
 
@@ -371,7 +375,8 @@ export default function PlayMode({ puzzleData: puzzleDataProp, onComplete, tutor
 						{!gameStarted ? (
 							<div className="flex flex-col justify-center space-y-6 sm:space-y-8 md:space-y-10">
 								{numbersForClue.map((_, index) => (
-									<div key={index} className={`${GameConfig.wordColors.default} text-3xl md:text-5xl font-bold`}>
+									<div key={index} className={`${GameConfig.wordColors.default} dash-text font-bold`}>
+										{/* Placeholder Dash */}
 										_
 									</div>
 								))}

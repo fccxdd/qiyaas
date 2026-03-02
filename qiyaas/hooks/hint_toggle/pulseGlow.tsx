@@ -74,6 +74,8 @@ const PulseGlow: React.FC<PulseGlowProps> = ({
 			className={`${className} ${shouldPulse ? 'animate-pulse-glow' : ''}`}
 			style={{
 				...style,
+				display: 'inline-block',
+				willChange: 'filter',
 				animationDuration: shouldPulse ? `${GameConfig.duration.hintToggleDuration}ms` : undefined
 			}}
 		>

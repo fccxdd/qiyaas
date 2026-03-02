@@ -141,7 +141,7 @@ const HintToggle: React.FC<HintToggleProps> = ({
 						const isHintOpaque = (isGameOver && hasWon && revealedHints[index]) || hintsOpacity[index];
 
 						return (
-							<div key={index} className="flex items-center relative">
+							<div key={index} className="hint-wrapper-row flex items-center relative">
 								
 								<PulseGlow
 									enabled={hintsEnabled && !isHintVisible && !isGameOver}

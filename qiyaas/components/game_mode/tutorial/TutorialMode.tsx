@@ -12,7 +12,7 @@ import TutorialBox from '@/components/game_assets/messages/TutorialBox';
 import { GameConfig } from "@/lib/gameConfig";
 import { useAllowKeyboardShortcuts } from "@/hooks/keyboard/usePreventRefresh";
 import { useKeyboardLetterStatus } from "@/hooks/keyboard/KeyboardLetterTracker";
-import { TutorialGameInstructions, Game2 } from '@/data/tutorialGameSteps';
+import { Game1, Game2 } from '@/data/tutorialGameSteps';
 import { TutorialGame1, TutorialGame2 } from '@/data/tutorialWords';
 import { useTutorialGameState } from '@/hooks/clues/game_state/UseTutorialGameState';
 import { useKeyboardHandlers } from '@/hooks/keyboard/UseKeyboardHandlers';
@@ -78,9 +78,6 @@ function Game1Tutorial({ isTransitioned, onPhaseComplete }: Game1TutorialProps) 
     selectedLetters,
     hasLostLifeForNoStartingLetters,
     message,
-    messageType,
-    messagePersist,
-    handleMessageClose,
     gameStarted,
     lettersInClues,
     hintsEnabled,
@@ -235,7 +232,7 @@ function Game1Tutorial({ isTransitioned, onPhaseComplete }: Game1TutorialProps) 
       <GameViewportLayout isTransitioned={isTransitioned}>
 
         <TopSection isTransitioned={isTransitioned}>
-          <div className="flex flex-col gap-2 sm:gap-4 w-full">
+          <div className="w-full flex justify-between items-start">
             <div className={`transition-all duration-700 ${
               isTransitioned ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"
             }`}>
@@ -249,14 +246,6 @@ function Game1Tutorial({ isTransitioned, onPhaseComplete }: Game1TutorialProps) 
               />
             </div>
 
-            <div className="w-full flex justify-center">
-              <TutorialBox
-                steps={TutorialGameInstructions}
-                onComplete={onPhaseComplete}
-              />
-            </div>
-          </div>
-
           <div className={`transition-all duration-700 ${
             isTransitioned ? "opacity-100 translate-x-0" : "opacity-0 translate-x-4"
           } text-2xl sm:text-4xl md:text-4xl flex items-center gap-3`}>
@@ -264,6 +253,15 @@ function Game1Tutorial({ isTransitioned, onPhaseComplete }: Game1TutorialProps) 
             <div className={GameConfig.wordColors.verb}> v </div>
             <div className={GameConfig.wordColors.adjective}> a </div>
           </div>
+
+          </div>
+
+          <div className="w-full flex justify-center">
+              <TutorialBox
+                steps={Game1}
+                onComplete={onPhaseComplete}
+              />
+            </div>
         </TopSection>
 
         <MiddleSection isTransitioned={isTransitioned}>
@@ -339,6 +337,7 @@ interface Game2TutorialProps {
 function Game2Tutorial({ isTransitioned, onComplete, onRestartTutorial }: Game2TutorialProps) {
   const [showEndScreen, setShowEndScreen] = useState<'win' | 'lose' | null>(null);
   const hasSeededWordInputsRef = useRef(false);
+  const [tutorialDismissed, setTutorialDismissed] = useState(false);
 
   const {
     lives, selectedLetters, hasLostLifeForNoStartingLetters,
@@ -421,6 +420,12 @@ function Game2Tutorial({ isTransitioned, onComplete, onRestartTutorial }: Game2T
     submittedGuesses,
     completed
   });
+
+  useEffect(() => {
+  if (gameStarted) {
+    setTutorialDismissed(true);
+  }
+}, [gameStarted]);
 
   // ── Reveal animation ──────────────────────────────────────────────────────
 
@@ -546,17 +551,19 @@ function Game2Tutorial({ isTransitioned, onComplete, onRestartTutorial }: Game2T
 return (
     <div className="fixed inset-0 bg-white dark:bg-black overflow-hidden">
       <div className="z-[9999]">
+        {tutorialDismissed &&
         <MessageBox
           message={message}
           type={messageType}
           onClose={handleMessageClose}
           persist={messagePersist}
         />
+        }
       </div>
 
       <GameViewportLayout isTransitioned={isTransitioned}>
         <TopSection isTransitioned={isTransitioned}>
-          <div className="flex flex-col gap-2 sm:gap-4 w-full">
+          <div className="w-full flex justify-between items-start">
             <div className={`transition-all duration-700 ${
               isTransitioned ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"
             }`}>
@@ -570,16 +577,6 @@ return (
               />
             </div>
 
-            <div className="w-full flex justify-center">
-              <TutorialBox
-                steps={Game2}
-                collapsible
-                forceCollapsed={gameStarted}
-                onComplete={() => {}}
-              />
-            </div>
-          </div>
-
           <div className={`transition-all duration-700 ${
             isTransitioned ? "opacity-100 translate-x-0" : "opacity-0 translate-x-4"
           } text-2xl sm:text-4xl md:text-4xl flex items-center gap-3`}>
@@ -587,6 +584,17 @@ return (
             <div className={GameConfig.wordColors.verb}> v </div>
             <div className={GameConfig.wordColors.adjective}> a </div>
           </div>
+          </div>
+
+            <div className="w-full flex justify-center">
+              <TutorialBox
+                steps={Game2}
+                forceCollapsed={gameStarted}
+                onComplete={() => setTutorialDismissed(true)}
+              />
+            </div>
+          
+
         </TopSection>
 
         <MiddleSection isTransitioned={isTransitioned}>

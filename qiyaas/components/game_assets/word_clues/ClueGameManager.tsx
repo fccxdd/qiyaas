@@ -264,7 +264,7 @@ export default function ClueGameManager({
 	if (activeClues.length === 0) return null;
 
 	return (
-		<div className="flex flex-col items-start gap-4">
+		<div className="flex flex-col items-start gap-[1.8rem]">
 			{activeClues.map((clue, index) => (
 				<ClueWord
 					key={clue}

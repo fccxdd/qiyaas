@@ -41,8 +41,8 @@ const LifeBar: React.FC<LifeBarProps> = ({
         /* Mobile devices (320px — 480px) */
          @media (max-width: 480px) {
           .life-dot {
-            width: 0.75rem;
-            height: 0.75rem;
+            width: 1rem;
+            height: 1rem;
           }
           .life-container {
             gap: 0.5rem;
@@ -104,7 +104,7 @@ const LifeBar: React.FC<LifeBarProps> = ({
         }
       `}</style>
       
-      <div className="flex justify-center w-full mt-4 mb-2 z-20">
+      <div className="flex justify-center w-full z-20">
         <div className={`life-container flex ${isShaking ? 'animate-shake' : ''}`}>
           {Array.from({ length: maxLives }, (_, index) => (
             <div

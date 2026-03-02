@@ -6,7 +6,6 @@ interface TutorialStep {
   id: number;
   title: string;
   content: string;
-  waitForAction?: boolean;
 }
 
 interface TutorialBoxProps {
@@ -40,7 +39,6 @@ export default function TutorialBox({
   const step = steps[currentStep];
   const isFirst = currentStep === 0;
   const isLast = currentStep === steps.length - 1;
-  const isLocked = !!step?.waitForAction && !actionCompleted;
   const isCollapsed = forceCollapsed || collapsed;
 
   const transitionTo = useCallback((nextIndex: number) => {
@@ -53,18 +51,23 @@ export default function TutorialBox({
   }, [onStepChange]);
 
   const handleNext = useCallback(() => {
-    if (isLocked) return;
     if (isLast) {
       setVisible(false);
       onComplete?.();
     } else {
       transitionTo(currentStep + 1);
     }
-  }, [isLocked, isLast, currentStep, transitionTo, onComplete]);
+  }, [isLast, currentStep, transitionTo, onComplete]);
 
   const handleBack = useCallback(() => {
     if (!isFirst) transitionTo(currentStep - 1);
   }, [isFirst, currentStep, transitionTo]);
+
+  // Hide button — fires onComplete so tutorialDismissed is set
+  const handleCollapse = useCallback(() => {
+    setCollapsed(true);
+    onComplete?.();
+  }, [onComplete]);
 
   if (!visible || !step) return null;
 
@@ -88,11 +91,11 @@ export default function TutorialBox({
 
       <div className="w-full max-w-[260px] sm:max-w-[350px] flex flex-col gap-2 sm:gap-3 rounded-xl bg-gray-50 backdrop-blur-sm p-2 sm:p-3">
 
-        {/* Collapse button — FIX: flex + justify-end (was already correct, kept as-is) */}
+        {/* Collapse button */}
         {collapsible && !forceCollapsed && (
           <div className="flex justify-end">
             <button
-              onClick={() => setCollapsed(true)}
+              onClick={handleCollapse}
               className="text-gray-400 hover:text-gray-600 text-[11px] sm:text-xs transition-colors"
               aria-label="Collapse tutorial"
             >
@@ -101,15 +104,15 @@ export default function TutorialBox({
           </div>
         )}
 
-        {/* Content block — flex-col + items-center replaces text-center on every child */}
+        {/* Content block */}
         <div className={`flex flex-col items-center gap-1.5 transition-opacity duration-200 ${animating ? 'opacity-0' : 'opacity-100'}`}>
           {step.title && (
-            <h3 className="text-black font-bold text-[clamp(14px,3.8vw,16px)] text-center leading-snug">
+            <h3 className="text-black font-bold text-[clamp(0.875rem,3.8vw,1rem)] text-center leading-snug">
               <RichText html={step.title} />
             </h3>
           )}
           {step.content && (
-            <p className="text-black text-[clamp(13px,3.2vw,15px)] text-center leading-relaxed whitespace-pre-line">
+            <p className="text-black text-[clamp(0.8125rem,3.2vw,0.9375rem)] text-center leading-relaxed whitespace-pre-line">
               <RichText html={step.content} />
             </p>
           )}
@@ -119,7 +122,7 @@ export default function TutorialBox({
           {!isFirst && (
             <button
               onClick={handleBack}
-              className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-purple-700 text-purple-400 text-[11px] sm:text-xs font-semibold hover:bg-purple-900/30 transition-colors"
+              className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-purple-700 text-purple-400 text-[0.6875rem] sm:text-xs font-semibold hover:bg-purple-900/30 transition-colors"
             >
               ← Back
             </button>
@@ -127,14 +130,9 @@ export default function TutorialBox({
 
           <button
             onClick={handleNext}
-            disabled={isLocked}
-            className={`ml-auto px-3 sm:px-4 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs font-bold tracking-wide transition-colors ${
-              isLocked
-                ? 'bg-purple-950 text-purple-800 cursor-not-allowed'
-                : 'bg-purple-600 text-white hover:bg-purple-700 cursor-pointer'
-            }`}
+            className="ml-auto px-3 sm:px-4 py-1 sm:py-1.5 rounded-lg text-[0.6875rem] sm:text-xs font-bold tracking-wide transition-colors bg-purple-600 text-white hover:bg-purple-700 cursor-pointer"
           >
-            {isLocked ? '...' : isLast ? 'Done ✓' : 'Next →'}
+            {isLast ? 'Done ✓' : 'Next →'}
           </button>
         </div>
 

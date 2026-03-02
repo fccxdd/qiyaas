@@ -22,15 +22,15 @@ profanity.load_censor_words()
 lemmatizer = WordNetLemmatizer()
 
 BLOCKLIST = {
-				'aba', 'abandon', 'abortion', 'abuse', 'abused', 'absues', 'abuser', 'abusers', 'abusive', 'addict', 'addiction', 'adultery', 'alcohol', 'alcoholic', 'alexander',  'amen', 'any', 
+				'aba', 'abandon', 'abortion', 'abuse', 'abused', 'absues', 'abuser', 'abusers', 'abusive', 'addict', 'addiction', 'adultery', 'agnostic', 'alcohol', 'alcoholic', 'alexander',  'amen', 'any', 'apartheid', 'apostle', 'apostolic', 
 				'anymore', 'anyway', 'anyways', 'anywhere', 'arousal', 'arthritis', 'assassin', 'assault', 'atheism', 'atheist',
 				'babe', 'bar', 'beer', 'berlin', 'bisexual', 'bipolar', 'bitchy', 'black', 'blackjack', 'blacklist', 'blackmail', 'blackness', 'blackout', 'blind', 'bomb', 'bomber', 'booty', 'bordeaux', 'boston', 'bostons', 'bra', 'brothel', 'bullet', 'butt', 'burial',
 				'cannabis', 'cancer', 'cancerous', 'carcinoma', 'catholic', 'champagne', 'chit', 'christian', 'cigarette', 'cleavage', 'cocaine', 'cocktail', 'coffin', 'communist', 'condom', 'crack', 'crappy', 'crash', 'cremation', 'crime', 'criminal',
 				'dada', 'dak', 'dal', 'dah', 'dated', 'dead', 'death', 'dementia', 'demon', 'depressed', 'devil', 'diarrhea', 'die', 'dirty', 'disease', 'dope', 'drug', 'dumb', 
 				'eff', 'erotica', 'ethnic', 'execution', 'explosion', 'extremism', 'extremist', 
 				'fatal', 'fascism', 'fascist', 'fatty', 'feces', 'fetish', 'fight', 'firearm', 'firepower', 'fraud', 'funeral',
-				'gangsta', 'genital', 'genitals', 'genitalia', 'genocide', 'gin', 'grave', 'graveyard', 'grief', 'gun', 'gunfire', 'gunman', 'gunpoint', 'gunpowder', 'gunshot',
-				'handgun', 'harem', 'hijack', 'hepatitis', 'hickey', 'hindu', 'hobo', 'homeless', 'homicide', 'holocaust', 'horrible', 'horror', 'hostage', 'however',
+				'gangsta', 'genital', 'genitals', 'genitalia', 'genocide', 'gin', 'grave', 'graveyard', 'grenade', 'grief', 'gun', 'gunfire', 'gunman', 'gunpoint', 'gunpowder', 'gunshot',
+				'handgun', 'harem', 'hijack', 'heathen', 'hepatitis', 'hex', 'hickey', 'hindu', 'hobo', 'homeless', 'homicide', 'holocaust', 'horrible', 'horror', 'hostage', 'however',
 				'idiot', 'idiots', 'idiotic', 'ill', 'illegal', 'illness', 'islam', 'islamic', 
 				'jew',
 				'khan', 'killer', 'kink', 'knife',
@@ -44,9 +44,9 @@ BLOCKLIST = {
 				'soviet', 'spank', 'spit', 'stringer', 'stripper', 'stupidity', 'sucker', 'suicide', 'superman', 'syphilis',
 				'taboo', 'tang', 'tequila', 'terror', 'terrorism', 'terrorist', 'tho', 'thou', 'tobacco', 'toilet', 'torture', 'twitter', 
 				'ulcer', 'ups', 'urine', 'urinary', 'ute',
-				'vaginal', 'var', 'vibrator', 'virgin', 'virginity', 'victim', 'violence', 'violent', 
+				'vaginal', 'var', 'vibrator', 'virgin', 'virginity', 'victim', 'violence', 'violent', 'voodoo', 
 				'warhead', 'war', 'warlord', 'weapon', 'welfare', 'whiskey', 'whisky', 'white', 'wiener',
-				'yea', 'yeah', 'yes', 'yet',
+				'yahoo', 'yea', 'yeah', 'yes', 'yet',
 				'zee'
 			}
 
