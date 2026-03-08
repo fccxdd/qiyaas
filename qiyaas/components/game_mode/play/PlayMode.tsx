@@ -18,6 +18,9 @@ import { useGameState } from '@/hooks/clues/game_state/UseGameState';
 import { useKeyboardHandlers } from '@/hooks/keyboard/UseKeyboardHandlers';
 import GameViewportLayout, { TopSection, MiddleSection, BottomSection } from '@/components/ux/GameViewPortLayout';
 import React from 'react';
+import GameHeader from "@/components/layouts/GameHeader";
+import GoHome from "@/components/game_assets/game_walkthrough/GoHome";
+import ReadHowToVersion from "@/components/game_assets/game_walkthrough/ReadHowToVersion";
 
 interface PlayModeProps {
 	puzzleData?: DailyWordPuzzle;
@@ -306,6 +309,19 @@ export default function PlayMode({ puzzleData: puzzleDataProp, onComplete, tutor
 
 	return (
 		<div className="fixed inset-0 bg-white dark:bg-black overflow-hidden">
+			
+			<GameHeader
+			leftContent={
+				<div className="flex items-center gap-3 sm:gap-4">
+				<GoHome />
+				</div>
+			}
+			rightContent={
+				<div className="flex items-center gap-5 sm:gap-6">
+				<ReadHowToVersion variant="play" gameStarted={gameStarted} hasLoadedFromStorage={hasLoadedFromStorage}/>
+				</div>
+			}
+			/>
 
 			<div className="z-[9999]">
 				<MessageBox
