@@ -10,6 +10,17 @@ type Props = {
   hasLoadedFromStorage?: boolean;
 };
 
+type Slide = {
+  id: number;
+  title?: string;
+  content?: string;
+  component?: React.ComponentType | React.ReactNode;
+  variants?: {
+    howToPlay: { title: string; content: string };
+    play: { title: string; content: string };
+  };
+};
+
 export default function ReadHowToVersion({ variant = 'howToPlay', gameStarted = false, hasLoadedFromStorage = false }: Props) {
 
 	const [showModal, setShowModal] = useState(false);
@@ -17,8 +28,9 @@ export default function ReadHowToVersion({ variant = 'howToPlay', gameStarted = 
 
 	const resolvedSlides = TutorialGameInstructions.map(slide =>
 	slide.variants? { ...slide, ...slide.variants[variant] } : slide
-	);
-	
+	) as Slide[];
+	const slide = resolvedSlides[currentSlide];
+
 	useEffect(() => {
 
 	if (variant === 'howToPlay') {
@@ -53,7 +65,6 @@ export default function ReadHowToVersion({ variant = 'howToPlay', gameStarted = 
 		}
 	};
 
-	const slide = resolvedSlides[currentSlide];
 	const isLast = currentSlide === resolvedSlides.length - 1;
 
 	// Add these inside the component, before the return
@@ -94,6 +105,7 @@ export default function ReadHowToVersion({ variant = 'howToPlay', gameStarted = 
 		  }}
 		>
 		  <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-2xl p-6 sm:p-10 max-w-lg w-full relative flex flex-col items-center gap-6"
+			key={currentSlide}
 			onTouchStart={handleTouchStart}
 			onTouchEnd={handleTouchEnd}
 		  >
@@ -113,26 +125,26 @@ export default function ReadHowToVersion({ variant = 'howToPlay', gameStarted = 
 			  <h2
 				className="text-2xl sm:text-2xl font-bold tracking-tight text-gray-900 dark:text-white leading-snug"
 				
-				dangerouslySetInnerHTML={{ __html: slide.title }}
+				dangerouslySetInnerHTML={{ __html: slide.title ?? '' }}
 			  />
 
 			  {/* Content */}
-			  {slide.content && (
+			  {slide.content ? (
 				<p
 				  className="text-xl sm:text-2xl text-gray-600 dark:text-gray-300 leading-relaxed"
-				  dangerouslySetInnerHTML={{ __html: slide.content }}
+				  dangerouslySetInnerHTML={{ __html: slide.content ?? ''}}
 				/>
-			  )}
+			  ) : null}
 
 			{/* Render component if it exists in the step */}
-				{slide.component && (
-				<div className="mt-5 flex justify-center">
-					{typeof slide.component === 'function' 
-					? <slide.component />
-					: slide.component
-					}
-				</div>
-				)}
+			{slide.component && (
+			<div className="mt-5 flex justify-center">
+				{typeof slide.component === 'function'
+				? (() => { const C = slide.component as React.ComponentType; return <C />; })()
+				: slide.component
+				}
+			</div>
+			)}
 			</div>
 		
 			{/* Slide indicators */}

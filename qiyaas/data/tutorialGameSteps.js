@@ -1,6 +1,6 @@
 import EmptyStartingLetters from "@/components/game_assets/game_walkthrough/components/EmptyStartingLetters";
 import KeyboardPreview from "@/components/game_assets/game_walkthrough/components/KeyboardPreview";
-import LifeBar from "@/components/game_assets/lives/LifeBar";
+import LifeBarLoss from "@/components/game_assets/game_walkthrough/components/LifeBarLoss";
 
 export const TutorialGameInstructions = [
   {
@@ -67,7 +67,7 @@ export const TutorialGameInstructions = [
     id: 8,
     title: `You have <span style="color:#CC00FF; font-weight: bold;">4</span> chances to solve the puzzle`,
     content: `Solve <span style="font-weight: bold;">1</span> word at a time!`,
-    component: <LifeBar lives={4} maxLives={4} />
+    component: LifeBarLoss
   },
 
   {
@@ -121,7 +121,7 @@ export const Game1 = [
 
   {
     id: 15,
-    title: `Great! That was the <span style="color:#74A8DC; font-weight: bold;">number rule</span>`,
+    title: `Great! That was the <span style="color:#74A8DC; font-weight: bold;">number</span> clue`,
     content: ``
   },
 
