@@ -1,22 +1,35 @@
 'use client';
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { IoBook } from "react-icons/io5";
 import { IoMdClose } from "react-icons/io";
 import { TutorialGameInstructions } from "@/data/tutorialGameSteps";
 
 type Props = {
   variant?: 'howToPlay' | 'play';
+  gameStarted?: boolean;
+  hasLoadedFromStorage?: boolean;
 };
 
-export default function ReadHowToVersion({ variant = 'howToPlay' }: Props) {
+export default function ReadHowToVersion({ variant = 'howToPlay', gameStarted = false, hasLoadedFromStorage = false }: Props) {
 
-	const [showModal, setShowModal] = useState(true);
+	const [showModal, setShowModal] = useState(false);
   	const [currentSlide, setCurrentSlide] = useState(0);
 
 	const resolvedSlides = TutorialGameInstructions.map(slide =>
 	slide.variants? { ...slide, ...slide.variants[variant] } : slide
 	);
 	
+	useEffect(() => {
+
+	if (variant === 'howToPlay') {
+    	setShowModal(true);
+    	return;
+	}
+    if (hasLoadedFromStorage && !gameStarted) {
+      setShowModal(true);
+    }
+	}, [hasLoadedFromStorage]);
+
 	const handleOpenModal = () => {
 		setCurrentSlide(0);
 		setShowModal(true);
