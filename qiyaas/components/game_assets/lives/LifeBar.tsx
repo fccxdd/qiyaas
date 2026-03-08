@@ -13,7 +13,7 @@ interface LifeBarProps {
 
 const LifeBar: React.FC<LifeBarProps> = ({ 
   lives, 
-  maxLives = 5,
+  maxLives = GameConfig.maxLives,
   onLifeLost 
 }) => {
   const [isShaking, setIsShaking] = useState(false);
