@@ -10,7 +10,7 @@ export default function EmptyStartingLetters() {
       {Array.from({ length: GameConfig.startingLettersNumber }).map((_, index) => (
         <div
           key={`empty-${index}`}
-          className={`w-7 h-7 sm:w-8 sm:h-8 md:w-12 md:h-12 rounded-full border-2 border-dashed ${GameConfig.startingColors.beforeGameBegins} flex items-center justify-center`}
+          className={`starting-letter-slot rounded-full border-2 border-dashed ${GameConfig.startingColors.beforeGameBegins} flex items-center justify-center`}
         />
       ))}
     </div>

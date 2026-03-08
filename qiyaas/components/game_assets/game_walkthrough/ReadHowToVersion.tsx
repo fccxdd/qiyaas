@@ -4,39 +4,47 @@ import { IoBook } from "react-icons/io5";
 import { IoMdClose } from "react-icons/io";
 import { TutorialGameInstructions } from "@/data/tutorialGameSteps";
 
-export default function ReadHowToVersion() {
+type Props = {
+  variant?: 'howToPlay' | 'play';
+};
 
-  const [showModal, setShowModal] = useState(true);
-  const [currentSlide, setCurrentSlide] = useState(0);
+export default function ReadHowToVersion({ variant = 'howToPlay' }: Props) {
 
-  const handleOpenModal = () => {
-	setCurrentSlide(0);
-	setShowModal(true);
-  };
+	const [showModal, setShowModal] = useState(true);
+  	const [currentSlide, setCurrentSlide] = useState(0);
 
-  const handleCloseModal = () => {
-	setShowModal(false);
-  };
+	const resolvedSlides = TutorialGameInstructions.map(slide =>
+	slide.variants? { ...slide, ...slide.variants[variant] } : slide
+	);
+	
+	const handleOpenModal = () => {
+		setCurrentSlide(0);
+		setShowModal(true);
+	};
 
-  const handleNext = () => {
-	if (currentSlide < TutorialGameInstructions.length - 1) {
-	  setCurrentSlide((prev) => prev + 1);
-	} else {
-	  handleCloseModal();
-	}
-  };
+	const handleCloseModal = () => {
+		setShowModal(false);
+	};
 
-  const handlePrev = () => {
-	if (currentSlide > 0) {
-	  setCurrentSlide((prev) => prev - 1);
-	}
-  };
+	const handleNext = () => {
+		if (currentSlide < resolvedSlides.length - 1) {
+		setCurrentSlide((prev) => prev + 1);
+		} else {
+		handleCloseModal();
+		}
+	};
 
-  const slide = TutorialGameInstructions[currentSlide];
-  const isLast = currentSlide === TutorialGameInstructions.length - 1;
+	const handlePrev = () => {
+		if (currentSlide > 0) {
+		setCurrentSlide((prev) => prev - 1);
+		}
+	};
 
-  // Add these inside the component, before the return
-  const touchStartX = useRef<number | null>(null);
+	const slide = resolvedSlides[currentSlide];
+	const isLast = currentSlide === resolvedSlides.length - 1;
+
+	// Add these inside the component, before the return
+	const touchStartX = useRef<number | null>(null);
 
 	const handleTouchStart = (e: React.TouchEvent) => {
 	touchStartX.current = e.touches[0].clientX;
@@ -73,7 +81,7 @@ export default function ReadHowToVersion() {
 		  }}
 		>
 		  <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-2xl p-6 sm:p-10 max-w-lg w-full relative flex flex-col items-center gap-6"
-		    onTouchStart={handleTouchStart}
+			onTouchStart={handleTouchStart}
 			onTouchEnd={handleTouchEnd}
 		  >
 
@@ -102,11 +110,21 @@ export default function ReadHowToVersion() {
 				  dangerouslySetInnerHTML={{ __html: slide.content }}
 				/>
 			  )}
-			</div>
 
+			{/* Render component if it exists in the step */}
+				{slide.component && (
+				<div className="mt-5 flex justify-center">
+					{typeof slide.component === 'function' 
+					? <slide.component />
+					: slide.component
+					}
+				</div>
+				)}
+			</div>
+		
 			{/* Slide indicators */}
 			<div className="flex gap-1.5">
-			  {TutorialGameInstructions.map((_, i) => (
+			  {resolvedSlides.map((_, i) => (
 				<button
 				  key={i}
 				  onClick={() => setCurrentSlide(i)}
