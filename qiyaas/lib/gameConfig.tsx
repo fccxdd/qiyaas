@@ -129,6 +129,9 @@ export const GameConfig = {
 							// Messages
 							messages: {
 
+										// Tutorial Messages
+										selectingStartingLetters: "For this tutorial, please select R, S, T, E",
+
 										// Starting Letters Messages
 										startingLettersMessage: "Please input your 4 starting letters",
 										letterAlreadySelected: "Letter already selected!",

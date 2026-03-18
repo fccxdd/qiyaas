@@ -20,7 +20,7 @@ import GameViewportLayout, { TopSection, MiddleSection, BottomSection } from '@/
 import React from 'react';
 import GameHeader from "@/components/layouts/GameHeader";
 import GoHome from "@/components/game_assets/game_walkthrough/GoHome";
-import ReadHowToVersion from "@/components/game_assets/game_walkthrough/ReadHowToVersion";
+import ReadHowToPlay from "@/components/game_assets/game_walkthrough/ReadHowToPlay";
 
 interface PlayModeProps {
 	puzzleData?: DailyWordPuzzle;
@@ -318,7 +318,7 @@ export default function PlayMode({ puzzleData: puzzleDataProp, onComplete, tutor
 			}
 			rightContent={
 				<div className="flex items-center gap-5 sm:gap-6">
-				<ReadHowToVersion variant="play" gameStarted={gameStarted} hasLoadedFromStorage={hasLoadedFromStorage}/>
+				<ReadHowToPlay variant="play" gameStarted={gameStarted} hasLoadedFromStorage={hasLoadedFromStorage}/>
 				</div>
 			}
 			/>

@@ -1,4 +1,4 @@
-import EmptyStartingLetters from "@/components/game_assets/game_walkthrough/components/EmptyStartingLetters";
+import StartingLetterAnimation from "@/components/game_assets/game_walkthrough/components/StartingLetterAnimation";
 import KeyboardPreview from "@/components/game_assets/game_walkthrough/components/KeyboardPreview";
 import LifeBarLoss from "@/components/game_assets/game_walkthrough/components/LifeBarLoss";
 
@@ -53,7 +53,7 @@ export const TutorialGameInstructions = [
     id: 6,
     title: `Starting Letters`,
     content: `You will start by selecting <span style="color:#CC00FF; font-weight: bold;">3</span> consonants and <span style="color:#CC00FF; font-weight: bold;">1</span> vowel <br />`,
-    component: EmptyStartingLetters
+    component: StartingLetterAnimation
   },
 
   {
@@ -75,7 +75,7 @@ export const TutorialGameInstructions = [
     variants: {
       howToPlay: {
         title: `Let's try a practice puzzle!`,
-        content: `Let's put those rules into action!`
+        content: `Let's put those clues into action!`
       },
       play: {
         title: `Play Tutorial`,
@@ -83,76 +83,123 @@ export const TutorialGameInstructions = [
                   ✨<a href="/how-to-play" style="font-weight: bold; text-decoration: underline; color:#EAB308;">Tutorial</a>✨`
       }
     }
-    }
-  ];
+  }
+];
 
 export const Game1 = [
-  
+
   {
     id: 10,
-    title: `This is a half completed puzzle`,
+    title: `Let's walk through it, shall we? `,
     content: ``,
   },
 
   {
     id: 11,
-    title: `You will start by selecting some starting letters`,
-    content: `<span style="color:#CC00FF; font-weight: bold;">3</span> consonants, <span style="color:#CC00FF; font-weight: bold;">1</span> vowel
-              We've already selected some for you to get started <span style="color:#48bb78; font-weight:bold;">(R, S, T, E)</span>`
-  },
-
-  {
-    id: 12,
-    title: `Remember <span style="color:#74A8DC">noun <span style="color:#6AA84F">verb <span style="color:#E06666">adjective`,
-    content: ``,
+    title: `You will start by selecting some <span style="color:#CC00FF; font-weight: bold;">starting letters</span> (top-left)`,
+    content: `<span style="color:#CC00FF; font-weight: bold;">3</span> consonants, <span style="color:#CC00FF; font-weight: bold;">1</span> vowel`,
+    spotlight: ['startingLetters'],
   },
 
   {
     id: 13,
-    title: `Look at those numbers <span style="color:#74A8DC">G</span><span style="color:#6AA84F">L</span><span style="color:#E06666">O</span><span style="color:">W</span>!`,
-    content: `Go ahead and click on it to see the clues`,
+    title: `Remember each puzzle has a <span style="color:#74A8DC">noun</span>, <span style="color:#6AA84F">verb</span>, and <span style="color:#E06666">adjective</span> (top-right)`,
+    content: ``,
+    spotlight: ['wordTypes'],
   },
 
   {
     id: 14,
-    title: `Try guessing the <span style="color:#74A8DC; font-weight: bold;">first</span> word`,
-    content: ``,
+    title: `Look at those numbers <span style="color:#74A8DC">G</span><span style="color:#6AA84F">L</span><span style="color:#E06666">O</span><span style="color:">W</span>!`,
+    content: `Go ahead and click on each number to see the clues`,
+    spotlight: ['hints'],
+    requiresAction: true,
   },
 
   {
     id: 15,
-    title: `Great! That was the <span style="color:#74A8DC; font-weight: bold;">number</span> clue`,
-    content: ``
+    title: `This column is the <span style="text-decoration:underline;">Length</span> Clue`,
+    content: `Word has this many letters`,
+    spotlight: ['hints:number'],
   },
 
   {
     id: 16,
-    title: `Try solving the <span style="color:#6AA84F; font-weight: bold;">second</span> word`,
-    content: ``,
+    title: `This column is the <span style="text-decoration:underline;">Alphabet</span> Clue`,
+    content: `Word starts with this letter`,
+    spotlight: ['hints:alpha'],
   },
 
   {
     id: 17,
-    title: `Great! You solved the <span style="color:#6AA84F; font-weight: bold;">length</span> clue`,
-    content: ``
+    title: `This column is the <span style="text-decoration:underline;">Number</span> Clue`,
+    content: `Word starts with this letter`,
+    spotlight: ['hints:value'],
   },
 
   {
     id: 18,
-    title: `<span style="color:#E06666; font-weight: bold;">Last</span> word`,
-    content: ``,
+    title: `Each clue will only be used once`,
+    content: `Think carefully`,
+    spotlight: ['hints'],
   },
 
   {
     id: 19,
-    title: `Great! You solved the <span style="color:#E06666; font-weight: bold;">alphabet</span> clue`,
-    content: ``
+    title: `Try selecting the letters <span style="color:#CC00FF; font-weight: bold;">R, S, T, E</span>`,
+    content: ``,
+    spotlight: ['startingLetters', 'keyboard'],
+    requiresAction: true,
   },
 
   {
     id: 20,
+    title: `<span style="color:#4CAF50">Correctly guessed</span> letters will slowly be revealed`,
+    content: ``,
+    spotlight: ['startingLetters', 'clues', 'keyboard'],
+    requiresAction: true,
+  },
+
+  // Title overridden dynamically in Game1Tutorial
+  {
+    id: 21,
+    title: `Try guessing one of the words`,
+    content: ``,
+    requiresAction: true,
+  },
+
+  // Title overridden dynamically — "Close, but not quite!" or "✨ Quick Tip!"
+  {
+    id: 25,
+    title: `Close, but not quite!`,
+    content: `<span style="color:#EAB308; font-weight:bold;">Yellow</span> letters on the keyboard mean that letter exists in a different word`,
+  },
+
+  {
+    id: 22,
+    title: `Great! That was the <span style="color:#74A8DC; font-weight: bold;">number</span> clue`,
+    content: ``,
+    requiresAction: true,
+  },
+
+  {
+    id: 23,
+    title: `Great! That was the <span style="color:#6AA84F; font-weight: bold;">length</span> clue`,
+    content: ``,
+    requiresAction: true,
+  },
+
+  {
+    id: 24,
+    title: `Great! That was the <span style="color:#E06666; font-weight: bold;">alphabet</span> clue`,
+    content: ``,
+    requiresAction: true,
+  },
+
+  {
+    id: 26,
     title: `Makes sense so far?`,
-    content: `Let's try a harder one.`
+    content: `Let's try a harder one.`,
   },
 ];
 
