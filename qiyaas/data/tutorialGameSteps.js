@@ -160,40 +160,70 @@ export const Game1 = [
     requiresAction: true,
   },
 
-  // Title overridden dynamically in Game1Tutorial
+  // Round 1
   {
     id: 21,
     title: `Try guessing one of the words`,
     content: ``,
     requiresAction: true,
+
   },
 
-  // Title overridden dynamically — "Close, but not quite!" or "✨ Quick Tip!"
+  // Round 2
+  {
+    id: 27,
+    title: `Now guess another word`,
+    content: ``,
+    requiresAction: true,
+  },
+
+  // Round 3
+  {
+    id: 28,
+    title: `Last one!`,
+    content: ``,
+    requiresAction: true,
+
+  },
+
+  // Tip slides — one per round so next routing is static, no dynamic logic needed
+  // Round 1 tip (after 21) → goes to 27
   {
     id: 25,
     title: `Close, but not quite!`,
-    content: `<span style="color:#EAB308; font-weight:bold;">Yellow</span> letters on the keyboard mean that letter exists in a different word`,
+    content: `<span style="color:#EAB308; font-weight:bold;">Yellow</span> letters on the keyboard mean that letter exists in the <span style="color:#EAB308; font-weight:bold;">yellow</span> dashes`,
+  },
+
+  // Round 2 tip (after 27) → goes to 28
+  {
+    id: 29,
+    title: `Close, but not quite!`,
+    content: `<span style="color:#EAB308; font-weight:bold;">Yellow</span> letters on the keyboard mean that letter exists in the <span style="color:#EAB308; font-weight:bold;">yellow</span> dashes`,
+  },
+
+  // Round 3 tip (after 28) → goes to 26
+  {
+    id: 30,
+    title: `Close, but not quite!`,
+    content: `<span style="color:#EAB308; font-weight:bold;">Yellow</span> letters on the keyboard mean that letter exists in the <span style="color:#EAB308; font-weight:bold;">yellow</span> dashes`,
   },
 
   {
     id: 22,
     title: `Great! That was the <span style="color:#74A8DC; font-weight: bold;">number</span> clue`,
     content: ``,
-    requiresAction: true,
   },
 
   {
     id: 23,
     title: `Great! That was the <span style="color:#6AA84F; font-weight: bold;">length</span> clue`,
     content: ``,
-    requiresAction: true,
   },
 
   {
     id: 24,
     title: `Great! That was the <span style="color:#E06666; font-weight: bold;">alphabet</span> clue`,
     content: ``,
-    requiresAction: true,
   },
 
   {
