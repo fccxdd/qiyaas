@@ -536,8 +536,16 @@ export default function Game1Tutorial({
     return {
       // Step 26 → last result slide visited
       26: lastResult,
-      // Step 20 → step 19 (previous instruction)
+      // Instruction steps — explicit back chain so none accumulate on history stack
       20: 19,
+      19: 18,
+      18: 17,
+      17: 16,
+      16: 15,
+      15: 14,
+      14: 13,
+      13: 11,
+      11: 10,
       // Guess steps → last result if any solved, else last instruction step
       21: lastResult !== 20 ? lastResult : prevInstructionStep,
       27: lastResult !== 20 ? lastResult : prevInstructionStep,
@@ -674,7 +682,12 @@ export default function Game1Tutorial({
                 onCursorChange={setCursorPosition}
                 onLifeLost={wrappedHandleLifeLost}
                 onWin={handleWin}
-                onShowMessage={showMessage}
+                onShowMessage={(msg, type) => {
+                  if (
+                    msg === GameConfig.messages.wordNotValid ||
+                    msg === GameConfig.messages.wordNotComplete
+                  ) showMessage(msg, type);
+                }}
                 isMessageActive={message !== ''}
                 isGameOver={isGameOver}
                 revealAnimation={revealAnimation}

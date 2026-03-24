@@ -191,21 +191,21 @@ export const Game1 = [
   {
     id: 25,
     title: `Close, but not quite!`,
-    content: `<span style="color:#EAB308; font-weight:bold;">Yellow</span> letters on the keyboard mean that letter exists in the <span style="color:#EAB308; font-weight:bold;">yellow</span> dashes`,
+    content: `<span style="color:#EAB308; font-weight:bold;">Yellow</span> letters on the keyboard go in the <span style="color:#EAB308; font-weight:bold;">yellow</span> dashes`,
   },
 
   // Round 2 tip (after 27) → goes to 28
   {
     id: 29,
     title: `Close, but not quite!`,
-    content: `<span style="color:#EAB308; font-weight:bold;">Yellow</span> letters on the keyboard mean that letter exists in the <span style="color:#EAB308; font-weight:bold;">yellow</span> dashes`,
+    content: `<span style="color:#EAB308; font-weight:bold;">Yellow</span> letters on the keyboard go in the <span style="color:#EAB308; font-weight:bold;">yellow</span> dashes`,
   },
 
   // Round 3 tip (after 28) → goes to 26
   {
     id: 30,
     title: `Close, but not quite!`,
-    content: `<span style="color:#EAB308; font-weight:bold;">Yellow</span> letters on the keyboard mean that letter exists in the <span style="color:#EAB308; font-weight:bold;">yellow</span> dashes`,
+    content: `<span style="color:#EAB308; font-weight:bold;">Yellow</span> letters on the keyboard go in the <span style="color:#EAB308; font-weight:bold;">yellow</span> dashes`,
   },
 
   {
