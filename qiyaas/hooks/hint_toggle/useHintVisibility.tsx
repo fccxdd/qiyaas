@@ -9,7 +9,8 @@ interface HintVisibilityManagerProps {
   puzzleDate: string;
   hintsEnabled: boolean;
   solvedClues?: boolean[];
-  isGameOver?: boolean;  
+  isGameOver?: boolean;
+  autoOpenAll?: boolean;
   children: (props: {
     hintsVisible: boolean[];
     hintsOpacity: boolean[];
@@ -22,7 +23,8 @@ const HintVisibilityManager: React.FC<HintVisibilityManagerProps> = ({
   puzzleDate,
   hintsEnabled,
   solvedClues = [false, false, false],
-  isGameOver = false,  
+  isGameOver = false,
+  autoOpenAll = false,
   children
 }) => {
   const [hintsVisible, setHintsVisible] = useState<boolean[]>([false, false, false]);
@@ -48,42 +50,46 @@ const HintVisibilityManager: React.FC<HintVisibilityManagerProps> = ({
       }, 10);
     });
   }, [solvedClues]);
-  
-  // Toggle hint visibility
+
+  useEffect(() => {
+    if (autoOpenAll) {
+      setHintsVisible([true, true, true]);
+      setHintsOpacity([true, true, true]);
+    }
+  }, [autoOpenAll]);
+
   const toggleHint = (index: number) => {
-    if (isGameOver) return; // Don't allow toggling after game over
+    if (isGameOver) return;
+    if (autoOpenAll) return;
     if (hintsVisible[index]) {
-      // Closing hint
       setHintsOpacity(prev => {
-        const newOpacity = [...prev];
-        newOpacity[index] = false;
-        return newOpacity;
+        const next = [...prev];
+        next[index] = false;
+        return next;
       });
       setTimeout(() => {
         setHintsVisible(prev => {
-          const newHints = [...prev];
-          newHints[index] = false;
-          return newHints;
+          const next = [...prev];
+          next[index] = false;
+          return next;
         });
       }, 400);
     } else {
-      // Opening hint
       setHintsVisible(prev => {
-        const newHints = [...prev];
-        newHints[index] = true;
-        return newHints;
+        const next = [...prev];
+        next[index] = true;
+        return next;
       });
       setTimeout(() => {
         setHintsOpacity(prev => {
-          const newOpacity = [...prev];
-          newOpacity[index] = true;
-          return newOpacity;
+          const next = [...prev];
+          next[index] = true;
+          return next;
         });
       }, 10);
     }
   };
 
-  // Reset hints visibility when hintsEnabled changes from parent
   useEffect(() => {
     if (!hintsEnabled) {
       setHintsVisible([false, false, false]);
@@ -91,7 +97,10 @@ const HintVisibilityManager: React.FC<HintVisibilityManagerProps> = ({
     }
   }, [hintsEnabled]);
 
-  return <>{children({ hintsVisible, hintsOpacity, toggleHint })}</>;
+  const resolvedVisible = autoOpenAll ? [true, true, true] : hintsVisible;
+  const resolvedOpacity = autoOpenAll ? [true, true, true] : hintsOpacity;
+
+  return <>{children({ hintsVisible: resolvedVisible, hintsOpacity: resolvedOpacity, toggleHint })}</>;
 };
 
 export default HintVisibilityManager;

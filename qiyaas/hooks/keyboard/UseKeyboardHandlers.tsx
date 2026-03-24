@@ -104,5 +104,6 @@ export function useKeyboardHandlers({
     handleKeyPress,
     handleBackspace,
     handleEnter,
+    restoreStartingMessage
   };
 }

@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { useRef } from 'react';
+import React from 'react';
 import { GameConfig } from '@/lib/gameConfig';
 
 interface HintHighlighterProps {
@@ -11,6 +11,8 @@ interface HintHighlighterProps {
   wordType: string;
   isSolved: boolean;
   hintNumber: string;
+  // 'number' | 'alpha' | 'value' | null — dims the other parts
+  spotlightColumn?: 'number' | 'alpha' | 'value' | null;
 }
 
 const HintHighlighter: React.FC<HintHighlighterProps> = ({
@@ -18,9 +20,10 @@ const HintHighlighter: React.FC<HintHighlighterProps> = ({
   ruleType,
   wordType,
   isSolved,
-  hintNumber
+  hintNumber,
+  spotlightColumn = null,
 }) => {
-  
+
   const parseHint = (hint: string) => {
     const cleanHint = hint.replace('= ', '');
     const parts = cleanHint.split(',');
@@ -41,34 +44,74 @@ const HintHighlighter: React.FC<HintHighlighterProps> = ({
     }
   };
 
+  // When a spotlightColumn is active, dim parts that aren't spotlit
+  const dim = (col: 'alpha' | 'value') =>
+    spotlightColumn && spotlightColumn !== col
+      ? 'opacity-20'
+      : '';
+
+  // Dim separators whenever any column is spotlit
+  const sepClass = spotlightColumn ? 'opacity-20 transition-opacity duration-300' : '';
+
   const renderHighlightedHint = () => {
     const bgColor = getBackgroundColor(wordType);
     const highlightClass = `${bgColor} ${GameConfig.hintMappingColors} px-2 py-1 rounded font-bold animate-pop-in`;
 
     if (!isSolved) {
-      return <>= {alphabetPart} , {numberPart}</>;
+      return (
+        <>
+          <span className={sepClass}>=</span>{' '}
+          <span className={`transition-opacity duration-300 ${dim('alpha')}`}>{alphabetPart}</span>
+          {' '}<span className={sepClass}>,</span>{' '}
+          <span className={`transition-opacity duration-300 ${dim('value')}`}>{numberPart}</span>
+        </>
+      );
     }
 
     switch (ruleType) {
       case 'alphabet_rule':
         return (
           <>
-            = <span key={`${hintNumber}-alpha`} className={highlightClass}>{alphabetPart}</span> , {numberPart}
+            <span className={sepClass}>=</span>{' '}
+            <span className={`transition-opacity duration-300 ${dim('alpha')}`}>
+              <span key={`${hintNumber}-alpha`} className={highlightClass}>{alphabetPart}</span>
+            </span>
+            {' '}<span className={sepClass}>,</span>{' '}
+            <span className={`transition-opacity duration-300 ${dim('value')}`}>{numberPart}</span>
           </>
         );
-      
+
       case 'number_rule':
         return (
           <>
-            = {alphabetPart} , <span key={`${hintNumber}-num`} className={highlightClass}>{numberPart}</span>
+            <span className={sepClass}>=</span>{' '}
+            <span className={`transition-opacity duration-300 ${dim('alpha')}`}>{alphabetPart}</span>
+            {' '}<span className={sepClass}>,</span>{' '}
+            <span className={`transition-opacity duration-300 ${dim('value')}`}>
+              <span key={`${hintNumber}-num`} className={highlightClass}>{numberPart}</span>
+            </span>
           </>
         );
-      
+
       case 'length_rule':
-        return <>= {alphabetPart} , {numberPart}</>;
-      
+        return (
+          <>
+            <span className={sepClass}>=</span>{' '}
+            <span className={`transition-opacity duration-300 ${dim('alpha')}`}>{alphabetPart}</span>
+            {' '}<span className={sepClass}>,</span>{' '}
+            <span className={`transition-opacity duration-300 ${dim('value')}`}>{numberPart}</span>
+          </>
+        );
+
       default:
-        return <>= {alphabetPart} , {numberPart}</>;
+        return (
+          <>
+            <span className={sepClass}>=</span>{' '}
+            <span className={`transition-opacity duration-300 ${dim('alpha')}`}>{alphabetPart}</span>
+            {' '}<span className={sepClass}>,</span>{' '}
+            <span className={`transition-opacity duration-300 ${dim('value')}`}>{numberPart}</span>
+          </>
+        );
     }
   };
 
