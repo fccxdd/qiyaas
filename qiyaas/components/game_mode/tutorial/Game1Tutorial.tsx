@@ -92,6 +92,11 @@ export default function Game1Tutorial({
   // Result steps visited in solve order — drives back navigation
   // e.g. [23, 22, 24] means length was solved first, then number, then alphabet
   const [solvedResultsInOrder, setSolvedResultsInOrder] = useState<number[]>([]);
+  const solvedResultsInOrderRef = useRef<number[]>([]);
+  // Keep ref in sync with state
+  useEffect(() => {
+    solvedResultsInOrderRef.current = solvedResultsInOrder;
+  }, [solvedResultsInOrder]);
 
   // Whether the current tip slide is showing a correct-guess tip or wrong-guess tip
   const [tipIsCorrect, setTipIsCorrect] = useState(false);
@@ -99,6 +104,10 @@ export default function Game1Tutorial({
   // The result step ID that the current tip should go Back to
   // (set when routing to tip — correct → result slide, wrong → guess step)
   const [tipBackTarget, setTipBackTarget] = useState<number>(21);
+
+  // Whether the tip was arrived at going backwards — drives tipNext routing.
+  // State (not ref) so nextOverride useMemo reacts when it changes.
+  const [tipArrivedViaBack, setTipArrivedViaBack] = useState(false);
 
   // The last instruction step seen — used as Back target for guess steps
   const [prevInstructionStep, setPrevInstructionStep] = useState<number>(20);
@@ -421,9 +430,22 @@ export default function Game1Tutorial({
       }
     }
 
-    // Track tip routing when arriving at a tip from a result slide
-    if (!isBack && TIP_STEP_IDS.has(stepId) && RESULT_STEP_IDS.has(currentStepIdRef.current)) {
-      setTipBackTarget(currentStepIdRef.current);
+    // When arriving at a tip slide (forward or back), restore tipIsCorrect
+    if (TIP_STEP_IDS.has(stepId)) {
+      setTipArrivedViaBack(isBack);
+      if (!isBack && RESULT_STEP_IDS.has(currentStepIdRef.current)) {
+        // Arriving forward from a result slide — update back target and mark correct
+        setTipBackTarget(currentStepIdRef.current);
+        setTipIsCorrect(true);
+      } else if (isBack) {
+        // Arriving via back nav — tip is correct if any words have been solved
+        const solved = solvedResultsInOrderRef.current;
+        const hasCorrectResult = solved.length > 0;
+        setTipIsCorrect(hasCorrectResult);
+        if (hasCorrectResult) {
+          setTipBackTarget(solved[0]);
+        }
+      }
     }
 
     // Track last instruction step for guess step back navigation
@@ -449,14 +471,12 @@ export default function Game1Tutorial({
       : solvedResultsInOrder.length === 2 ? 28
       : 26;
     // Tip Next:
-    //   If correct and 2+ results exist → go to second result to continue showing results
-    //   If correct but only 1 result → go to next guess step (more words to solve)
-    //   If wrong → return to same guess step
-    const tipNextCorrect = !allSolved
-      ? nextGuessStep
-      : solvedResultsInOrder.length >= 2
-        ? solvedResultsInOrder[1]
-        : 26;
+    //   If result 2 exists (2+ words solved) → go to result 2 to continue showing results
+    //   Otherwise → next guess step (more words left to solve)
+    //   Wrong guess → return to same guess step
+    const tipNextCorrect = solvedResultsInOrder.length >= 2
+      ? solvedResultsInOrder[1]
+      : nextGuessStep;
     const tipNext = tipIsCorrect ? tipNextCorrect : currentGuessStepRef.current;
 
     // For each result slide, Next goes to the next result in solve order,
@@ -491,7 +511,7 @@ export default function Game1Tutorial({
       29: tipNext,
       30: tipNext,
     };
-  }, [tipIsCorrect, currentStepId, solvedResultsInOrder]);
+  }, [tipIsCorrect, tipArrivedViaBack, currentStepId, solvedResultsInOrder]);
 
   // ── backOverride ──────────────────────────────────────────────────────────
   // Step 26 ("makes sense?") → last result slide in solve order
@@ -505,7 +525,11 @@ export default function Game1Tutorial({
 
     const backForResult = (resultStepId: number): number => {
       const idx = solvedResultsInOrder.indexOf(resultStepId);
-      if (idx > 0) return solvedResultsInOrder[idx - 1];
+      // Second result → tip always sits between result 1 and result 2
+      if (idx === 1) return 25;
+      // Third result → second result
+      if (idx > 1) return solvedResultsInOrder[idx - 1];
+      // First result → step 20
       return 20;
     };
 
@@ -514,10 +538,10 @@ export default function Game1Tutorial({
       26: lastResult,
       // Step 20 → step 19 (previous instruction)
       20: 19,
-      // Guess steps → last instruction step
-      21: prevInstructionStep,
-      27: prevInstructionStep,
-      28: prevInstructionStep,
+      // Guess steps → last result if any solved, else last instruction step
+      21: lastResult !== 20 ? lastResult : prevInstructionStep,
+      27: lastResult !== 20 ? lastResult : prevInstructionStep,
+      28: lastResult !== 20 ? lastResult : prevInstructionStep,
       // Tips → result slide (correct) or guess step (wrong)
       25: tipBackTarget,
       29: tipBackTarget,

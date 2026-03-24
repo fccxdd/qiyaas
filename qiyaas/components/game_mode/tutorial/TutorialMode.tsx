@@ -6,7 +6,6 @@ import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Game1Tutorial from '@/components/game_mode/tutorial/Game1Tutorial';
 import Game2Tutorial from '@/components/game_mode/tutorial/Game2Tutorial';
-import { Game1 } from '@/data/tutorialGameSteps';
 
 const PHASE_INTRO = 0;
 const PHASE_GAME2 = 1;
@@ -19,7 +18,6 @@ export default function TutorialMode({ tutorialBoxReady = false }: TutorialModeP
   const router = useRouter();
   const [phase, setPhase] = useState(PHASE_INTRO);
   const [isTransitioned, setIsTransitioned] = useState(false);
-  const [game1InitialStep, setGame1InitialStep] = useState<number | undefined>(undefined);
 
   useEffect(() => {
     const t = setTimeout(() => setIsTransitioned(true), 50);
@@ -37,8 +35,8 @@ export default function TutorialMode({ tutorialBoxReady = false }: TutorialModeP
   }, [router, phase]);
 
   const handleBackFromGame2Done = useCallback(() => {
-    setGame1InitialStep(Game1.length - 1);
     setPhase(PHASE_INTRO);
+    // No initialStep — defaults to 0, restarting Game 1 from the beginning
   }, []);
 
   if (phase === PHASE_GAME2) {
@@ -60,7 +58,6 @@ export default function TutorialMode({ tutorialBoxReady = false }: TutorialModeP
       isTransitioned={isTransitioned}
       onPhaseComplete={handlePhaseComplete}
       tutorialBoxReady={tutorialBoxReady}
-      initialStep={game1InitialStep}
       onComplete={() => router.push('/play')}
       onRestartTutorial={() => window.location.reload()}
     />
