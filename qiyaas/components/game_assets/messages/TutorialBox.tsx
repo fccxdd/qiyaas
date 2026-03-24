@@ -218,7 +218,7 @@ const TutorialBox = forwardRef<TutorialBoxHandle, TutorialBoxProps>(function Tut
     return (
       <div className={`transition-all duration-500 ${ready ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'}`}>
         <div className="w-full px-4 py-2 flex justify-center">
-          <button onClick={onBackFromDone} className="px-3 py-1.5 rounded-lg border border-purple-700 text-purple-400 text-sm sm:text-[0.6875rem] font-semibold hover:bg-purple-900/30 transition-colors">
+          <button onClick={onBackFromDone} className="px-3 py-1.5 rounded-lg border border-purple-700 text-purple-400 text-base font-semibold hover:bg-purple-900/30 transition-colors">
             ← Back to tutorial
           </button>
         </div>
@@ -257,7 +257,7 @@ const TutorialBox = forwardRef<TutorialBoxHandle, TutorialBoxProps>(function Tut
               </h3>
             )}
             {step.content && (
-              <p className="text-black text-[clamp(0.8rem,3.2vw,1.25rem)] text-center leading-relaxed whitespace-pre-line">
+              <p className="text-black text-[clamp(0.8rem,3.2vw,0.9rem)] text-center leading-relaxed whitespace-pre-line">
                 <RichText html={step.content} />
               </p>
             )}
@@ -268,14 +268,14 @@ const TutorialBox = forwardRef<TutorialBoxHandle, TutorialBoxProps>(function Tut
 
           <div className="flex flex-row items-center gap-2">
             {canGoBack && (
-              <button onClick={handleBack} className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-purple-700 text-purple-400 text-[0.6875rem] sm:text-xs font-semibold hover:bg-purple-900/30 transition-colors">
+              <button onClick={handleBack} className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-purple-700 text-purple-400 text-xs sm:text-sm font-semibold hover:bg-purple-900/30 transition-colors">
                 ← Back
               </button>
             )}
             <button
               onClick={handleNext}
               disabled={isActionPending}
-              className={`ml-auto px-3 sm:px-4 py-1 sm:py-1.5 rounded-lg text-[0.6875rem] sm:text-xs font-bold tracking-wide transition-colors ${isActionPending ? 'bg-purple-300 text-white cursor-not-allowed' : 'bg-purple-600 text-white hover:bg-purple-700 cursor-pointer'}`}
+              className={`ml-auto px-3 sm:px-4 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm font-bold tracking-wide transition-colors ${isActionPending ? 'bg-purple-300 text-white cursor-not-allowed' : 'bg-purple-600 text-white hover:bg-purple-700 cursor-pointer'}`}
             >
               {isLast ? 'Done ✓' : 'Next →'}
             </button>
