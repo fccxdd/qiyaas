@@ -37,7 +37,7 @@ export default function KeyboardPreview() {
 
       <div className="flex items-end gap-1">
         <span className="text-base sm:text-lg title-text text-black dark:text-white text-left">
-          Possible <span className="text-yellow-500">yellow</span> letters appear as a yellow dash{' '}
+          <span className="text-yellow-500">Yellow</span> letters go in the yellow dash(es){' '}
           <span className={`leading-none dash-text ${GameConfig.cursorColor.stillAvailable} animate-pulse`} style={{ fontFamily: 'var(--font-indie-flower)' }}>
             _
           </span>
