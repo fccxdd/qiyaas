@@ -21,7 +21,8 @@ export const GameConfig = {
 											wonGame: "qiyaas_glow.svg",
 											lostGameDarkMode: "qiyaas_gray_dark.svg",
 											lostGameLightMode: "qiyaas_gray_light.svg",
-											shareable: "qiyaas_glow_shareable.png"
+											shareable: "qiyaas_glow_shareable.png",
+											shareable_square: "qiyaas_glow_shareable_square.png"
 											
 										},
 														

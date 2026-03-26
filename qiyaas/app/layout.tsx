@@ -34,10 +34,16 @@ export const metadata = {
     siteName: GameConfig.titleName,
     images: [
                 {
-                url: `${GameConfig.urlName}/${GameConfig.imagePaths.shareable}`,
+                url: 'https://www.qiyaasgame.com/qiyaas_glow_shareable.png',
                 width: 1200,
                 height: 630,
                 alt: 'Qiyaas Shareable Logo',
+                },
+                {
+                url: 'https://www.qiyaasgame.com/qiyaas_glow_shareable_square.png',
+                width: 400,
+                height: 400,
+                alt: 'Qiyaas Shareable Logo Square',
                 }
             ],
     locale: 'en_US',
