@@ -7,26 +7,7 @@ import { GameConfig } from '@/lib/gameConfig';
 export default function KeyboardPreview() {
   return (
     <div className="flex flex-col gap-3 py-4 w-full max-w-2xl">
-      
-    {/* Yellow E with description */}
-    <div className="flex items-center gap-3 sm:gap-4 md:gap-6 w-full">
-      <div
-        className={`flex items-center justify-center font-bold uppercase rounded-md select-none flex-shrink-0 ${GameConfig.keyboardColors.still_available}`}
-        style={{ width: '3rem', height: '3rem', fontSize: '1.5rem' }}
-      >
-        E
-      </div>
 
-      <span className="text-base sm:text-lg title-text text-black dark:text-white text-left">
-        Yellow letters go here
-      </span>
-
-      <div className="relative flex items-end justify-center">
-        <span className={`dash-text font-bold leading-none ${GameConfig.cursorColor.stillAvailable} animate-pulse`}>
-          _
-        </span>
-      </div>
-    </div>
 
     {/* Grey S with description */}
     <div className="flex items-center gap-3 sm:gap-4 md:gap-6 w-full">
@@ -41,10 +22,28 @@ export default function KeyboardPreview() {
         S
       </div>
       <span className="text-base sm:text-lg title-text text-black dark:text-white text-left flex-1 min-w-0">
-        The letter is not in any words <span className="font-bold">OR</span> used up
+        The letter is <span className="text-gray-600">dark gray</span> when not in any words <span className="font-bold">OR</span> used up
       </span>
     </div>
+    
+    {/* Yellow E with description */}
+    <div className="flex items-center gap-3 sm:gap-4 md:gap-6 w-full">
+      <div
+        className={`flex items-center justify-center font-bold uppercase rounded-md select-none flex-shrink-0 ${GameConfig.keyboardColors.still_available}`}
+        style={{ width: '3rem', height: '3rem', fontSize: '1.5rem' }}
+      >
+        E
+      </div>
 
+      <div className="flex items-end gap-1">
+        <span className="text-base sm:text-lg title-text text-black dark:text-white text-left">
+          Possible <span className="text-yellow-500">yellow</span> letters appear as a yellow dash{' '}
+          <span className={`leading-none dash-text ${GameConfig.cursorColor.stillAvailable} animate-pulse`} style={{ fontFamily: 'var(--font-indie-flower)' }}>
+            _
+          </span>
+        </span>
+      </div>
+    </div>
     </div>
   );
 }

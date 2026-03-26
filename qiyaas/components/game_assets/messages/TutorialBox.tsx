@@ -72,9 +72,6 @@ const TutorialBox = forwardRef<TutorialBoxHandle, TutorialBoxProps>(function Tut
   const [visibleMessage, setVisibleMessage] = useState<string | null>(null);
   const touchStartX = useRef<number | null>(null);
 
-  // History stack for steps without an explicit backOverride.
-  // Steps with noBack: true are never pushed here.
-  // Steps with a backOverride entry are also not pushed — they manage their own back routing.
   const historyRef = useRef<number[]>([]);
 
   const hasAutoAdvanced = useRef<Set<number>>(new Set());
@@ -113,8 +110,6 @@ const TutorialBox = forwardRef<TutorialBoxHandle, TutorialBoxProps>(function Tut
     setTimeout(() => {
       if (!isBack) {
         const curStep = steps[currentStep];
-        // Only push to history if the step is back-navigable via the stack.
-        // Steps with noBack or a backOverride don't use the stack.
         if (curStep && !curStep.noBack && !(curStep.id in backOverrideRef.current)) {
           historyRef.current = [...historyRef.current, currentStep];
         }
@@ -127,7 +122,6 @@ const TutorialBox = forwardRef<TutorialBoxHandle, TutorialBoxProps>(function Tut
   }, [onStepChange, onSpotlightChange, steps, playSpotlight, currentStep]);
   transitionToRef.current = transitionTo;
 
-  // Auto-advance for requiresAction steps
   useEffect(() => {
     if (!step?.requiresAction) return;
     if (!isCurrentActionCompleted) return;
@@ -142,7 +136,6 @@ const TutorialBox = forwardRef<TutorialBoxHandle, TutorialBoxProps>(function Tut
     transitionTo(currentStep + 1);
   }, [isCurrentActionCompleted, currentStep]);
 
-  // Re-arm requiresAction step when parent resets actionCompleted
   useEffect(() => {
     if (!step?.requiresAction) return;
     if (!isCurrentActionCompleted) {
@@ -181,7 +174,6 @@ const TutorialBox = forwardRef<TutorialBoxHandle, TutorialBoxProps>(function Tut
 
   const handleBack = useCallback(() => {
     if (!step) return;
-    // Explicit backOverride takes priority over the history stack
     const overrideTargetId = backOverrideRef.current[step.id];
     if (overrideTargetId !== undefined) {
       const targetIndex = steps.findIndex(s => s.id === overrideTargetId);
@@ -216,7 +208,7 @@ const TutorialBox = forwardRef<TutorialBoxHandle, TutorialBoxProps>(function Tut
 
   if (done && onBackFromDone) {
     return (
-      <div className={`transition-all duration-500 ${ready ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'}`}>
+      <div className={`relative z-10 transition-all duration-500 ${ready ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'}`}>
         <div className="w-full px-4 py-2 flex justify-center">
           <button onClick={onBackFromDone} className="px-3 py-1.5 rounded-lg border border-purple-700 text-purple-400 text-base font-semibold hover:bg-purple-900/30 transition-colors">
             ← Back to tutorial
@@ -240,7 +232,7 @@ const TutorialBox = forwardRef<TutorialBoxHandle, TutorialBoxProps>(function Tut
   return (
     <div className={`transition-all duration-500 ${ready ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'}`}>
       <div className="w-full px-4 py-2 flex justify-center" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
-        <div className="w-full max-w-[260px] sm:max-w-[350px] flex flex-col gap-2 sm:gap-3 rounded-xl bg-gray-50 backdrop-blur-sm p-2 sm:p-3">
+        <div className="tutorial-box w-full max-w-[260px] sm:max-w-[350px] flex flex-col gap-2 sm:gap-3 rounded-xl bg-gray-50 backdrop-blur-sm p-2 sm:p-3">
 
           {collapsible && !forceCollapsed && (
             <div className="flex justify-end">
@@ -252,12 +244,12 @@ const TutorialBox = forwardRef<TutorialBoxHandle, TutorialBoxProps>(function Tut
 
           <div className={`flex flex-col items-center gap-1.5 transition-opacity duration-200 ${animating ? 'opacity-0' : 'opacity-100'}`}>
             {step.title && (
-              <h3 className="text-black font-bold text-[clamp(0.875rem,3.8vw,1rem)] text-center leading-snug">
+              <h3 className="text-black font-bold text-[clamp(0.875rem,3.8vw,1.2rem)] text-center leading-snug">
                 <RichText html={step.title} />
               </h3>
             )}
             {step.content && (
-              <p className="text-black text-[clamp(0.8rem,3.2vw,0.9rem)] text-center leading-relaxed whitespace-pre-line">
+              <p className="text-black text-[clamp(0.8rem,3.2vw,1.25rem)] text-center leading-relaxed whitespace-pre-line">
                 <RichText html={step.content} />
               </p>
             )}

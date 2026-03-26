@@ -25,28 +25,28 @@ export const TutorialGameInstructions = [
     id: 3,
     title: `Length clue`,
     content: `The number represents the <span style="font-weight: bold;">length</span> of the word.<br/><br/>
-              <span style="color:#6AA84F; font-weight: bold">PROTECT&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color:#6AA84F; padding:1.5px 5px; color: white; border-radius:4px; font-weight: bold">7</span> = G , S</span><br/>
-              <span style="color:#E06666; font-weight: bold">ORIGINAL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color:#E06666; padding:1.5px 5px; color: white; border-radius:4px; font-weight: bold">8</span> = H , E</span><br/>
-              <span style="color:#74A8DC; font-weight: bold">CHOCOLATE&nbsp;<span style="background-color:#74A8DC; padding:1.5px 5px; color: white; border-radius:4px; font-weight: bold">9</span> = I , N</span>`
+              <span style="color:#6AA84F; font-weight: bold">PROTECT&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color:#6AA84F; padding:1.5px 5px; color: white; border-radius:4px; font-weight: bold">7</span> <span style="opacity:0.1">= G , S</span></span><br/>
+              <span style="color:#E06666; font-weight: bold">ORIGINAL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color:#E06666; padding:1.5px 5px; color: white; border-radius:4px; font-weight: bold">8</span> <span style="opacity:0.1">= H , E</span></span><br/>
+              <span style="color:#74A8DC; font-weight: bold">CHOCOLATE&nbsp;<span style="background-color:#74A8DC; padding:1.5px 5px; color: white; border-radius:4px; font-weight: bold">9</span> <span style="opacity:0.1">= I , N</span></span>`
   },
 
   {
     id: 4,
     title: `Alphabet clue`,
-    content: `Each number represents a <span style="font-weight: bold;">letter's position in the alphabet</span> telling you which letter the word starts with.<br/><br/>
-              <span style="color:#74A8DC; font-weight: bold">APPLE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1 = <span style="background-color:#74A8DC; padding:1.5px 5px; color: white; border-radius:4px; font-weight: bold">A</span> , O</span><br/>
-              <span style="color:#6AA84F; font-weight: bold">BOUNCE&nbsp;&nbsp;&nbsp;2 = <span style="background-color:#6AA84F; padding:1.5px 5px; color: white; border-radius:4px; font-weight: bold">B</span> , T</span><br/>
-              <span style="color:#E06666; font-weight: bold">CLEAR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3 = <span style="background-color:#E06666; padding:1.5px 5px; color: white; border-radius:4px; font-weight: bold">C</span> , T</span>`
+    content: `<span style="color:#CC00FF; font-weight: bold; text-decoration:underline;">OR</span> each number represents a <span style="font-weight: bold;">letter's position in the alphabet</span> telling you which letter the word starts with.<br/><br/>
+              <span style="color:#74A8DC; font-weight: bold;">APPLE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1 = <span style="background-color:#74A8DC; padding:1.5px 5px; color: white; border-radius:4px; font-weight: bold">A</span> <span style="opacity:0.1">, O</span></span><br/>
+              <span style="color:#6AA84F; font-weight: bold;">BOUNCE&nbsp;&nbsp;&nbsp;2 = <span style="background-color:#6AA84F; padding:1.5px 5px; color: white; border-radius:4px; font-weight: bold">B</span> <span style="opacity:0.1">, T</span></span><br/>
+              <span style="color:#E06666; font-weight: bold;">CLEAR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3 = <span style="background-color:#E06666; padding:1.5px 5px; color: white; border-radius:4px; font-weight: bold">C</span> <span style="opacity:0.1">, T</span></span>`
   },
 
   {
     id: 5,
     title: `Number clue`,
-    content: `Each number tells you to <span style="font-weight: bold;">start the word with the first letter of that number</span>.<br/>
+    content: `<span style="color:#CC00FF; font-weight: bold; text-decoration:underline;">OR</span> each number tells you to <span style="font-weight: bold;">start the word with the first letter of that number</span>.<br/>
               4 = <span style="text-decoration:underline; font-weight:bold; color:#74A8DC;">F</span>our, 5 = <span style="text-decoration:underline; font-weight:bold; color:#E06666;">F</span>ive, 6 = <span style="text-decoration:underline; font-weight:bold; color:#6AA84F;">S</span>ix<br/><br/>
-              <span style="color:#74A8DC; font-weight: bold">FLOWER&nbsp;&nbsp;&nbsp;4 = D , <span style="background-color:#74A8DC; padding:1.5px 5px; color: white; border-radius:4px; font-weight: bold">F</span></span><br/>
-              <span style="color:#E06666; font-weight: bold">FINAL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5 = E , <span style="background-color:#E06666; padding:1.5px 5px; color: white; border-radius:4px; font-weight: bold">F</span></span><br/>
-              <span style="color:#6AA84F; font-weight: bold">SPEAK&nbsp;&nbsp;&nbsp;&nbsp;6 = F , <span style="background-color:#6AA84F; padding:1.5px 5px; color: white; border-radius:4px; font-weight: bold">S</span></span>`
+              <span style="color:#74A8DC; font-weight: bold;">FLOWER&nbsp;&nbsp;&nbsp;4 = <span style="opacity:0.1">D ,</span> <span style="background-color:#74A8DC; padding:1.5px 5px; color: white; border-radius:4px; font-weight: bold">F</span></span><br/>
+              <span style="color:#E06666; font-weight: bold;">FINAL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5 = <span style="opacity:0.1">E ,</span> <span style="background-color:#E06666; padding:1.5px 5px; color: white; border-radius:4px; font-weight: bold">F</span></span><br/>
+              <span style="color:#6AA84F; font-weight: bold;">SPEAK&nbsp;&nbsp;&nbsp;&nbsp;6 = <span style="opacity:0.1">F ,</span> <span style="background-color:#6AA84F; padding:1.5px 5px; color: white; border-radius:4px; font-weight: bold">S</span></span>`
   },
 
   {
@@ -192,6 +192,7 @@ export const Game1 = [
     id: 25,
     title: `Close, but not quite!`,
     content: `<span style="color:#EAB308; font-weight:bold;">Yellow</span> letters on the keyboard go in the <span style="color:#EAB308; font-weight:bold;">yellow</span> dashes`,
+    spotlight: ['keyboard', 'clues']
   },
 
   // Round 2 tip (after 27) → goes to 28
@@ -199,6 +200,7 @@ export const Game1 = [
     id: 29,
     title: `Close, but not quite!`,
     content: `<span style="color:#EAB308; font-weight:bold;">Yellow</span> letters on the keyboard go in the <span style="color:#EAB308; font-weight:bold;">yellow</span> dashes`,
+    spotlight: ['clues', 'keyboard']
   },
 
   // Round 3 tip (after 28) → goes to 26
@@ -206,24 +208,28 @@ export const Game1 = [
     id: 30,
     title: `Close, but not quite!`,
     content: `<span style="color:#EAB308; font-weight:bold;">Yellow</span> letters on the keyboard go in the <span style="color:#EAB308; font-weight:bold;">yellow</span> dashes`,
+    spotlight: ['keyboard', 'clues']
   },
 
   {
     id: 22,
     title: `Great! That was the <span style="color:#74A8DC; font-weight: bold;">number</span> clue`,
-    content: ``,
+    content: `2 = <span style="color:#74A8DC; font-weight: bold; text-decoration:underline;">T</span>WO`,
+    spotlight: ['clues:0', 'hints:value', 'wordTypes:noun']
   },
 
   {
     id: 23,
     title: `Great! That was the <span style="color:#6AA84F; font-weight: bold;">length</span> clue`,
-    content: ``,
+    content: `6 = <span style="color:#6AA84F; font-weight: bold; text-decoration:underline;">6</span> Letter Word`,
+    spotlight: ['clues:1', 'hints:number', 'wordTypes:verb']
   },
 
   {
     id: 24,
     title: `Great! That was the <span style="color:#E06666; font-weight: bold;">alphabet</span> clue`,
-    content: ``,
+    content: `<span style="color:#E06666; font-weight: bold;">E</span> is the <span style="color:#E06666; font-weight: bold;">5th Letter</span> of the alphabet`,
+    spotlight: ['clues:2', 'hints:alpha', 'wordTypes:adjective']
   },
 
   {
