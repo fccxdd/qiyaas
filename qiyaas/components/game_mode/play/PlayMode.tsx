@@ -1,3 +1,5 @@
+// components/game_mode/play/PlayMode.tsx
+
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -39,6 +41,8 @@ export default function PlayMode({ puzzleData: puzzleDataProp, onComplete, tutor
 
 	const { puzzle: puzzleFromApi } = usePuzzleData();
 	const puzzle = puzzleDataProp ?? puzzleFromApi;
+
+	const [isHowToPlayOpen, setIsHowToPlayOpen] = useState(false);
 
 	const {
 		lives,
@@ -318,14 +322,19 @@ export default function PlayMode({ puzzleData: puzzleDataProp, onComplete, tutor
 			}
 			rightContent={
 				<div className="flex items-center gap-5 sm:gap-6">
-				<ReadHowToPlay variant="play" gameStarted={gameStarted} hasLoadedFromStorage={hasLoadedFromStorage}/>
+				<ReadHowToPlay variant="play" 
+								gameStarted={gameStarted} 
+								hasLoadedFromStorage={hasLoadedFromStorage}
+								onModalClose={() => setIsHowToPlayOpen(false)}
+  								onModalOpen={() => setIsHowToPlayOpen(true)} 
+				/>
 				</div>
 			}
 			/>
 
 			<div className="z-[9999]">
 				<MessageBox
-					message={message}
+					message={isHowToPlayOpen ? '' : message}
 					type={messageType}
 					onClose={handleMessageClose}
 					persist={messagePersist}
@@ -382,6 +391,8 @@ export default function PlayMode({ puzzleData: puzzleDataProp, onComplete, tutor
 					</div>
 
 					</div>
+					{/* Spacer to match TutorialBox height in Game1/Game2 */}
+					<div className="h-[72px] sm:h-[80px]" />
 				</TopSection>
 
 				<MiddleSection isTransitioned={isTransitioned}>
@@ -412,7 +423,8 @@ export default function PlayMode({ puzzleData: puzzleDataProp, onComplete, tutor
 								onLifeLost={handleLifeLost}
 								onWin={handleWin}
 								onShowMessage={showMessage}
-								isMessageActive={message !== ''}
+								isMessageActive={message !== ''
+												}
 								isGameOver={isGameOver}
 								revealAnimation={revealAnimation}
 								onClueSolved={handleClueSolved}

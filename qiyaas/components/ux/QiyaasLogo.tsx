@@ -39,7 +39,6 @@ const QiyaasLogoAnimated: React.FC<QiyaasLogoProps> = ({
     if (currentStep < animationSequence.length) {
       const timer = setTimeout(() => {
         if (currentStep === animationSequence.length - 1) {
-          // On last step, enable pulse
           setShowPulse(true);
           setIsAnimating(false);
           
@@ -47,7 +46,6 @@ const QiyaasLogoAnimated: React.FC<QiyaasLogoProps> = ({
             onAnimationComplete();
           }
 
-          // If loop is enabled, restart after showing final image
           if (loop) {
             setTimeout(() => {
               restartAnimation();
@@ -67,8 +65,17 @@ const QiyaasLogoAnimated: React.FC<QiyaasLogoProps> = ({
     setShowPulse(false);
   };
 
+  const imgStyle: React.CSSProperties = {
+    width: '100%',
+    height: '100%',
+    objectFit: 'contain',
+  };
+
   return (
-    <div className={`relative ${className}`}>
+    <div
+      className={`relative ${className}`}
+      style={{ width: 'clamp(180px, 20vw, 300px)', height: 'clamp(120px, 13vw, 200px)' }}
+    >
       <div className="relative w-full h-full">
 
         {/* Logo 2 - Blue ball moved down */}
@@ -79,17 +86,12 @@ const QiyaasLogoAnimated: React.FC<QiyaasLogoProps> = ({
               : 'opacity-0'
           }`}
         >
-          <div
-            className={`${
-              currentStep === 1 ? (isSafari ? 'animate-ball-drop' : 'animate-ball-drop') : ''
-            }`}
-          >
+          <div className={currentStep === 1 ? 'animate-ball-drop' : ''}>
             {isSafari ? (
               <img
                 src="/qiyaas_logo/first_frame.png"
                 alt="Qiyaas Logo Animation Step 2"
-                width="300"
-                height="300"
+                style={imgStyle}
               />
             ) : (
               <Image
@@ -97,7 +99,7 @@ const QiyaasLogoAnimated: React.FC<QiyaasLogoProps> = ({
                 alt="Qiyaas Logo Animation Step 2"
                 width={300}
                 height={300}
-                style={{ objectFit: 'contain' }}
+                style={imgStyle}
               />
             )}
           </div>
@@ -115,75 +117,36 @@ const QiyaasLogoAnimated: React.FC<QiyaasLogoProps> = ({
           {showPulse && !isSafari && (
             <>
               {/* Blue ball glow */}
-              <div className={`absolute inset-0 flex items-center justify-center ${isSafari ? 'animate-blue-glow-safari' : 'animate-blue-glow-wrapper'}`}>
-                {isSafari ? (
-                  <img
-                    src="/qiyaas_logo/orbs/blue_orb.svg"
-                    alt="Blue Orb Glow"
-                    width="300"
-                    height="300"
-                    style={{ 
-                      imageRendering: 'crisp-edges',
-                      shapeRendering: 'crispEdges'
-                    }}
-                  />
-                ) : (
-                  <Image
-                    src="/qiyaas_logo/orbs/blue_orb.svg"
-                    alt="Blue Orb Glow"
-                    width={300}
-                    height={300}
-                    style={{ objectFit: 'contain' }}
-                  />
-                )}
+              <div className="absolute inset-0 flex items-center justify-center animate-blue-glow-wrapper">
+                <Image
+                  src="/qiyaas_logo/orbs/blue_orb.svg"
+                  alt="Blue Orb Glow"
+                  width={300}
+                  height={300}
+                  style={imgStyle}
+                />
               </div>
               
               {/* Green ball glow */}
-              <div className={`absolute inset-0 flex items-center justify-center ${isSafari ? 'animate-green-glow-safari' : 'animate-green-glow-wrapper'}`}>
-                {isSafari ? (
-                  <img
-                    src="/qiyaas_logo/orbs/green_orb.svg"
-                    alt="Green Orb Glow"
-                    width="300"
-                    height="300"
-                    style={{ 
-                      imageRendering: 'crisp-edges',
-                      shapeRendering: 'crispEdges'
-                    }}
-                  />
-                ) : (
-                  <Image
-                    src="/qiyaas_logo/orbs/green_orb.svg"
-                    alt="Green Orb Glow"
-                    width={300}
-                    height={300}
-                    style={{ objectFit: 'contain' }}
-                  />
-                )}
+              <div className="absolute inset-0 flex items-center justify-center animate-green-glow-wrapper">
+                <Image
+                  src="/qiyaas_logo/orbs/green_orb.svg"
+                  alt="Green Orb Glow"
+                  width={300}
+                  height={300}
+                  style={imgStyle}
+                />
               </div>
               
               {/* Pink ball glow */}
-              <div className={`absolute inset-0 flex items-center justify-center ${isSafari ? 'animate-pink-glow-safari' : 'animate-pink-glow-wrapper'}`}>
-                {isSafari ? (
-                  <img
-                    src="/qiyaas_logo/orbs/pink_orb.svg"
-                    alt="Pink Orb Glow"
-                    width="300"
-                    height="300"
-                    style={{ 
-                      imageRendering: 'crisp-edges',
-                      shapeRendering: 'crispEdges'
-                    }}
-                  />
-                ) : (
-                  <Image
-                    src="/qiyaas_logo/orbs/pink_orb.svg"
-                    alt="Pink Orb Glow"
-                    width={300}
-                    height={300}
-                    style={{ objectFit: 'contain' }}
-                  />
-                )}
+              <div className="absolute inset-0 flex items-center justify-center animate-pink-glow-wrapper">
+                <Image
+                  src="/qiyaas_logo/orbs/pink_orb.svg"
+                  alt="Pink Orb Glow"
+                  width={300}
+                  height={300}
+                  style={imgStyle}
+                />
               </div>
             </>
           )}
@@ -194,8 +157,7 @@ const QiyaasLogoAnimated: React.FC<QiyaasLogoProps> = ({
               <img
                 src="/qiyaas_logo/second_frame.png"
                 alt="Qiyaas Logo Final"
-                width="300"
-                height="300"
+                style={imgStyle}
               />
             ) : (
               <Image
@@ -203,7 +165,7 @@ const QiyaasLogoAnimated: React.FC<QiyaasLogoProps> = ({
                 alt="Qiyaas Logo Final"
                 width={300}
                 height={300}
-                style={{ objectFit: 'contain' }}
+                style={imgStyle}
               />
             )}
           </div>
@@ -233,7 +195,6 @@ const QiyaasLogoAnimated: React.FC<QiyaasLogoProps> = ({
           animation: ball-drop 1.2s cubic-bezier(0.36, 0, 0.66, -0.56);
         }
 
-        /* Safari ball-drop - using opacity fade instead of transform */
         @keyframes ball-drop-safari {
           0% {
             opacity: 0;
@@ -403,7 +364,6 @@ const QiyaasLogoAnimated: React.FC<QiyaasLogoProps> = ({
           will-change: filter, opacity;
         }
 
-        /* Safari-specific classes without transform */
         .animate-blue-glow-safari {
           animation: blue-neon-glow 8s ease-in-out infinite;
         }

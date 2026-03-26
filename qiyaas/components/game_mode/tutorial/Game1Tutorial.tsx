@@ -82,38 +82,19 @@ export default function Game1Tutorial({
   const [step19Done, setStep19Done] = useState(false);
 
   // ── Guess flow ────────────────────────────────────────────────────────────
-  // Wrong guess tracking — per guess step, did it have a wrong guess?
-  // Used to restore tip routing when user goes back and then forward again.
   const hadWrongGuessPerStepRef = useRef<Record<number, boolean>>({});
-
-  // Which guess step (21/27/28) is currently active
   const currentGuessStepRef = useRef<number>(21);
 
-  // Result steps visited in solve order — drives back navigation
-  // e.g. [23, 22, 24] means length was solved first, then number, then alphabet
   const [solvedResultsInOrder, setSolvedResultsInOrder] = useState<number[]>([]);
   const solvedResultsInOrderRef = useRef<number[]>([]);
-  // Keep ref in sync with state
   useEffect(() => {
     solvedResultsInOrderRef.current = solvedResultsInOrder;
   }, [solvedResultsInOrder]);
 
-  // Whether the current tip slide is showing a correct-guess tip or wrong-guess tip
   const [tipIsCorrect, setTipIsCorrect] = useState(false);
-
-  // The result step ID that the current tip should go Back to
-  // (set when routing to tip — correct → result slide, wrong → guess step)
   const [tipBackTarget, setTipBackTarget] = useState<number>(21);
-
-  // Whether the tip was arrived at going backwards — drives tipNext routing.
-  // State (not ref) so nextOverride useMemo reacts when it changes.
   const [tipArrivedViaBack, setTipArrivedViaBack] = useState(false);
-
-  // The last instruction step seen — used as Back target for guess steps
   const [prevInstructionStep, setPrevInstructionStep] = useState<number>(20);
-
-  // Whether a wrong guess is pending resolution for the current guess step
-  // Used to re-arm the wrong-guess tip when user navigates back then forward
   const pendingWrongGuessRef = useRef(false);
 
   // ── End screen ────────────────────────────────────────────────────────────
@@ -201,8 +182,6 @@ export default function Game1Tutorial({
     setRevealedStartingColors, setHasStartingLettersAnimationCompleted]);
 
   // ── Clue solved ───────────────────────────────────────────────────────────
-  // Called immediately when a word is solved correctly.
-  // Jump directly to the matching result slide regardless of current step.
   const handleClueSolved = useCallback((clueIndex: number) => {
     setSolvedClues(prev => {
       const next = [...prev];
@@ -212,27 +191,22 @@ export default function Game1Tutorial({
 
     const resultStepId = clueIndexToResultStep(clueIndex);
 
-    // Record this result in solve order (skip duplicates)
     setSolvedResultsInOrder(prev =>
       prev.includes(resultStepId) ? prev : [...prev, resultStepId]
     );
 
-    // Mark the current guess step as no longer having a pending wrong guess
-    hadWrongGuessPerStepRef.current[currentGuessStepRef.current] = false;
+    // Clear wrong-guess history for all steps — once a word is solved,
+    // navigating back should never show "not quite" again
+    hadWrongGuessPerStepRef.current = {};
     pendingWrongGuessRef.current = false;
 
-    // Tip after this result will be a "quick tip" (correct)
     setTipIsCorrect(true);
-    // Back from tip → result slide
     setTipBackTarget(resultStepId);
 
-    // Jump immediately to the result slide
     tutorialBoxRef.current?.goToStepId(resultStepId);
   }, [setSolvedClues]);
 
   // ── Guess submitted (wrong guess handling) ────────────────────────────────
-  // Only fires on wrong guesses — correct guesses are handled by handleClueSolved.
-  // We use a short timeout so handleClueSolved can fire first if correct.
   const lastGuessCorrectRef = useRef(false);
 
   const handleGuessSubmitted = useCallback((clueIndex: number, word: string) => {
@@ -242,10 +216,9 @@ export default function Game1Tutorial({
       return next;
     });
 
-    if (GUESS_STEP_IDS.has(currentStepIdRef.current)) {
+    if (GUESS_STEP_IDS.has(currentStepIdRef.current) || RESULT_STEP_IDS.has(currentStepIdRef.current)) {
       lastGuessCorrectRef.current = false;
       setTimeout(() => {
-        // If handleClueSolved ran, lastGuessCorrectRef will be true — skip wrong path
         if (lastGuessCorrectRef.current) return;
 
         const guessStep = currentGuessStepRef.current;
@@ -258,7 +231,6 @@ export default function Game1Tutorial({
     }
   }, [setSubmittedGuesses]);
 
-  // Keep lastGuessCorrectRef in sync with handleClueSolved
   const handleClueSolvedWrapped = useCallback((clueIndex: number) => {
     lastGuessCorrectRef.current = true;
     handleClueSolved(clueIndex);
@@ -401,6 +373,7 @@ export default function Game1Tutorial({
     currentGameData.cluesData.clue_3.rule,
   ];
 
+  // ── Spotlight derivations ─────────────────────────────────────────────────
   const hintSpotlightColumn: 'number' | 'alpha' | 'value' | null = (() => {
     if (!spotlight) return null;
     if (spotlight.includes('hints:number')) return 'number';
@@ -409,36 +382,49 @@ export default function Game1Tutorial({
     return null;
   })();
 
+  // Which individual clue row to spotlight (null = all visible)
+  const spotlightClueIndex: number | null = (() => {
+    if (!spotlight) return null;
+    const s = spotlight.find(s => s.startsWith('clues:'));
+    return s ? parseInt(s.split(':')[1]) : null;
+  })();
+
+  // Which word type to spotlight: 'noun' | 'verb' | 'adjective' | null
+  const spotlightWordType: string | null = (() => {
+    if (!spotlight) return null;
+    const s = spotlight.find(s => s.startsWith('wordTypes:'));
+    return s ? s.split(':')[1] : null;
+  })();
+
   useAllowKeyboardShortcuts();
 
   // ── onStepChange ──────────────────────────────────────────────────────────
   const handleStepChange = useCallback((index: number, isBack: boolean) => {
     const stepId = Game1[index].id;
+    const prevStepId = currentStepIdRef.current; // capture BEFORE updating
     currentStepIdRef.current = stepId;
     setCurrentStepId(stepId);
 
-    // Track which guess step is active
     if (GUESS_STEP_IDS.has(stepId)) {
       currentGuessStepRef.current = stepId;
 
-      // Restore wrong-guess tip routing if this step had a prior wrong guess
       const hadWrong = !!hadWrongGuessPerStepRef.current[stepId];
       pendingWrongGuessRef.current = hadWrong;
       if (hadWrong) {
         setTipIsCorrect(false);
         setTipBackTarget(stepId);
+      } else {
+        setTipIsCorrect(true);
       }
     }
 
-    // When arriving at a tip slide (forward or back), restore tipIsCorrect
     if (TIP_STEP_IDS.has(stepId)) {
       setTipArrivedViaBack(isBack);
-      if (!isBack && RESULT_STEP_IDS.has(currentStepIdRef.current)) {
-        // Arriving forward from a result slide — update back target and mark correct
-        setTipBackTarget(currentStepIdRef.current);
+      if (!isBack && RESULT_STEP_IDS.has(prevStepId)) {
+        // Arriving forward from a result slide
+        setTipBackTarget(prevStepId);
         setTipIsCorrect(true);
       } else if (isBack) {
-        // Arriving via back nav — tip is correct if any words have been solved
         const solved = solvedResultsInOrderRef.current;
         const hasCorrectResult = solved.length > 0;
         setTipIsCorrect(hasCorrectResult);
@@ -448,56 +434,32 @@ export default function Game1Tutorial({
       }
     }
 
-    // Track last instruction step for guess step back navigation
     if (!GUESS_STEP_IDS.has(stepId) && !RESULT_STEP_IDS.has(stepId) && !TIP_STEP_IDS.has(stepId)) {
       setPrevInstructionStep(stepId);
     }
   }, []);
 
   // ── nextOverride ──────────────────────────────────────────────────────────
-  // Result slides:
-  //   If all 3 words solved → skip tip, go straight to 26
-  //   Otherwise → tip (25)
-  // Tip slides:
-  //   correct → next guess step (or 26 if all done)
-  //   wrong   → same guess step
   const nextOverride = useMemo((): Record<number, number> => {
     const allSolved = solvedResultsInOrder.length === 3;
-    // Next guess step is determined by how many words have been solved so far,
-    // not by which guess step is currently active — this ensures consistency
-    // regardless of which order words are solved.
     const nextGuessStep = solvedResultsInOrder.length === 0 ? 21
       : solvedResultsInOrder.length === 1 ? 27
       : solvedResultsInOrder.length === 2 ? 28
       : 26;
-    // Tip Next:
-    //   If result 2 exists (2+ words solved) → go to result 2 to continue showing results
-    //   Otherwise → next guess step (more words left to solve)
-    //   Wrong guess → return to same guess step
     const tipNextCorrect = solvedResultsInOrder.length >= 2
       ? solvedResultsInOrder[1]
       : nextGuessStep;
     const tipNext = tipIsCorrect ? tipNextCorrect : currentGuessStepRef.current;
 
-    // For each result slide, Next goes to the next result in solve order,
-    // or to 25 (tip) if there's no next result yet,
-    // or to 26 if this is the last result and all words are solved.
     const nextForResult = (resultStepId: number): number => {
       const idx = solvedResultsInOrder.indexOf(resultStepId);
-      // Not yet solved — shouldn't normally happen but default to tip
       if (idx === -1) return 25;
-      // First result → tip
       if (idx === 0) return 25;
-      // There's a next result in solve order → go there
       if (idx < solvedResultsInOrder.length - 1) return solvedResultsInOrder[idx + 1];
-      // This is the last result so far
       if (allSolved) return 26;
-      // Not all solved yet → go to the next guess step so they can solve the remaining word
       return nextGuessStep;
     };
 
-    // Step 20 (correctly guessed letters): if any words already solved,
-    // skip the guess steps and jump to the first result in solve order (or 26 if all done).
     const step20Next = solvedResultsInOrder.length > 0
       ? solvedResultsInOrder[0]
       : 21;
@@ -514,10 +476,6 @@ export default function Game1Tutorial({
   }, [tipIsCorrect, tipArrivedViaBack, currentStepId, solvedResultsInOrder]);
 
   // ── backOverride ──────────────────────────────────────────────────────────
-  // Step 26 ("makes sense?") → last result slide in solve order
-  // Tip → tipBackTarget (result slide if correct, guess step if wrong)
-  // Result → previous result in solve order, or step 20
-  // Guess → last instruction step
   const backOverride = useMemo((): Record<number, number> => {
     const lastResult = solvedResultsInOrder.length > 0
       ? solvedResultsInOrder[solvedResultsInOrder.length - 1]
@@ -525,18 +483,13 @@ export default function Game1Tutorial({
 
     const backForResult = (resultStepId: number): number => {
       const idx = solvedResultsInOrder.indexOf(resultStepId);
-      // Second result → tip always sits between result 1 and result 2
       if (idx === 1) return 25;
-      // Third result → second result
       if (idx > 1) return solvedResultsInOrder[idx - 1];
-      // First result → step 20
       return 20;
     };
 
     return {
-      // Step 26 → last result slide visited
       26: lastResult,
-      // Instruction steps — explicit back chain so none accumulate on history stack
       20: 19,
       19: 18,
       18: 17,
@@ -546,15 +499,12 @@ export default function Game1Tutorial({
       14: 13,
       13: 11,
       11: 10,
-      // Guess steps → last result if any solved, else last instruction step
       21: lastResult !== 20 ? lastResult : prevInstructionStep,
       27: lastResult !== 20 ? lastResult : prevInstructionStep,
       28: lastResult !== 20 ? lastResult : prevInstructionStep,
-      // Tips → result slide (correct) or guess step (wrong)
       25: tipBackTarget,
       29: tipBackTarget,
       30: tipBackTarget,
-      // Result slides → previous result in solve order, or step 20
       22: backForResult(22),
       23: backForResult(23),
       24: backForResult(24),
@@ -562,18 +512,11 @@ export default function Game1Tutorial({
   }, [prevInstructionStep, tipBackTarget, solvedResultsInOrder]);
 
   // ── nextDisabled ──────────────────────────────────────────────────────────
-  // Guess steps are locked until the user solves a word (which auto-jumps them)
-  // or submits a wrong guess (which jumps to tip).
-  // We lock based on whether they're still on a guess step with nothing resolved yet.
-  // Result and tip slides are always freely navigable.
   const nextDisabled =
     (currentStepId === 14 && !step14EverDone) ||
     (currentStepId === 19 && !step19EverDone) ||
     (currentStepId === 20 && !step20EverDone) ||
     GUESS_STEP_IDS.has(currentStepId);
-  // Note: guess steps are always locked because the user can never manually
-  // press Next on them — they always exit via solving (→ result) or wrong guess (→ tip).
-  // Back is always available via backOverride.
 
   if (showEndScreen === 'lose') {
     return (
@@ -619,14 +562,23 @@ export default function Game1Tutorial({
               />
             </div>
 
+            {/* Word type indicators — dim whole section if no wordTypes spotlight,
+                dim individual letters if wordTypes:noun/verb/adjective */}
             <div className={`transition-all duration-700 ${
               !isTransitioned ? "opacity-0 translate-x-4" :
-              spotlight && !spotlight.includes('wordTypes') ? "opacity-20 pointer-events-none" :
+              spotlight && !spotlight.some(s => s === 'wordTypes' || s.startsWith('wordTypes:')) ? "opacity-20 pointer-events-none" :
               "opacity-100 translate-x-0"
             } text-2xl sm:text-4xl md:text-4xl flex items-center gap-3`}>
-              <div className={GameConfig.wordColors.noun}> n </div>
-              <div className={GameConfig.wordColors.verb}> v </div>
-              <div className={GameConfig.wordColors.adjective}> a </div>
+              {(['noun', 'verb', 'adjective'] as const).map((type) => (
+                <div
+                  key={type}
+                  className={`${GameConfig.wordColors[type]} transition-opacity duration-300 ${
+                    spotlightWordType && spotlightWordType !== type ? 'opacity-20' : 'opacity-100'
+                  }`}
+                >
+                  {type === 'noun' ? 'n' : type === 'verb' ? 'v' : 'a'}
+                </div>
+              ))}
             </div>
           </div>
 
@@ -657,13 +609,13 @@ export default function Game1Tutorial({
         <MiddleSection isTransitioned={isTransitioned}>
           <div className={`transition-all duration-700 ${
             !isTransitioned ? "opacity-0 -translate-x-4" :
-            spotlight && !spotlight.includes('clues') ? "opacity-20 pointer-events-none" :
+            spotlight && !spotlight.some(s => s === 'clues' || s.startsWith('clues:')) ? "opacity-20 pointer-events-none" :
             "opacity-100 translate-x-0"
           }`}>
             {!gameStarted ? (
               <div className="flex flex-col justify-center space-y-6 sm:space-y-8 md:space-y-10">
                 {numbersForClue.map((_, index) => (
-                  <div key={index} className={`${GameConfig.wordColors.default} text-3xl md:text-5xl font-bold`}>
+                  <div key={index} className={`${GameConfig.wordColors.default} dash-text md:text-5xl font-bold`}>
                     _
                   </div>
                 ))}
@@ -682,13 +634,17 @@ export default function Game1Tutorial({
                 onCursorChange={setCursorPosition}
                 onLifeLost={wrappedHandleLifeLost}
                 onWin={handleWin}
-                onShowMessage={(msg, type) => {
+                onShowMessage={(msg, type, persist) => {
                   if (
+                    msg === '' ||
                     msg === GameConfig.messages.wordNotValid ||
-                    msg === GameConfig.messages.wordNotComplete
-                  ) showMessage(msg, type);
+                    msg === GameConfig.messages.wordNotComplete ||
+                    msg === GameConfig.messages.confirmWord
+                  ) showMessage(msg, type, persist);
                 }}
-                isMessageActive={message !== ''}
+                isMessageActive={message !== '' &&
+                                message !== GameConfig.messages.confirmWord
+                                }
                 isGameOver={isGameOver}
                 revealAnimation={revealAnimation}
                 onClueSolved={handleClueSolvedWrapped}
@@ -697,6 +653,8 @@ export default function Game1Tutorial({
                 setHasLostLifeForNoStartingLetters={setHasLostLifeForNoStartingLetters}
                 onGuessSubmitted={handleGuessSubmitted}
                 sequenceRevealed={sequenceRevealed}
+                showConfirmWord={true}
+                spotlightClueIndex={spotlightClueIndex}
               />
             )}
           </div>
@@ -746,7 +704,8 @@ export default function Game1Tutorial({
                   (!isGameOver &&
                     message !== '' &&
                     message !== GameConfig.messages.startingLettersMessage &&
-                    message !== GameConfig.messages.confirmStartingLetters)
+                    message !== GameConfig.messages.confirmStartingLetters &&
+                    message !== GameConfig.messages.confirmWord)
                 }
               />
             </div>

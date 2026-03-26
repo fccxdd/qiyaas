@@ -35,7 +35,7 @@ interface ClueGameManagerProps {
 	onCursorChange: (pos: { clueIndex: number; position: number } | null) => void;
 	onLifeLost: () => void;
 	onWin: () => void;
-	onShowMessage: (msg: string, type?: 'error' | 'success' | 'info') => void;
+	onShowMessage: (msg: string, type?: 'error' | 'success' | 'info', persist?: boolean) => void;
 	isMessageActive: boolean;
 	isGameOver: boolean;
 	revealAnimation?: RevealAnimation;
@@ -43,9 +43,12 @@ interface ClueGameManagerProps {
 	letterStatus?: LetterStatus;
 	hasLostLifeForNoStartingLetters: boolean;
 	setHasLostLifeForNoStartingLetters: (value: boolean) => void;
-  	onGuessSubmitted?: (clueIndex: number, word: string) => void;
+	onGuessSubmitted?: (clueIndex: number, word: string) => void;
 	silentRevealed?: boolean[];
 	sequenceRevealed: (string | null)[][];
+	showConfirmWord?: boolean;
+	// Tutorial: dim all rows except this index (null = all visible)
+	spotlightClueIndex?: number | null;
 }
 
 export default function ClueGameManager({
@@ -69,8 +72,10 @@ export default function ClueGameManager({
 	letterStatus = {},
 	hasLostLifeForNoStartingLetters,
 	setHasLostLifeForNoStartingLetters,
-  	onGuessSubmitted = () => {},
-	silentRevealed = [false, false, false]
+	onGuessSubmitted = () => {},
+	silentRevealed = [false, false, false],
+	showConfirmWord = false,
+	spotlightClueIndex = null,
 }: ClueGameManagerProps) {
 
 	const [shakeWord, setShakeWord] = useState<string | null>(null);
@@ -122,7 +127,6 @@ export default function ClueGameManager({
 	) => onCursorChange(pos), [onCursorChange]);
 
 	// ── Find next incomplete word ─────────────────────────────────────────────
-	// Takes explicit completed array to avoid stale closure after word is solved.
 
 	const findNextIncompleteWordFrom = useCallback((
 		currentCompleted: boolean[],
@@ -201,7 +205,7 @@ export default function ClueGameManager({
 		triggerFlash,
 		setCursorPosition,
 		findNextIncompleteWord,
-    	onGuessSubmitted
+		onGuessSubmitted,
 	});
 
 	// ── Auto-Complete the Word if all Starting Letters are Present ─────────────────
@@ -233,6 +237,7 @@ export default function ClueGameManager({
 		moveToClueAbove,
 		moveToClueBelow,
 		isPositionEditable,
+		showConfirmWord,
 	});
 
 	// ── Starting letters validation ───────────────────────────────────────────
@@ -266,26 +271,34 @@ export default function ClueGameManager({
 	return (
 		<div className="flex flex-col items-start gap-[1.8rem]">
 			{activeClues.map((clue, index) => (
-				<ClueWord
+				<div
 					key={clue}
-					word={clue}
-					wordType={wordTypes[index]}
-					cursorPosition={cursorPosition?.clueIndex === index ? cursorPosition.position : null}
-					onCursorClick={(position) => handleCursorClick(index, position)}
-					flashState={getFlashState(clue)}
-					isComplete={completed[index]}
-					inputs={wordInputs[index] ?? []}
-					verified={verified[index] ?? []}
-					shouldShake={shakeWord === clue}
-					isLocked={isGameOver}
-					revealAnimation={revealAnimation ? {
-						dashesRevealed: revealAnimation.dashesRevealed[index] ?? new Set(),
-						dashesAnimating: revealAnimation.dashesAnimating[index] ?? new Set(),
-						lettersRevealed: revealAnimation.lettersRevealed[index] ?? [],
-					} : undefined}
-					letterStatus={letterStatus}
-					silentReveal={silentRevealed[index]}
-				/>
+					className={`transition-opacity duration-300 ${
+						spotlightClueIndex !== null && spotlightClueIndex !== index
+							? 'opacity-20 pointer-events-none'
+							: 'opacity-100'
+					}`}
+				>
+					<ClueWord
+						word={clue}
+						wordType={wordTypes[index]}
+						cursorPosition={cursorPosition?.clueIndex === index ? cursorPosition.position : null}
+						onCursorClick={(position) => handleCursorClick(index, position)}
+						flashState={getFlashState(clue)}
+						isComplete={completed[index]}
+						inputs={wordInputs[index] ?? []}
+						verified={verified[index] ?? []}
+						shouldShake={shakeWord === clue}
+						isLocked={isGameOver}
+						revealAnimation={revealAnimation ? {
+							dashesRevealed: revealAnimation.dashesRevealed[index] ?? new Set(),
+							dashesAnimating: revealAnimation.dashesAnimating[index] ?? new Set(),
+							lettersRevealed: revealAnimation.lettersRevealed[index] ?? [],
+						} : undefined}
+						letterStatus={letterStatus}
+						silentReveal={silentRevealed[index]}
+					/>
+				</div>
 			))}
 		</div>
 	);

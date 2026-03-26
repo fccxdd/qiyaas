@@ -8,7 +8,8 @@ const MessageBox = ({
   type, 
   onClose, 
   duration = GameConfig.duration.messageDelay,
-  persist = false
+  persist = false,
+  top = null
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
@@ -78,7 +79,7 @@ const MessageBox = ({
       <style jsx>{`
         /* Mobile devices (320px — 480px) */
         .message-box {
-          top: 19%;
+          top: 25%;
         }
         
         /* iPads, Tablets (481px — 768px) */
@@ -91,14 +92,21 @@ const MessageBox = ({
         /* Small screens, laptops - 13-inch (769px — 1024px) */
         @media screen and (min-width: 769px) and (max-width: 1024px) {
           .message-box {
-            top: 19%;
+            top: 28%;
           }
         }
         
+        /* iPad Pro 11" (834px wide, 1194px tall) and iPad Pro 12.9" (1024px wide, 1366px tall) */
+        @media screen and (min-width: 769px) and (max-width: 1024px) and (min-height: 1000px) {
+        .message-box {
+          top: 20%;
+        }
+      }
+
         /* Desktops, large screens - 15-inch+ (1025px — 1280px) */
         @media screen and (min-width: 1025px) and (max-width: 1280px) {
           .message-box {
-            top: 19%;
+            top: 25%;
           }
         }
         
@@ -113,6 +121,7 @@ const MessageBox = ({
         className={`message-box fixed left-1/2 transform -translate-x-1/2 z-[9999] transition-all duration-300 ${
           isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'
         }`}
+        style={top !== null ? { top } : undefined}
       >
         <div className={`${getMessageStyles()} whitespace-nowrap`}>
           {message}

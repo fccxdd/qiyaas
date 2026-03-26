@@ -145,6 +145,7 @@ export const GameConfig = {
 										// Clue Words Messages
 										wordNotValid: "Not a playable word. Try again.",
 										wordNotComplete: "Please enter a complete word.",
+										confirmWord: "Press Enter to confirm your word.",
 										wordCorrect: "Correct!",
 										wordIncorrect: "Incorrect.",
 
