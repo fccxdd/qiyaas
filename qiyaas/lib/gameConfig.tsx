@@ -12,7 +12,7 @@ export const GameConfig = {
 							// Description of Qiyaas
 							titleName: "Qiyaas - A word game based on numbers",
 							shareableDescription: "Play Qiyaas, the word game based on numbers!",
-							urlName: "https://qiyaasgame.com",
+							urlName: "https://www.qiyaasgame.com",
 
 							// Image Paths
 							imagePaths: {
