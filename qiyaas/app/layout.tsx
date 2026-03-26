@@ -43,7 +43,7 @@ export const metadata = {
                 url: 'https://www.qiyaasgame.com/qiyaas_glow_shareable_square.png',
                 width: 400,
                 height: 400,
-                alt: 'Qiyaas Shareable Logo Square',
+                alt: 'Qiyaas Shareable Square Logo',
                 }
             ],
     locale: 'en_US',
@@ -73,6 +73,20 @@ export default function RootLayout({
   return (
     <html lang="en" className={`dark ${indieFlower.variable} ${inknutAntiqua.variable}`}>
       
+      <head>
+        {/* Large format - for Facebook posts, Twitter, LinkedIn */}
+        <meta property="og:image" content="https://www.qiyaasgame.com/qiyaas_glow_shareable.png" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content="Qiyaas Shareable Logo" />
+
+        {/* Square format - for Facebook thumbnails, WhatsApp */}
+        <meta property="og:image" content="https://www.qiyaasgame.com/qiyaas_glow_shareable_square.png" />
+        <meta property="og:image:width" content="400" />
+        <meta property="og:image:height" content="400" />
+        <meta property="og:image:alt" content="Qiyaas Shareable Square Logo" />
+      </head>
+
       {/* ↑ Both variables added to make them available everywhere */}
       <body className={indieFlower.className}>
         <OrientationLock>
