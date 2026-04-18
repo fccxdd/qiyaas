@@ -294,6 +294,7 @@ function getEasternHour(date) {
   const hour = parts.find(p => p.type === 'hour')?.value;
   return parseInt(hour);
 }
+
 // --- CLOUDFLARE WORKER EXPORT ---
 // 
 // CACHING STRATEGY:
@@ -309,10 +310,10 @@ function getEasternHour(date) {
 export default {
   // Scheduled trigger (cron job)
   async scheduled(event, env, ctx) {
-    
-    // Only run at midnight Eastern — handles Daylight Savings Time (DST) automatically
+
+    // Only run at midnight Eastern — skip this check if triggered manually
     const now = new Date(event.scheduledTime);
-    if (getEasternHour(now) !== 0) return;
+    if (!event.manual && getEasternHour(now) !== 0) return;
 
     try {
       // Load word database
@@ -345,7 +346,6 @@ export default {
         used_words: Array.from(usedWordsSet)
       }));
       
-      
     } catch (error) {
       console.error('Error generating puzzle:', error);
     }
@@ -354,6 +354,16 @@ export default {
   // HTTP request handler
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
+
+    // Manual cron trigger — protected by secret token, runs at any time
+    if (url.pathname === '/run-cron-now') {
+      const token = url.searchParams.get('token');
+      if (token !== env.CRON_SECRET) {
+        return new Response('Unauthorized', { status: 401 });
+      }
+      await this.scheduled({ scheduledTime: Date.now(), manual: true }, env, ctx);
+      return new Response('Cron ran successfully!', { status: 200 });
+    }
     
     // CORS headers
     const corsHeaders = {
