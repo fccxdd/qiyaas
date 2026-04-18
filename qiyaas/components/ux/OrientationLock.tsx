@@ -19,8 +19,12 @@ const OrientationLock = ({ children }: { children: React.ReactNode }) => {
       // Debounce to avoid flickering during browser chrome animations
       timeoutId = setTimeout(() => {
         // Check if device is mobile/tablet
-        const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
-          || (window.innerWidth <= 1024 && 'ontouchstart' in window);
+        const isMobileDevice = 
+          /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+          // iPadOS 13+ reports as Macintosh — detect via touch + pointer
+          (navigator.userAgent.includes('Macintosh') && 'ontouchstart' in window) ||
+          // wider touch threshold to catch iPad Pro in landscape
+          (window.innerWidth <= 1400 && 'ontouchstart' in window);
         
         setIsMobile(isMobileDevice);
         

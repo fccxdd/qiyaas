@@ -295,7 +295,8 @@ export default function Game2Tutorial({ isTransitioned, onComplete, onBackFromDo
             {!gameStarted ? (
               <div className="flex flex-col justify-center space-y-6 sm:space-y-8 md:space-y-10">
                 {numbersForClue.map((_, index) => (
-                  <div key={index} className={`${GameConfig.wordColors.default} text-3xl md:text-5xl font-bold`}>
+                  <div key={index} className={`${GameConfig.wordColors.default} dash-text font-bold`}>
+                    {/* Placeholder Dash */}
                     _
                   </div>
                 ))}

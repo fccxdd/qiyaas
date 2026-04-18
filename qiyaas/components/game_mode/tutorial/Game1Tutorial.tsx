@@ -9,7 +9,7 @@ import LifeBar from "@/components/game_assets/lives/LifeBar";
 import StartingLetters from "@/components/game_assets/word_clues/StartingLetters";
 import { UseRevealLetter } from '@/hooks/clues/useRevealLetter';
 import ClueGameManager from "@/components/game_assets/word_clues/ClueGameManager";
-import TutorialBox from '@/components/game_assets/messages/TutorialBox';
+import TutorialBox, { TutorialBoxHandle } from '@/components/game_assets/messages/TutorialBox';
 import { GameConfig } from "@/lib/gameConfig";
 import { useAllowKeyboardShortcuts } from "@/hooks/keyboard/usePreventRefresh";
 import { useKeyboardLetterStatus } from "@/hooks/keyboard/KeyboardLetterTracker";
@@ -29,58 +29,81 @@ interface Game1TutorialProps {
   onComplete: () => void;
 }
 
-export default function Game1Tutorial({ isTransitioned, onPhaseComplete, tutorialBoxReady = false, initialStep, onRestartTutorial, onComplete }: Game1TutorialProps) {
+// Step ID sets
+const GUESS_STEP_IDS = new Set([21, 27, 28]);
+const RESULT_STEP_IDS = new Set([22, 23, 24]);
+const TIP_STEP_IDS = new Set([25, 29, 30]);
+
+// Maps clue rule → result step ID
+const RULE_TO_RESULT: Record<string, number> = {
+  number_rule:   22,
+  length_rule:   23,
+  alphabet_rule: 24,
+};
+
+// Maps result step ID → clue rule (for back nav labels)
+const RESULT_TO_RULE: Record<number, string> = {
+  22: 'number_rule',
+  23: 'length_rule',
+  24: 'alphabet_rule',
+};
+
+// The three clue rules in order, for looking up which result step a clue index maps to
+const CLUE_RULES = [
+  TutorialGame1.cluesData.clue_1.rule,
+  TutorialGame1.cluesData.clue_2.rule,
+  TutorialGame1.cluesData.clue_3.rule,
+];
+
+// Maps clue index → result step ID (derived from actual rule, not assumed order)
+function clueIndexToResultStep(clueIndex: number): number {
+  return RULE_TO_RESULT[CLUE_RULES[clueIndex]] ?? 22;
+}
+
+export default function Game1Tutorial({
+  isTransitioned,
+  onPhaseComplete,
+  tutorialBoxReady = false,
+  initialStep,
+  onRestartTutorial,
+  onComplete,
+}: Game1TutorialProps) {
   const currentGameData = TutorialGame1;
   const [spotlight, setSpotlight] = useState<string[] | null>(null);
   const [hintsAllOpened, setHintsAllOpened] = useState(false);
   const [autoOpenAll, setAutoOpenAll] = useState(false);
   const [currentStepId, setCurrentStepId] = useState<number>(Game1[0].id);
+  const currentStepIdRef = useRef<number>(Game1[0].id);
 
-  // ── Guess flow state ──────────────────────────────────────────────────────
-  const [step21Done, setStep21Done] = useState(false);
-  const [resultStepDone, setResultStepDone] = useState(false);
-  const [solveCount, setSolveCount] = useState(0);
-  const [lastResultStepId, setLastResultStepId] = useState<number | null>(null);
-  const solvedOrderRef = useRef<number[]>([]);
-  const wrongGuessOnStep21Ref = useRef(false);
-  const lastGuessCorrectRef = useRef(false);
-  const [lastGuessCorrect, setLastGuessCorrect] = useState(false);
-  const hasSeededWordInputsRef = useRef(false);
+  // ── Persist step "ever done" state ────────────────────────────────────────
+  const [step14EverDone, setStep14EverDone] = useState(false);
+  const [step19EverDone, setStep19EverDone] = useState(false);
+  const [step20EverDone, setStep20EverDone] = useState(false);
+  const [step19Done, setStep19Done] = useState(false);
+
+  // ── Guess flow ────────────────────────────────────────────────────────────
+  const hadWrongGuessPerStepRef = useRef<Record<number, boolean>>({});
+  const currentGuessStepRef = useRef<number>(21);
+
+  const [solvedResultsInOrder, setSolvedResultsInOrder] = useState<number[]>([]);
+  const solvedResultsInOrderRef = useRef<number[]>([]);
+  useEffect(() => {
+    solvedResultsInOrderRef.current = solvedResultsInOrder;
+  }, [solvedResultsInOrder]);
+
+  const [tipIsCorrect, setTipIsCorrect] = useState(false);
+  const [tipBackTarget, setTipBackTarget] = useState<number>(21);
+  const [tipArrivedViaBack, setTipArrivedViaBack] = useState(false);
+  const [prevInstructionStep, setPrevInstructionStep] = useState<number>(20);
+  const pendingWrongGuessRef = useRef(false);
+
+  // ── End screen ────────────────────────────────────────────────────────────
   const [showEndScreen, setShowEndScreen] = useState<'lose' | null>(null);
 
-  useEffect(() => {
-    if (currentStepId === 21) {
-      // Re-arm for each new round
-      setStep21Done(false);
-      wrongGuessOnStep21Ref.current = false;
-      lastGuessCorrectRef.current = false;
-      setLastGuessCorrect(false);
-    }
-
-    if ([22, 23, 24].includes(currentStepId)) {
-      setLastResultStepId(currentStepId);
-      setResultStepDone(false);
-      const t = setTimeout(() => setResultStepDone(true), 1500);
-      return () => clearTimeout(t);
-    } else {
-      setResultStepDone(false);
-    }
-  }, [currentStepId]);
-
-  // ── Spotlight / autoOpenAll ───────────────────────────────────────────────
-
-  useEffect(() => {
-    const isHintsColumnSpotlight = !!spotlight?.some(s => s.startsWith('hints:'));
-    if (isHintsColumnSpotlight) {
-      setAutoOpenAll(false);
-      setTimeout(() => setAutoOpenAll(true), 0);
-    } else {
-      setAutoOpenAll(false);
-    }
-  }, [spotlight]);
+  const hasSeededWordInputsRef = useRef(false);
+  const tutorialBoxRef = useRef<TutorialBoxHandle>(null);
 
   // ── Game state ────────────────────────────────────────────────────────────
-
   const {
     lives,
     selectedLetters,
@@ -124,6 +147,27 @@ export default function Game1Tutorial({ isTransitioned, onPhaseComplete, tutoria
     checkLettersInClues,
   } = useTutorialGameState({ cluesData: currentGameData.cluesData });
 
+  // ── Spotlight / autoOpenAll ───────────────────────────────────────────────
+  useEffect(() => {
+    const isHintsColumnSpotlight = !!spotlight?.some(s => s.startsWith('hints:'));
+    if (isHintsColumnSpotlight) {
+      setAutoOpenAll(false);
+      setTimeout(() => setAutoOpenAll(true), 0);
+    } else {
+      setAutoOpenAll(false);
+    }
+  }, [spotlight]);
+
+  // ── Step 19 tracking ──────────────────────────────────────────────────────
+  useEffect(() => {
+    if (currentStepId === 19) setStep19Done(false);
+  }, [currentStepId]);
+
+  useEffect(() => {
+    if (gameStarted && currentStepId === 19) setStep19Done(true);
+  }, [gameStarted, currentStepId]);
+
+  // ── Starting letters submit ───────────────────────────────────────────────
   const handleStartingLettersSubmit = useCallback(() => {
     if (hasStartingLettersAnimationCompleted || revealedStartingColors.length === selectedLetters.length) return;
     setRevealedStartingColors([]);
@@ -135,25 +179,64 @@ export default function Game1Tutorial({ isTransitioned, onPhaseComplete, tutoria
     const totalAnimationTime = selectedLetters.length * GameConfig.duration.startingLetterBounceDelay + 500;
     setTimeout(() => setHasStartingLettersAnimationCompleted(true), totalAnimationTime);
   }, [selectedLetters, hasStartingLettersAnimationCompleted, revealedStartingColors.length,
-      setRevealedStartingColors, setHasStartingLettersAnimationCompleted]);
+    setRevealedStartingColors, setHasStartingLettersAnimationCompleted]);
 
+  // ── Clue solved ───────────────────────────────────────────────────────────
   const handleClueSolved = useCallback((clueIndex: number) => {
     setSolvedClues(prev => {
       const next = [...prev];
       next[clueIndex] = true;
       return next;
     });
-    if (!solvedOrderRef.current.includes(clueIndex)) {
-      solvedOrderRef.current = [...solvedOrderRef.current, clueIndex];
-      setSolveCount(solvedOrderRef.current.length);
-    }
-    if (currentStepId === 21) {
-      lastGuessCorrectRef.current = true;
-      setLastGuessCorrect(true);
-      setStep21Done(true);
-    }
-  }, [setSolvedClues, currentStepId]);
 
+    const resultStepId = clueIndexToResultStep(clueIndex);
+
+    setSolvedResultsInOrder(prev =>
+      prev.includes(resultStepId) ? prev : [...prev, resultStepId]
+    );
+
+    // Clear wrong-guess history for all steps — once a word is solved,
+    // navigating back should never show "not quite" again
+    hadWrongGuessPerStepRef.current = {};
+    pendingWrongGuessRef.current = false;
+
+    setTipIsCorrect(true);
+    setTipBackTarget(resultStepId);
+
+    tutorialBoxRef.current?.goToStepId(resultStepId);
+  }, [setSolvedClues]);
+
+  // ── Guess submitted (wrong guess handling) ────────────────────────────────
+  const lastGuessCorrectRef = useRef(false);
+
+  const handleGuessSubmitted = useCallback((clueIndex: number, word: string) => {
+    setSubmittedGuesses(prev => {
+      const next = [...prev];
+      next[clueIndex] = [...next[clueIndex], word];
+      return next;
+    });
+
+    if (GUESS_STEP_IDS.has(currentStepIdRef.current) || RESULT_STEP_IDS.has(currentStepIdRef.current)) {
+      lastGuessCorrectRef.current = false;
+      setTimeout(() => {
+        if (lastGuessCorrectRef.current) return;
+
+        const guessStep = currentGuessStepRef.current;
+        hadWrongGuessPerStepRef.current[guessStep] = true;
+        pendingWrongGuessRef.current = true;
+        setTipIsCorrect(false);
+        setTipBackTarget(guessStep);
+        tutorialBoxRef.current?.goToStepId(25);
+      }, 50);
+    }
+  }, [setSubmittedGuesses]);
+
+  const handleClueSolvedWrapped = useCallback((clueIndex: number) => {
+    lastGuessCorrectRef.current = true;
+    handleClueSolved(clueIndex);
+  }, [handleClueSolved]);
+
+  // ── Life / lose ───────────────────────────────────────────────────────────
   const handleLose = useCallback(() => {
     setTimeout(() => setShowEndScreen('lose'), GameConfig.duration.gameOverScreenDelay);
   }, []);
@@ -163,6 +246,7 @@ export default function Game1Tutorial({ isTransitioned, onPhaseComplete, tutoria
     if (lives - 1 <= 0) handleLose();
   }, [handleLifeLost, lives, handleLose]);
 
+  // ── Keyboard ──────────────────────────────────────────────────────────────
   const { handleKeyPress: baseHandleKeyPress, handleBackspace, handleEnter, restoreStartingMessage } = useKeyboardHandlers({
     selectedLetters,
     gameStarted,
@@ -185,25 +269,9 @@ export default function Game1Tutorial({ isTransitioned, onPhaseComplete, tutoria
       return;
     }
     baseHandleKeyPress(key);
-  }, [gameStarted, baseHandleKeyPress, showMessage]);
-
-  const handleGuessSubmitted = useCallback((clueIndex: number, word: string) => {
-    setSubmittedGuesses(prev => {
-      const next = [...prev];
-      next[clueIndex] = [...next[clueIndex], word];
-      return next;
-    });
-    // On step 21, any wrong guess (on any round) triggers yellow tip
-    if (currentStepId === 21 && !solvedClues[clueIndex] && !wrongGuessOnStep21Ref.current) {
-      wrongGuessOnStep21Ref.current = true;
-      lastGuessCorrectRef.current = false;
-      setLastGuessCorrect(false);
-      setStep21Done(true);
-    }
-  }, [setSubmittedGuesses, currentStepId, solvedClues]);
+  }, [gameStarted, baseHandleKeyPress, showMessage, restoreStartingMessage]);
 
   // ── Letter status ─────────────────────────────────────────────────────────
-
   const letterStatus = useKeyboardLetterStatus({
     selectedStartingLetters: selectedLetters,
     cluesData,
@@ -225,7 +293,6 @@ export default function Game1Tutorial({ isTransitioned, onPhaseComplete, tutoria
   }, [letterStatus, currentGameData]);
 
   // ── Reveal animation ──────────────────────────────────────────────────────
-
   const {
     dashesRevealed,
     dashesAnimating,
@@ -243,7 +310,6 @@ export default function Game1Tutorial({ isTransitioned, onPhaseComplete, tutoria
     if (!gameStarted) return;
     if (hasSeededWordInputsRef.current) return;
     if (!lettersComplete) return;
-
     const hasLetters = lettersRevealed.some(arr => arr.some(l => l !== null));
     if (!hasLetters) return;
 
@@ -252,12 +318,10 @@ export default function Game1Tutorial({ isTransitioned, onPhaseComplete, tutoria
     setWordInputs(prev => prev.map((row, i) =>
       row.map((letter, pos) => letter ?? lettersRevealed[i]?.[pos] ?? null)
     ));
-
     const newVerified = verified.map((row, i) =>
       row.map((v, pos) => v || lettersRevealed[i]?.[pos] !== null)
     );
     setVerified(newVerified);
-
     for (let i = 0; i < newVerified.length; i++) {
       for (let pos = 0; pos < newVerified[i].length; pos++) {
         if (!newVerified[i][pos]) {
@@ -268,14 +332,31 @@ export default function Game1Tutorial({ isTransitioned, onPhaseComplete, tutoria
     }
   }, [gameStarted, lettersComplete, lettersRevealed]);
 
-  const revealAnimation = gameStarted ? {
-    dashesRevealed,
-    dashesAnimating,
-    lettersRevealed,
-  } : undefined;
+  // ── Persist-step auto-advance ─────────────────────────────────────────────
+  useEffect(() => {
+    if (hintsAllOpened && !step14EverDone) {
+      setStep14EverDone(true);
+      tutorialBoxRef.current?.goNext();
+    }
+  }, [hintsAllOpened]);
+
+  useEffect(() => {
+    if (step19Done && !step19EverDone) {
+      setStep19EverDone(true);
+      tutorialBoxRef.current?.goNext();
+    }
+  }, [step19Done]);
+
+  useEffect(() => {
+    if (lettersComplete && currentStepId === 20 && !step20EverDone) {
+      setStep20EverDone(true);
+      tutorialBoxRef.current?.goNext();
+    }
+  }, [lettersComplete, currentStepId, step20EverDone]);
+
+  const revealAnimation = gameStarted ? { dashesRevealed, dashesAnimating, lettersRevealed } : undefined;
 
   // ── Clue data ─────────────────────────────────────────────────────────────
-
   const numbersForClue = [
     currentGameData.cluesData.clue_1.number,
     currentGameData.cluesData.clue_2.number,
@@ -292,6 +373,7 @@ export default function Game1Tutorial({ isTransitioned, onPhaseComplete, tutoria
     currentGameData.cluesData.clue_3.rule,
   ];
 
+  // ── Spotlight derivations ─────────────────────────────────────────────────
   const hintSpotlightColumn: 'number' | 'alpha' | 'value' | null = (() => {
     if (!spotlight) return null;
     if (spotlight.includes('hints:number')) return 'number';
@@ -300,7 +382,141 @@ export default function Game1Tutorial({ isTransitioned, onPhaseComplete, tutoria
     return null;
   })();
 
+  // Which individual clue row to spotlight (null = all visible)
+  const spotlightClueIndex: number | null = (() => {
+    if (!spotlight) return null;
+    const s = spotlight.find(s => s.startsWith('clues:'));
+    return s ? parseInt(s.split(':')[1]) : null;
+  })();
+
+  // Which word type to spotlight: 'noun' | 'verb' | 'adjective' | null
+  const spotlightWordType: string | null = (() => {
+    if (!spotlight) return null;
+    const s = spotlight.find(s => s.startsWith('wordTypes:'));
+    return s ? s.split(':')[1] : null;
+  })();
+
   useAllowKeyboardShortcuts();
+
+  // ── onStepChange ──────────────────────────────────────────────────────────
+  const handleStepChange = useCallback((index: number, isBack: boolean) => {
+    const stepId = Game1[index].id;
+    const prevStepId = currentStepIdRef.current; // capture BEFORE updating
+    currentStepIdRef.current = stepId;
+    setCurrentStepId(stepId);
+
+    if (GUESS_STEP_IDS.has(stepId)) {
+      currentGuessStepRef.current = stepId;
+
+      const hadWrong = !!hadWrongGuessPerStepRef.current[stepId];
+      pendingWrongGuessRef.current = hadWrong;
+      if (hadWrong) {
+        setTipIsCorrect(false);
+        setTipBackTarget(stepId);
+      } else {
+        setTipIsCorrect(true);
+      }
+    }
+
+    if (TIP_STEP_IDS.has(stepId)) {
+      setTipArrivedViaBack(isBack);
+      if (!isBack && RESULT_STEP_IDS.has(prevStepId)) {
+        // Arriving forward from a result slide
+        setTipBackTarget(prevStepId);
+        setTipIsCorrect(true);
+      } else if (isBack) {
+        const solved = solvedResultsInOrderRef.current;
+        const hasCorrectResult = solved.length > 0;
+        setTipIsCorrect(hasCorrectResult);
+        if (hasCorrectResult) {
+          setTipBackTarget(solved[0]);
+        }
+      }
+    }
+
+    if (!GUESS_STEP_IDS.has(stepId) && !RESULT_STEP_IDS.has(stepId) && !TIP_STEP_IDS.has(stepId)) {
+      setPrevInstructionStep(stepId);
+    }
+  }, []);
+
+  // ── nextOverride ──────────────────────────────────────────────────────────
+  const nextOverride = useMemo((): Record<number, number> => {
+    const allSolved = solvedResultsInOrder.length === 3;
+    const nextGuessStep = solvedResultsInOrder.length === 0 ? 21
+      : solvedResultsInOrder.length === 1 ? 27
+      : solvedResultsInOrder.length === 2 ? 28
+      : 26;
+    const tipNextCorrect = solvedResultsInOrder.length >= 2
+      ? solvedResultsInOrder[1]
+      : nextGuessStep;
+    const tipNext = tipIsCorrect ? tipNextCorrect : currentGuessStepRef.current;
+
+    const nextForResult = (resultStepId: number): number => {
+      const idx = solvedResultsInOrder.indexOf(resultStepId);
+      if (idx === -1) return 25;
+      if (idx === 0) return 25;
+      if (idx < solvedResultsInOrder.length - 1) return solvedResultsInOrder[idx + 1];
+      if (allSolved) return 26;
+      return nextGuessStep;
+    };
+
+    const step20Next = solvedResultsInOrder.length > 0
+      ? solvedResultsInOrder[0]
+      : 21;
+
+    return {
+      20: step20Next,
+      22: nextForResult(22),
+      23: nextForResult(23),
+      24: nextForResult(24),
+      25: tipNext,
+      29: tipNext,
+      30: tipNext,
+    };
+  }, [tipIsCorrect, tipArrivedViaBack, currentStepId, solvedResultsInOrder]);
+
+  // ── backOverride ──────────────────────────────────────────────────────────
+  const backOverride = useMemo((): Record<number, number> => {
+    const lastResult = solvedResultsInOrder.length > 0
+      ? solvedResultsInOrder[solvedResultsInOrder.length - 1]
+      : 20;
+
+    const backForResult = (resultStepId: number): number => {
+      const idx = solvedResultsInOrder.indexOf(resultStepId);
+      if (idx === 1) return 25;
+      if (idx > 1) return solvedResultsInOrder[idx - 1];
+      return 20;
+    };
+
+    return {
+      26: lastResult,
+      20: 19,
+      19: 18,
+      18: 17,
+      17: 16,
+      16: 15,
+      15: 14,
+      14: 13,
+      13: 11,
+      11: 10,
+      21: lastResult !== 20 ? lastResult : prevInstructionStep,
+      27: lastResult !== 20 ? lastResult : prevInstructionStep,
+      28: lastResult !== 20 ? lastResult : prevInstructionStep,
+      25: tipBackTarget,
+      29: tipBackTarget,
+      30: tipBackTarget,
+      22: backForResult(22),
+      23: backForResult(23),
+      24: backForResult(24),
+    };
+  }, [prevInstructionStep, tipBackTarget, solvedResultsInOrder]);
+
+  // ── nextDisabled ──────────────────────────────────────────────────────────
+  const nextDisabled =
+    (currentStepId === 14 && !step14EverDone) ||
+    (currentStepId === 19 && !step19EverDone) ||
+    (currentStepId === 20 && !step20EverDone) ||
+    GUESS_STEP_IDS.has(currentStepId);
 
   if (showEndScreen === 'lose') {
     return (
@@ -346,68 +562,40 @@ export default function Game1Tutorial({ isTransitioned, onPhaseComplete, tutoria
               />
             </div>
 
+            {/* Word type indicators — dim whole section if no wordTypes spotlight,
+                dim individual letters if wordTypes:noun/verb/adjective */}
             <div className={`transition-all duration-700 ${
               !isTransitioned ? "opacity-0 translate-x-4" :
-              spotlight && !spotlight.includes('wordTypes') ? "opacity-20 pointer-events-none" :
+              spotlight && !spotlight.some(s => s === 'wordTypes' || s.startsWith('wordTypes:')) ? "opacity-20 pointer-events-none" :
               "opacity-100 translate-x-0"
             } text-2xl sm:text-4xl md:text-4xl flex items-center gap-3`}>
-              <div className={GameConfig.wordColors.noun}> n </div>
-              <div className={GameConfig.wordColors.verb}> v </div>
-              <div className={GameConfig.wordColors.adjective}> a </div>
+              {(['noun', 'verb', 'adjective'] as const).map((type) => (
+                <div
+                  key={type}
+                  className={`${GameConfig.wordColors[type]} transition-opacity duration-300 ${
+                    spotlightWordType && spotlightWordType !== type ? 'opacity-20' : 'opacity-100'
+                  }`}
+                >
+                  {type === 'noun' ? 'n' : type === 'verb' ? 'v' : 'a'}
+                </div>
+              ))}
             </div>
           </div>
 
           <div className="w-full flex justify-center">
             <TutorialBox
+              ref={tutorialBoxRef}
               steps={Game1}
               onComplete={onPhaseComplete}
               onSpotlightChange={setSpotlight}
-              onStepChange={(index) => setCurrentStepId(Game1[index].id)}
-              actionCompleted={{
-                19: gameStarted,
-                14: hintsAllOpened,
-                20: lettersComplete,
-                21: step21Done,
-                22: resultStepDone,
-                23: resultStepDone,
-                24: resultStepDone,
-              }}
-              onActionComplete={(stepId) => {
-                const resultStepMap: Record<number, number> = { 0: 22, 1: 23, 2: 24 };
-
-                if (stepId === 21) {
-                  if (wrongGuessOnStep21Ref.current) return 25;
-                  const clue = solvedOrderRef.current[solvedOrderRef.current.length - 1];
-                  if (clue !== undefined) return resultStepMap[clue] ?? null;
-                }
-
-                if ([22, 23, 24].includes(stepId)) {
-                  return solveCount >= 3 ? 26 : 21;
-                }
-
-                if (stepId === 25) return 21;
-
-                return null;
-              }}
-              backOverride={{
-                25: lastResultStepId ?? 21,
-              }}
-              nextOverride={{
-                25: 21,
-              }}
+              onStepChange={handleStepChange}
+              nextDisabled={nextDisabled}
+              nextOverride={nextOverride}
+              backOverride={backOverride}
               stepOverrides={{
-                21: {
-                  title: solveCount === 0
-                    ? `Try guessing one of the words`
-                    : solveCount === 1
-                    ? `Now guess another word`
-                    : `Last one!`,
-                },
-                25: {
-                  title: lastGuessCorrect
-                    ? `✨Quick Tip!✨`
-                    : `Close, but not quite!`,
-                },
+                25: { title: tipIsCorrect ? `✨ Quick Tip! ✨` : `Close, but not quite!` },
+                29: { title: tipIsCorrect ? `✨ Quick Tip! ✨` : `Close, but not quite!` },
+                30: { title: tipIsCorrect ? `✨ Quick Tip! ✨` : `Close, but not quite!` },
               }}
               message={currentStepId >= 19 ? message : null}
               messagePersist={messagePersist}
@@ -421,13 +609,13 @@ export default function Game1Tutorial({ isTransitioned, onPhaseComplete, tutoria
         <MiddleSection isTransitioned={isTransitioned}>
           <div className={`transition-all duration-700 ${
             !isTransitioned ? "opacity-0 -translate-x-4" :
-            spotlight && !spotlight.includes('clues') ? "opacity-20 pointer-events-none" :
+            spotlight && !spotlight.some(s => s === 'clues' || s.startsWith('clues:')) ? "opacity-20 pointer-events-none" :
             "opacity-100 translate-x-0"
           }`}>
             {!gameStarted ? (
               <div className="flex flex-col justify-center space-y-6 sm:space-y-8 md:space-y-10">
                 {numbersForClue.map((_, index) => (
-                  <div key={index} className={`${GameConfig.wordColors.default} text-3xl md:text-5xl font-bold`}>
+                  <div key={index} className={`${GameConfig.wordColors.default} dash-text md:text-5xl font-bold`}>
                     _
                   </div>
                 ))}
@@ -446,16 +634,27 @@ export default function Game1Tutorial({ isTransitioned, onPhaseComplete, tutoria
                 onCursorChange={setCursorPosition}
                 onLifeLost={wrappedHandleLifeLost}
                 onWin={handleWin}
-                onShowMessage={showMessage}
-                isMessageActive={message !== ''}
+                onShowMessage={(msg, type, persist) => {
+                  if (
+                    msg === '' ||
+                    msg === GameConfig.messages.wordNotValid ||
+                    msg === GameConfig.messages.wordNotComplete ||
+                    msg === GameConfig.messages.confirmWord
+                  ) showMessage(msg, type, persist);
+                }}
+                isMessageActive={message !== '' &&
+                                message !== GameConfig.messages.confirmWord
+                                }
                 isGameOver={isGameOver}
                 revealAnimation={revealAnimation}
-                onClueSolved={handleClueSolved}
+                onClueSolved={handleClueSolvedWrapped}
                 letterStatus={mergedLetterStatus}
                 hasLostLifeForNoStartingLetters={hasLostLifeForNoStartingLetters}
                 setHasLostLifeForNoStartingLetters={setHasLostLifeForNoStartingLetters}
                 onGuessSubmitted={handleGuessSubmitted}
                 sequenceRevealed={sequenceRevealed}
+                showConfirmWord={true}
+                spotlightClueIndex={spotlightClueIndex}
               />
             )}
           </div>
@@ -505,7 +704,8 @@ export default function Game1Tutorial({ isTransitioned, onPhaseComplete, tutoria
                   (!isGameOver &&
                     message !== '' &&
                     message !== GameConfig.messages.startingLettersMessage &&
-                    message !== GameConfig.messages.confirmStartingLetters)
+                    message !== GameConfig.messages.confirmStartingLetters &&
+                    message !== GameConfig.messages.confirmWord)
                 }
               />
             </div>

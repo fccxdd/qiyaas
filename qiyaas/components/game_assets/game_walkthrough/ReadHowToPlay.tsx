@@ -11,6 +11,7 @@ type Props = {
   gameStarted?: boolean;
   hasLoadedFromStorage?: boolean;
   onModalClose?: () => void;
+  onModalOpen?: () => void;
 };
 
 type Slide = {
@@ -24,7 +25,7 @@ type Slide = {
   };
 };
 
-export default function ReadHowToPlay({ variant = 'howToPlay', gameStarted = false, hasLoadedFromStorage = false, onModalClose }: Props) {
+export default function ReadHowToPlay({ variant = 'howToPlay', gameStarted = false, hasLoadedFromStorage = false, onModalClose, onModalOpen }: Props) {
 
   const [showModal, setShowModal] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -37,16 +38,19 @@ export default function ReadHowToPlay({ variant = 'howToPlay', gameStarted = fal
   useEffect(() => {
     if (variant === 'howToPlay') {
       setShowModal(true);
+      onModalOpen?.();
       return;
     }
     if (hasLoadedFromStorage && !gameStarted) {
       setShowModal(true);
+      onModalOpen?.();
     }
   }, [hasLoadedFromStorage]);
 
   const handleOpenModal = () => {
     setCurrentSlide(0);
     setShowModal(true);
+    onModalOpen?.(); 
   };
 
   const handleCloseModal = () => {

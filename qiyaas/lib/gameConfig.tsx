@@ -12,7 +12,7 @@ export const GameConfig = {
 							// Description of Qiyaas
 							titleName: "Qiyaas - A word game based on numbers",
 							shareableDescription: "Play Qiyaas, the word game based on numbers!",
-							urlName: "https://qiyaasgame.com",
+							urlName: "https://www.qiyaasgame.com",
 
 							// Image Paths
 							imagePaths: {
@@ -21,7 +21,8 @@ export const GameConfig = {
 											wonGame: "qiyaas_glow.svg",
 											lostGameDarkMode: "qiyaas_gray_dark.svg",
 											lostGameLightMode: "qiyaas_gray_light.svg",
-											shareable: "qiyaas_glow_shareable.png"
+											shareable: "qiyaas_glow_shareable.png",
+											shareable_square: "qiyaas_glow_shareable_square.png"
 											
 										},
 														
@@ -145,6 +146,7 @@ export const GameConfig = {
 										// Clue Words Messages
 										wordNotValid: "Not a playable word. Try again.",
 										wordNotComplete: "Please enter a complete word.",
+										confirmWord: "Press Enter to confirm your word.",
 										wordCorrect: "Correct!",
 										wordIncorrect: "Incorrect.",
 

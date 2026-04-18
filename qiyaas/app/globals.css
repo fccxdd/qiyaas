@@ -19,7 +19,7 @@
 	--foreground: #171717;
 }
 
-/* Class-based dark mode - this will work with toggle */
+/* Class-based dark mode */
 .dark {
 	--background: #0a0a0a;
 	--foreground: #ededed;
@@ -27,25 +27,25 @@
 
 body, .body-text {
 	@apply bg-white dark:bg-black text-gray-900 dark:text-gray-100;
-	font-family: var(--font-indie-flower); /* Body uses Indie Flower */
+	font-family: var(--font-indie-flower);
 	transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-
 h1, h2, h3, h4, h5, h6, .title-text {
-	font-family: var(--font-inknut-antiqua);  
-	/* Titles use Inknut Antiqua */
+	font-family: var(--font-inknut-antiqua);
 	font-feature-settings: "lnum", "tnum";
 	-webkit-font-feature-settings: "lnum", "tnum";
 }
 
+/* ========================================
+   MISC COMPONENTS
+   ======================================== */
+
 /* Black Loading Screen */
 .loading-screen {
 	position: fixed;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
+	top: 0; left: 0;
+	width: 100%; height: 100%;
 	background-color: white;
 	display: flex;
 	justify-content: center;
@@ -62,21 +62,12 @@ h1, h2, h3, h4, h5, h6, .title-text {
 	color: white;
 }
 
-/* Tutorial Page: Fade-in effect */
-.fade-in {
-	opacity: 1;
-}
+.fade-in  { opacity: 1; }
+.fade-out { opacity: 0; pointer-events: none; }
 
-/* Tutorial Page: Fade-out effect */
-.fade-out {
-	opacity: 0;
-	pointer-events: none;
-}
-
-/* Loading Page: Spinner icon animation */
 .spinner-icon {
-	font-size: 3rem; /* Adjust size */
-	color: black; /* Spinner color */
+	font-size: 3rem;
+	color: black;
 	animation: spin 1s linear infinite;
 }
 
@@ -87,370 +78,276 @@ h1, h2, h3, h4, h5, h6, .title-text {
 
 /* Loading Page: Spinning animation */
 @keyframes spin {
-	from {
-		transform: rotate(0deg);
-	}
-	to {
-		transform: rotate(360deg);
-	}
+	from { transform: rotate(0deg); }
+	to   { transform: rotate(360deg); }
 }
 
-/* Game Styles for different ViewPorts */
-
 /* ========================================
-   ROOT FONT SCALING - Cross-browser zoom
-   Tailwind's rem-based classes scale with this.
-   Default is 16px = 100%
+   ROOT FONT SCALING
    ======================================== */
 
 /* Small phones under 340px (iPhone SE, small Androids) */
 @media screen and (max-width: 340px) {
-    html {
-        font-size: 12px;
-    }
+	html { font-size: 12px; }
 }
 
 /* Short screens under 667px (iPhone SE in landscape, small Androids) */
 @media screen and (max-height: 667px) {
-    html {
-        font-size: 13px;
-    }
+	html { font-size: 13px; }
 }
 
 /* Standard phones (341px — 480px) — Galaxy A21, new iPhones */
 @media screen and (min-width: 341px) and (max-width: 480px) {
-    html {
-        font-size: 14px;
-    }
+	html { font-size: 14px; }
 }
 
 /* Large phones (481px — 768px) — iPads, tablets */
 @media screen and (min-width: 481px) and (max-width: 768px) {
-    html {
-        font-size: 15px;
-    }
+	html { font-size: 15px; }
 }
 
 /* Small laptops / large tablets (769px — 1024px) */
 @media screen and (min-width: 769px) and (max-width: 1024px) {
-    html {
-        font-size: 14px;
-    }
+	html { font-size: 14px; }
 }
 
 /* Medium laptops (1025px — 1200px) */
 @media screen and (min-width: 1025px) and (max-width: 1200px) {
-    html {
-        font-size: 13px;
-    }
+	html { font-size: 13px; }
 }
 
-/* Medium laptops (1201+) */
-@media screen and (min-width: 1201px) {
-    html {
-        font-size: 14px;
-    }
-}
-
-/* Large desktops / TVs above 1800px - these actually benefit from bigger */
-@media screen and (min-width: 1800px) {
-    html {
-        font-size: 16px;
-    }
-}
-
-/* Mobile Devices */
-@media screen and (min-width: 320px) and (max-width: 481px) {
-    .dash-container {
-        width: 1.5rem;
-        height: 2.25rem;
-    }
-    .dash-text   { font-size: 1.75rem; } 
-    .letter-text { font-size: 1.5rem; }   
-    .word-dash-wrapper { gap: 0.4rem; }   
-}
-
-/* iPads and Tablets */
-@media screen and (min-width: 481px) and (max-width: 768px) {
-		.dash-container {
-			width: 1.625rem;
-			height: 2.375rem;
-		}
-		.dash-text {
-			font-size: 1.75rem;
-		}
-		
-		.letter-text {
-			font-size: 1.375rem;
-		}
-		
-		.word-dash-wrapper {
-			gap: 0.5rem;
-		}
-
-	}
-
-/* Small screens, laptops - 13-inch  */
-@media screen and (min-width: 769px) and (max-width: 1024px) {
-		.dash-container {
-			width: 1.75rem;  /* was 28px */
-			height: 2.5rem;  /* was 40px */
-		}
-		
-		.dash-text {
-			font-size: 2rem;
-		}
-		
-		.letter-text {
-			font-size: 1.5rem;
-		}
-		
-		.word-dash-wrapper {
-			gap: 0.75rem;
-		}
-		
-	}
-
-/* Desktops, large screens - 15-inch+ */
-@media screen and (min-width: 1025px) and (max-width: 1200px) {
-		.dash-container {
-			width: 1.875rem; /* was 30px */
-			height: 2.625rem; /* was 42px */
-		}
-
-		.dash-text {
-			font-size: 2.25rem;
-		}
-
-		.letter-text {
-			font-size: 1.625rem;
-		}
-
-		.word-dash-wrapper {
-			gap: 0.875rem;
-		}
-
-	}
-
-/* Extra large screens (1201px and more) */
-@media screen and (min-width: 1201px) {
-		.dash-container {
-			width: 2rem;     /* was 32px */
-			height: 2.75rem; /* was 44px */
-		}
-	
-		.dash-text {
-			font-size: 2.5rem;
-		}
-		
-		.letter-text {
-			font-size: 1.75rem;
-		}
-		
-		.word-dash-wrapper {
-			gap: 1rem;
-		}
-
-	}
-
-/* High-DPI 13-inch laptops (Yoga, etc.) - needs smaller sizing */
 @media screen and (min-width: 1201px) and (max-width: 1400px) {
-		.dash-container {
-			width: 1.5rem;   /* was 24px */
-			height: 2.25rem; /* was 36px */
-		}
-		
-		.dash-text {
-			font-size: 1.75rem;
-		}
-		
-		.letter-text {
-			font-size: 1.25rem;
-		}
-		
-		.word-dash-wrapper {
-			gap: 0.5rem;
-		}
-
-	}
-
-	@media screen and (max-height: 667px) {
-    .dash-container {
-        width: 1.5rem;
-        height: 2.25rem;
-    }
-    
-    .dash-text {
-        font-size: 1.75rem;
-    }
-    
-    .letter-text {
-        font-size: 1.25rem;
-    }
-    
-    .word-dash-wrapper {
-        gap: 0.5rem;
-    }
+	html { font-size: 14px; }
 }
+
+@media screen and (min-width: 1401px) and (max-width: 1799px) {
+	html { font-size: 14px; }
+}
+
+@media screen and (min-width: 1800px) {
+	html { font-size: 16px; }
+}
+
+/* ========================================
+   HINT & LAYOUT HELPERS
+   ======================================== */
 
 .hint-wrapper-row {
-  display: flex;
-  align-items: center;
-  margin-top: 0.5rem;   /* matches my-2 on word-dash-wrapper */
-  margin-bottom: 0.5rem;
+	display: flex;
+	align-items: center;
+	margin-top: 0.5rem;
+	margin-bottom: 0.5rem;
 }
 
-/* Hint Container */
+.hint-container {
+	gap: 1.8rem;
+}
+
+.hint-wrapper {
+	display: inline-flex;
+	align-items: baseline;
+	gap: 0.75rem;
+}
+
+.hint-number {
+	font-size: clamp(2rem, 5.5vw, 3rem);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-weight: 700;
+	flex-shrink: 0;
+	position: relative;
+	min-width: 32px;
+}
+
+.hint-text {
+	font-size: clamp(1rem, 5.5vw, 2rem);
+	line-height: 1.3;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	flex: 1;
+	min-width: 0;
+	padding: 0.375rem 0.75rem;
+}
+/* ========================================
+   GAME ELEMENT SIZING
+   ======================================== */
+
+/* Mobile (320px — 481px) */
 @media screen and (min-width: 320px) and (max-width: 481px) {
-  .hint-container { gap: 1.8rem; }
+	.dash-container        { width: 1.5rem; height: 2.25rem; }
+	.dash-text             { font-size: 1.75rem; }
+	.letter-text           { font-size: 1.5rem; }
+	.word-dash-wrapper     { gap: 0.4rem; }
+	.hint-container        { gap: 1.8rem; }
+	.starting-letter-text  { font-size: 1.5rem; }
+	.starting-letter-slot  { width: 2.25rem; height: 2.25rem; }
 }
+
+/* iPads and Tablets (481px — 768px) */
 @media screen and (min-width: 481px) and (max-width: 768px) {
-  .hint-container { gap: 2rem; }
+	.dash-container        { width: 1.625rem; height: 2.375rem; }
+	.dash-text             { font-size: 1.75rem; }
+	.letter-text           { font-size: 1.375rem; }
+	.word-dash-wrapper     { gap: 0.5rem; }
+	.hint-container        { gap: 2rem; }
+	.starting-letter-text  { font-size: 1.375rem; }
+	.starting-letter-slot  { width: 2rem; height: 2rem; }
 }
+
+/* Small laptops / 13-inch (769px — 1024px) */
 @media screen and (min-width: 769px) and (max-width: 1024px) {
-  .hint-container { gap: 2.4rem; }
+	.dash-container        { width: 1.75rem; height: 2.5rem; }
+	.dash-text             { font-size: 2rem; }
+	.letter-text           { font-size: 1.5rem; }
+	.word-dash-wrapper     { gap: 0.75rem; }
+	.hint-container        { gap: 2.4rem; }
+	.starting-letter-text  { font-size: 1.5rem; }
+	.starting-letter-slot  { width: 2.5rem; height: 2.5rem; }
 }
+
+/* iPad Pro 11" (834px wide, 1194px tall) and iPad Pro 12.9" (1024px wide, 1366px tall) */
+@media screen and (min-width: 769px) and (max-width: 1024px) and (min-height: 1000px) {
+  html { font-size: 15px; }
+
+  .dash-container        { width: 1.625rem; height: 2.375rem; }
+  .dash-text             { font-size: 1.875rem; }
+  .letter-text           { font-size: 1.375rem; }
+  .word-dash-wrapper     { gap: 0.6rem; }
+  .hint-container        { gap: 2rem; }
+  .starting-letter-text  { font-size: 1.375rem; }
+  .starting-letter-slot  { width: 2.25rem; height: 2.25rem; }
+  .hint-number           { font-size: 2rem; }
+  .hint-text             { font-size: 1.5rem; }
+}
+
+/* Medium laptops (1025px — 1200px) */
 @media screen and (min-width: 1025px) and (max-width: 1200px) {
-  .hint-container { gap: 2.6rem; }
-}
-@media screen and (min-width: 1201px) {
-  .hint-container { gap: 2.8rem; }
-}
-@media screen and (min-width: 1201px) and (max-width: 1400px) {
-  .hint-container { gap: 2rem; }
+	.dash-container        { width: 1.875rem; height: 2.625rem; }
+	.dash-text             { font-size: 2.25rem; }
+	.letter-text           { font-size: 1.625rem; }
+	.word-dash-wrapper     { gap: 0.875rem; }
+	.hint-container        { gap: 2.6rem; }
+	.starting-letter-text  { font-size: 1.625rem; }
+	.starting-letter-slot  { width: 2.75rem; height: 2.75rem; }
 }
 
-/* Starting Letters */
-@media screen and (min-width: 320px) and (max-width: 481px) {
-  .starting-letter-text { font-size: 1.5rem; }
+/* 14-inch laptops (1201px — 1400px) */
+@media screen and (min-width: 1201px) and (max-width: 1400px) {
+	.dash-container        { width: 1.5rem; height: 2.25rem; }
+	.dash-text             { font-size: 2rem; }
+	.letter-text           { font-size: 1.25rem; }
+	.word-dash-wrapper     { gap: 0.5rem; }
+	.hint-container        { gap: 2rem; }
+	.starting-letter-text  { font-size: 1.25rem; }
+	.starting-letter-slot  { width: 2.5rem; height: 2.5rem; }
+	.hint-number           { font-size: 2rem; }
+	.hint-text             { font-size: 1.5rem; padding: 0.25rem 0.5rem; }
+	.tutorial-box          { max-width: 260px; gap: 0.375rem; padding: 0.5rem; font-size: 0.75rem; }
+	.tutorial-box h3       { font-size: 1rem; }
+	.tutorial-box p        { font-size: 1rem; }
+	.tutorial-box button   { font-size: 0.85rem; padding: 0.125rem 0.5rem; }
 }
+
+/* Large laptops / desktops (1401px — 1799px) */
+@media screen and (min-width: 1401px) and (max-width: 1799px) {
+	.dash-container        { width: 2rem; height: 2.75rem; }
+	.dash-text             { font-size: 2.5rem; }
+	.letter-text           { font-size: 1.75rem; }
+	.word-dash-wrapper     { gap: 1rem; }
+	.hint-container        { gap: 2.8rem; }
+	.starting-letter-text  { font-size: 1.75rem; }
+	.starting-letter-slot  { width: 3rem; height: 3rem; }
+	.hint-number           { font-size: clamp(2rem, 5.5vw, 3rem); }
+	.hint-text             { font-size: clamp(1rem, 5.5vw, 2rem); padding: 0.375rem 0.75rem; }
+}
+
+/* Large desktops / TVs (1800px+) */
+@media screen and (min-width: 1800px) {
+	.dash-container        { width: 2rem; height: 2.75rem; }
+	.dash-text             { font-size: 2.5rem; }
+	.letter-text           { font-size: 1.75rem; }
+	.word-dash-wrapper     { gap: 1rem; }
+	.hint-container        { gap: 2.8rem; }
+	.starting-letter-text  { font-size: 1.75rem; }
+	.starting-letter-slot  { width: 3rem; height: 3rem; }
+	.hint-number           { font-size: clamp(2rem, 5.5vw, 3rem); }
+	.hint-text             { font-size: clamp(1rem, 5.5vw, 2rem); padding: 0.375rem 0.75rem; }
+}
+
+/* Short screens */
+@media screen and (max-height: 667px) {
+	.dash-container        { width: 1.5rem; height: 2.25rem; }
+	.dash-text             { font-size: 1.75rem; }
+	.letter-text           { font-size: 1.25rem; }
+	.word-dash-wrapper     { gap: 0.5rem; }
+}
+
+.message-text { font-size: 1rem; }
+
 @media screen and (min-width: 481px) and (max-width: 768px) {
-  .starting-letter-text { font-size: 1.375rem; }
+	.message-text { font-size: 1.125rem; }
 }
 @media screen and (min-width: 769px) and (max-width: 1024px) {
-  .starting-letter-text { font-size: 1.5rem; }
+	.message-text { font-size: 1.25rem; }
 }
-@media screen and (min-width: 1025px) and (max-width: 1200px) {
-  .starting-letter-text { font-size: 1.625rem; }
-}
-@media screen and (min-width: 1201px) {
-  .starting-letter-text { font-size: 1.75rem; }
-}
-@media screen and (min-width: 1201px) and (max-width: 1400px) {
-  .starting-letter-text { font-size: 1.25rem; }
-}
-
-/* Starting Letter Slot */
-@media screen and (min-width: 320px) and (max-width: 481px) {
-  .starting-letter-slot { width: 2.25rem; height: 2.25rem; }
-}
-@media screen and (min-width: 481px) and (max-width: 768px) {
-  .starting-letter-slot { width: 2rem; height: 2rem; }
-}
-@media screen and (min-width: 769px) and (max-width: 1024px) {
-  .starting-letter-slot { width: 2.5rem; height: 2.5rem; }
-}
-@media screen and (min-width: 1025px) and (max-width: 1200px) {
-  .starting-letter-slot { width: 2.75rem; height: 2.75rem; }
-}
-@media screen and (min-width: 1201px) {
-  .starting-letter-slot { width: 3rem; height: 3rem; }
-}
-@media screen and (min-width: 1201px) and (max-width: 1400px) {
-  .starting-letter-slot { width: 2rem; height: 2rem; }
-}
-
-/* Game Message Text */
-  .message-text { font-size: 1rem; } /* Default for mobile */
-
-@media screen and (min-width: 481px) and (max-width: 768px) {
-  .message-text { font-size: 1.125rem; }
-}
-
-@media screen and (min-width: 769px) and (max-width: 1024px) {
-  .message-text { font-size: 1.25rem; }
-}
-
 @media screen and (min-width: 1025px) {
-  .message-text { font-size: 1.125rem; }
+	.message-text { font-size: 1.125rem; }
 }
-/* Bounce Animation */
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+
 @keyframes bounce {
-	0%, 100% { 
-		transform: translateX(-50%) translateY(0); 
-	}
-	50% { 
-		transform: translateX(-50%) translateY(-4px); 
-	}
+	0%, 100% { transform: translateX(-50%) translateY(0); }
+	50%       { transform: translateX(-50%) translateY(-4px); }
 }
 
-/* Dash to Green Animation */
 @keyframes dash-to-green {
-	0% { 
-		transform: scale(1); 
-	}
-	50% { 
-		transform: scale(1.2); 
-	}
-	100% { 
-		transform: scale(1); 
-	}
+	0%   { transform: scale(1); }
+	50%  { transform: scale(1.2); }
+	100% { transform: scale(1); }
 }
 
-/* Shake Animation */
 @keyframes shake {
-	0%, 100% { 
-		transform: translateX(0); 
-	}
-	10%, 30%, 50%, 70%, 90% { 
-		transform: translateX(-8px); 
-	}
-	20%, 40%, 60%, 80% { 
-		transform: translateX(8px); 
-	}
+	0%, 100%               { transform: translateX(0); }
+	10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
+	20%, 40%, 60%, 80%     { transform: translateX(8px); }
 }
 
-/* Utility class for shake animation */
 .animate-shake {
 	animation: shake 0.5s ease-in-out;
 }
 
-/* Pulse Glow Animation - used by FlashOverlay */
 @keyframes pulseGlow {
-	0%, 100% { 
+	0%, 100% {
 		text-shadow: 0 0 0px currentColor;
 		filter: brightness(1);
 	}
-	50% { 
-		text-shadow: 0 0 12px currentColor,
-								 0 0 16px currentColor;
+	50% {
+		text-shadow: 0 0 12px currentColor, 0 0 16px currentColor;
 		filter: brightness(1.2);
 	}
 }
 
-/* Pulse Glow with Delay for Completed Words - 3s wait, 5s pulse (8s total) */
 @keyframes pulseGlowDelayed {
-	/* 0-37.5%: No glow (3s wait out of 8s total) */
-	0%, 37.5% { 
+	0%, 37.5% {
 		text-shadow: 0 0 0px currentColor;
 		filter: brightness(1);
 	}
-	/* 37.5-68.75%: Pulse up (2.5s) */
-	68.75% { 
-		text-shadow: 0 0 12px currentColor,
-								 0 0 16px currentColor;
+	68.75% {
+		text-shadow: 0 0 12px currentColor, 0 0 16px currentColor;
 		filter: brightness(1.2);
 	}
-	/* 68.75-100%: Pulse down (2.5s) */
-	100% { 
+	100% {
 		text-shadow: 0 0 0px currentColor;
 		filter: brightness(1);
 	}
 }
 
-/* White glow reveal - pulses white, then reveals actual color */
 @keyframes pulseGlowWhiteReveal {
-	/* 0-60%: Long suspenseful white glow (3.6s) */
 	0% {
 		color: white !important;
 		text-shadow: 0 0 5px white;
@@ -471,7 +368,6 @@ h1, h2, h3, h4, h5, h6, .title-text {
 		text-shadow: 0 0 20px white, 0 0 30px white;
 		filter: brightness(1.8);
 	}
-	/* 60-80%: Reveal color with glow (1.2s) */
 	70% {
 		color: currentColor !important;
 		text-shadow: 0 0 15px currentColor, 0 0 20px currentColor;
@@ -482,7 +378,6 @@ h1, h2, h3, h4, h5, h6, .title-text {
 		text-shadow: 0 0 8px currentColor;
 		filter: brightness(1.1);
 	}
-	/* 80-100%: Settle (1.2s) */
 	100% {
 		color: currentColor !important;
 		text-shadow: 0 0 0px currentColor;
@@ -490,14 +385,12 @@ h1, h2, h3, h4, h5, h6, .title-text {
 	}
 }
 
-/* Reverse Pulse Glow - starts with max glow, ends with no glow */
 @keyframes pulseGlowReverse {
-	0% { 
-		text-shadow: 0 0 12px currentColor,
-								 0 0 16px currentColor;
+	0% {
+		text-shadow: 0 0 12px currentColor, 0 0 16px currentColor;
 		filter: brightness(1.2);
 	}
-	100% { 
+	100% {
 		text-shadow: 0 0 0px currentColor;
 		filter: brightness(1);
 	}
@@ -505,42 +398,32 @@ h1, h2, h3, h4, h5, h6, .title-text {
 
 @media (prefers-color-scheme: dark) {
 	@keyframes pulseGlow {
-		0%, 100% { 
+		0%, 100% {
 			text-shadow: 0 0 0px currentColor;
 			filter: brightness(1);
 		}
-		50% { 
-			text-shadow: 0 0 20px currentColor,
-									 0 0 30px currentColor,
-									 0 0 40px currentColor,
-									 0 0 50px currentColor;
+		50% {
+			text-shadow: 0 0 20px currentColor, 0 0 30px currentColor, 0 0 40px currentColor, 0 0 50px currentColor;
 			filter: brightness(1.3);
 		}
 	}
-	
+
 	@keyframes pulseGlowDelayed {
-		/* 0-37.5%: No glow (3s wait) */
-		0%, 37.5% { 
+		0%, 37.5% {
 			text-shadow: 0 0 0px currentColor;
 			filter: brightness(1);
 		}
-		/* 37.5-68.75%: Pulse up (2.5s) */
-		68.75% { 
-			text-shadow: 0 0 20px currentColor,
-									 0 0 30px currentColor,
-									 0 0 40px currentColor,
-									 0 0 50px currentColor;
+		68.75% {
+			text-shadow: 0 0 20px currentColor, 0 0 30px currentColor, 0 0 40px currentColor, 0 0 50px currentColor;
 			filter: brightness(1.3);
 		}
-		/* 68.75-100%: Pulse down (2.5s) */
-		100% { 
+		100% {
 			text-shadow: 0 0 0px currentColor;
 			filter: brightness(1);
 		}
 	}
-	
+
 	@keyframes pulseGlowWhiteReveal {
-		/* 0-60%: Long suspenseful white glow (3.6s) */
 		0% {
 			color: white !important;
 			text-shadow: 0 0 8px white;
@@ -561,7 +444,6 @@ h1, h2, h3, h4, h5, h6, .title-text {
 			text-shadow: 0 0 30px white, 0 0 40px white;
 			filter: brightness(2);
 		}
-		/* 60-80%: Reveal color with glow (1.2s) */
 		70% {
 			color: currentColor !important;
 			text-shadow: 0 0 25px currentColor, 0 0 35px currentColor, 0 0 45px currentColor;
@@ -572,64 +454,53 @@ h1, h2, h3, h4, h5, h6, .title-text {
 			text-shadow: 0 0 12px currentColor, 0 0 16px currentColor;
 			filter: brightness(1.2);
 		}
-		/* 80-100%: Settle (1.2s) */
 		100% {
 			color: currentColor !important;
 			text-shadow: 0 0 0px currentColor;
 			filter: brightness(1);
 		}
 	}
-	
+
 	@keyframes pulseGlowReverse {
-		0% { 
-			text-shadow: 0 0 20px currentColor,
-									 0 0 30px currentColor,
-									 0 0 40px currentColor,
-									 0 0 50px currentColor;
+		0% {
+			text-shadow: 0 0 20px currentColor, 0 0 30px currentColor, 0 0 40px currentColor, 0 0 50px currentColor;
 			filter: brightness(1.3);
 		}
-		100% { 
+		100% {
 			text-shadow: 0 0 0px currentColor;
 			filter: brightness(1);
 		}
 	}
 }
 
-/* Safari/WebKit specific adjustments */
 @supports (-webkit-touch-callout: none) {
 	@keyframes pulseGlow {
-		0%, 100% { 
+		0%, 100% {
 			text-shadow: 0 0 0px currentColor;
 			-webkit-filter: brightness(1);
 		}
-		50% { 
-			text-shadow: 0 0 14px currentColor,
-									 0 0 18px currentColor;
+		50% {
+			text-shadow: 0 0 14px currentColor, 0 0 18px currentColor;
 			-webkit-filter: brightness(1.2);
 		}
 	}
-	
+
 	@keyframes pulseGlowDelayed {
-		/* 0-37.5%: No glow (3s wait) */
-		0%, 37.5% { 
+		0%, 37.5% {
 			text-shadow: 0 0 0px currentColor;
 			-webkit-filter: brightness(1);
 		}
-		/* 37.5-68.75%: Pulse up (2.5s) */
-		68.75% { 
-			text-shadow: 0 0 14px currentColor,
-									 0 0 18px currentColor;
+		68.75% {
+			text-shadow: 0 0 14px currentColor, 0 0 18px currentColor;
 			-webkit-filter: brightness(1.2);
 		}
-		/* 68.75-100%: Pulse down (2.5s) */
-		100% { 
+		100% {
 			text-shadow: 0 0 0px currentColor;
 			-webkit-filter: brightness(1);
 		}
 	}
-	
+
 	@keyframes pulseGlowWhiteReveal {
-		/* 0-60%: Long suspenseful white glow (3.6s) */
 		0% {
 			color: white !important;
 			text-shadow: 0 0 6px white;
@@ -650,7 +521,6 @@ h1, h2, h3, h4, h5, h6, .title-text {
 			text-shadow: 0 0 25px white, 0 0 35px white;
 			-webkit-filter: brightness(1.8);
 		}
-		/* 60-80%: Reveal color with glow (1.2s) */
 		70% {
 			color: currentColor !important;
 			text-shadow: 0 0 18px currentColor, 0 0 22px currentColor;
@@ -661,64 +531,52 @@ h1, h2, h3, h4, h5, h6, .title-text {
 			text-shadow: 0 0 10px currentColor;
 			-webkit-filter: brightness(1.1);
 		}
-		/* 80-100%: Settle (1.2s) */
 		100% {
 			color: currentColor !important;
 			text-shadow: 0 0 0px currentColor;
 			-webkit-filter: brightness(1);
 		}
 	}
-	
+
 	@keyframes pulseGlowReverse {
-		0% { 
-			text-shadow: 0 0 14px currentColor,
-									 0 0 18px currentColor;
+		0% {
+			text-shadow: 0 0 14px currentColor, 0 0 18px currentColor;
 			-webkit-filter: brightness(1.2);
 		}
-		100% { 
+		100% {
 			text-shadow: 0 0 0px currentColor;
 			-webkit-filter: brightness(1);
 		}
 	}
-	
+
 	@media (prefers-color-scheme: dark) {
 		@keyframes pulseGlow {
-			0%, 100% { 
+			0%, 100% {
 				text-shadow: 0 0 0px currentColor;
 				-webkit-filter: brightness(1);
 			}
-			50% { 
-				text-shadow: 0 0 22px currentColor,
-										 0 0 32px currentColor,
-										 0 0 42px currentColor,
-										 0 0 52px currentColor;
+			50% {
+				text-shadow: 0 0 22px currentColor, 0 0 32px currentColor, 0 0 42px currentColor, 0 0 52px currentColor;
 				-webkit-filter: brightness(1.3);
 			}
 		}
-		
+
 		@keyframes pulseGlowDelayed {
-			/* 0-37.5%: No glow (3s wait) */
-			0%, 37.5% { 
+			0%, 37.5% {
 				text-shadow: 0 0 0px currentColor;
 				-webkit-filter: brightness(1);
 			}
-			/* 37.5-68.75%: Pulse up (2.5s) */
-			68.75% { 
-				text-shadow: 0 0 22px currentColor,
-										 0 0 32px currentColor,
-										 0 0 42px currentColor,
-										 0 0 52px currentColor;
+			68.75% {
+				text-shadow: 0 0 22px currentColor, 0 0 32px currentColor, 0 0 42px currentColor, 0 0 52px currentColor;
 				-webkit-filter: brightness(1.3);
 			}
-			/* 68.75-100%: Pulse down (2.5s) */
-			100% { 
+			100% {
 				text-shadow: 0 0 0px currentColor;
 				-webkit-filter: brightness(1);
 			}
 		}
-		
+
 		@keyframes pulseGlowWhiteReveal {
-			/* 0-60%: Long suspenseful white glow (3.6s) */
 			0% {
 				color: white !important;
 				text-shadow: 0 0 10px white;
@@ -739,7 +597,6 @@ h1, h2, h3, h4, h5, h6, .title-text {
 				text-shadow: 0 0 32px white, 0 0 42px white;
 				-webkit-filter: brightness(2);
 			}
-			/* 60-80%: Reveal color with glow (1.2s) */
 			70% {
 				color: currentColor !important;
 				text-shadow: 0 0 27px currentColor, 0 0 37px currentColor, 0 0 47px currentColor;
@@ -750,23 +607,19 @@ h1, h2, h3, h4, h5, h6, .title-text {
 				text-shadow: 0 0 14px currentColor, 0 0 18px currentColor;
 				-webkit-filter: brightness(1.2);
 			}
-			/* 80-100%: Settle (1.2s) */
 			100% {
 				color: currentColor !important;
 				text-shadow: 0 0 0px currentColor;
 				-webkit-filter: brightness(1);
 			}
 		}
-		
+
 		@keyframes pulseGlowReverse {
-			0% { 
-				text-shadow: 0 0 22px currentColor,
-										 0 0 32px currentColor,
-										 0 0 42px currentColor,
-										 0 0 52px currentColor;
+			0% {
+				text-shadow: 0 0 22px currentColor, 0 0 32px currentColor, 0 0 42px currentColor, 0 0 52px currentColor;
 				-webkit-filter: brightness(1.3);
 			}
-			100% { 
+			100% {
 				text-shadow: 0 0 0px currentColor;
 				-webkit-filter: brightness(1);
 			}
@@ -774,41 +627,10 @@ h1, h2, h3, h4, h5, h6, .title-text {
 	}
 }
 
-.hint-container {
-  gap: 1.8rem;
-}
+/* ========================================
+   ANIMATION UTILITIES
+   ======================================== */
 
-.hint-wrapper {
-	display: inline-flex;
-	align-items: baseline;
-	gap: 0.75rem;
-}
-
-/* Larger, dominant number */
-.hint-number {
-	font-size: clamp(2rem, 5.5vw, 3rem);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	font-weight: 700;
-	flex-shrink: 0;
-	position: relative;
-	min-width: 32px;
-}
-
-/* Supporting explanation text */
-.hint-text {
-	font-size: clamp(1rem, 5.5vw, 2rem);
-	line-height: 1.3;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	flex: 1;
-	min-width: 0;
-    padding: 0.375rem 0.75rem;
-}
-
-/* Utility class for pulse glow */
 .animate-pulse-glow {
 	animation: pulseGlow 2s ease-in-out infinite;
 	transform: translateZ(0);
@@ -822,7 +644,6 @@ h1, h2, h3, h4, h5, h6, .title-text {
 	display: inline-block;
 }
 
-/* Flash overlay styles */
 .flash-wrapper {
 	transform: translateZ(0);
 	-webkit-transform: translateZ(0);
@@ -832,41 +653,34 @@ h1, h2, h3, h4, h5, h6, .title-text {
 .flash-wrapper.flash-active .letter-text {
 	animation: pulseGlowWhiteReveal 6000ms ease-in-out forwards;
 	display: inline-block !important;
-	/* Remove this transition as it might interfere */
-	
 }
 
-/* Incorrect Word */
 .flash-wrapper.flash-active.flash-red .dash-text,
 .flash-wrapper.flash-active.flash-red .letter-text {
 	color: #ef4444 !important;
-    animation: pulseGlow 6000ms ease-in-out forwards;
-    display: inline-block !important;	
+	animation: pulseGlow 6000ms ease-in-out forwards;
+	display: inline-block !important;
 }
 
-/* Partially Correct Word */
 .flash-wrapper.flash-active.flash-yellow .dash-text,
 .flash-wrapper.flash-active.flash-yellow .letter-text {
 	color: #eab308 !important;
 	animation: pulseGlow 6000ms ease-in-out forwards;
-    display: inline-block !important;
+	display: inline-block !important;
 }
 
-/* Correct Noun */
 .flash-wrapper.flash-active.flash-green-noun .dash-text,
 .flash-wrapper.flash-active.flash-green-noun .letter-text {
 	color: #74A8DC !important;
 	animation: pulseGlowDelayed 6000ms ease-in-out forwards;
-    display: inline-block !important;
+	display: inline-block !important;
 }
 
-/* Correct Verb */
 .flash-wrapper.flash-active.flash-green-verb .dash-text,
 .flash-wrapper.flash-active.flash-green-verb .letter-text {
 	color: #6AA84F !important;
 }
 
-/* Correct Adjective */
 .flash-wrapper.flash-active.flash-green-adjective .dash-text,
 .flash-wrapper.flash-active.flash-green-adjective .letter-text {
 	color: #E06666 !important;
@@ -881,15 +695,12 @@ h1, h2, h3, h4, h5, h6, .title-text {
    PERSISTENT GLOW FOR COMPLETED WORDS
    ======================================== */
 
-/* Persistent glow for completed words - synchronized infinite animation */
-/* Uses pulseGlowDelayed (8s cycle: 3s wait + 5s pulse) to sync all words */
 .completed-word-glow .dash-text,
 .completed-word-glow .letter-text {
 	animation: pulseGlowDelayed 8s ease-in-out infinite !important;
 	display: inline-block !important;
 }
 
-/* Completed word colors - persistent after flash ends */
 .completed-word-glow.flash-green-noun .dash-text,
 .completed-word-glow.flash-green-noun .letter-text {
 	color: #74A8DC !important;
@@ -911,11 +722,11 @@ h1, h2, h3, h4, h5, h6, .title-text {
 }
 
 @keyframes pop-in {
-  0%   { transform: scale(0.75); opacity: 0; }
-  70%  { transform: scale(1.15); opacity: 1; }
-  100% { transform: scale(1);    opacity: 1; }
+	0%   { transform: scale(0.75); opacity: 0; }
+	70%  { transform: scale(1.15); opacity: 1; }
+	100% { transform: scale(1);    opacity: 1; }
 }
 
 @utility animate-pop-in {
-  animation: pop-in 0.25s ease-out forwards;
+	animation: pop-in 0.25s ease-out forwards;
 }
