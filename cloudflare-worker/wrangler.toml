@@ -17,6 +17,10 @@ head_sampling_rate = 1
 invocation_logs = true
 persist = true
 
+# Variables
+[[secrets]]
+name = "CRON_SECRET"
+
 # KV namespace for storing puzzle data
 [[kv_namespaces]]
 binding = "PUZZLE_DATA"

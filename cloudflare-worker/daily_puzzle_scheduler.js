@@ -9,6 +9,7 @@ const INPUT_FILE_KEY = 'daily_words_tagged';
 const USED_WORDS_KEY = 'used_words';
 const CURRENT_PUZZLE_KEY = 'current_puzzle';
 const PUZZLE_PREFIX = 'puzzle_'; // Prefix for date-specific puzzle keys
+const CUSTOM_PUZZLE_KEY = 'custom_puzzle'; // Custom puzzle queue
 
 // --- NUMBER FUNCTIONS ---
 function numberFromLength(word) {
@@ -294,6 +295,7 @@ function getEasternHour(date) {
   const hour = parts.find(p => p.type === 'hour')?.value;
   return parseInt(hour);
 }
+
 // --- CLOUDFLARE WORKER EXPORT ---
 // 
 // CACHING STRATEGY:
@@ -309,10 +311,10 @@ function getEasternHour(date) {
 export default {
   // Scheduled trigger (cron job)
   async scheduled(event, env, ctx) {
-    
-    // Only run at midnight Eastern — handles Daylight Savings Time (DST) automatically
+
+    // Only run at midnight Eastern — skip this check if triggered manually
     const now = new Date(event.scheduledTime);
-    if (getEasternHour(now) !== 0) return;
+    if (!event.manual && getEasternHour(now) !== 0) return;
 
     try {
       // Load word database
@@ -326,12 +328,34 @@ export default {
       const usedWordsJson = await env.PUZZLE_DATA.get(USED_WORDS_KEY);
       const usedWordsArray = usedWordsJson ? JSON.parse(usedWordsJson).used_words || [] : [];
       const usedWordsSet = new Set(usedWordsArray);
-      
-      // Generate today's puzzle
+
+      // Get today's date in Eastern time
       const todayET = new Date().toLocaleString('en-US', { timeZone: 'America/New_York' });
       const puzzleDate = new Date(todayET).toISOString().split('T')[0];
-      
-      const puzzle = generateDailyPuzzle(wordsByPos, usedWordsSet, puzzleDate);
+
+      // --- CHECK FOR PENDING CUSTOM PUZZLE ---
+      let puzzle;
+      const customJson = await env.PUZZLE_DATA.get(CUSTOM_PUZZLE_KEY);
+
+      if (customJson) {
+        const custom = JSON.parse(customJson);
+
+        if (custom.date === puzzleDate) {
+          // It's the right day — use the custom puzzle
+          puzzle = custom;
+          await env.PUZZLE_DATA.delete(CUSTOM_PUZZLE_KEY);
+        } else {
+          // Not today — leave it queued, generate randomly as normal
+          puzzle = generateDailyPuzzle(wordsByPos, usedWordsSet, puzzleDate);
+        }
+      } else {
+        // No custom puzzle queued — generate randomly
+        puzzle = generateDailyPuzzle(wordsByPos, usedWordsSet, puzzleDate);
+      }
+
+      // Always update used_words, whether custom or generated
+      const puzzleWords = puzzle.clues.map(c => c.word);
+      puzzleWords.forEach(w => usedWordsSet.add(w));
       
       // Save puzzle with date-specific key for historical access
       const puzzleKey = `${PUZZLE_PREFIX}${puzzleDate}`;
@@ -345,7 +369,6 @@ export default {
         used_words: Array.from(usedWordsSet)
       }));
       
-      
     } catch (error) {
       console.error('Error generating puzzle:', error);
     }
@@ -354,6 +377,16 @@ export default {
   // HTTP request handler
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
+
+    // Manual cron trigger — protected by secret token, runs at any time
+    if (url.pathname === '/run-cron-now') {
+      const token = url.searchParams.get('token');
+      if (token !== env.CRON_SECRET) {
+        return new Response('Unauthorized', { status: 401 });
+      }
+      await this.scheduled({ scheduledTime: Date.now(), manual: true }, env, ctx);
+      return new Response('Cron ran successfully!', { status: 200 });
+    }
     
     // CORS headers
     const corsHeaders = {
