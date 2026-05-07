@@ -9,6 +9,7 @@ const INPUT_FILE_KEY = 'daily_words_tagged';
 const USED_WORDS_KEY = 'used_words';
 const CURRENT_PUZZLE_KEY = 'current_puzzle';
 const PUZZLE_PREFIX = 'puzzle_'; // Prefix for date-specific puzzle keys
+const CUSTOM_PUZZLE_KEY = 'custom_puzzle'; // Custom puzzle queue
 
 // --- NUMBER FUNCTIONS ---
 function numberFromLength(word) {
@@ -327,12 +328,34 @@ export default {
       const usedWordsJson = await env.PUZZLE_DATA.get(USED_WORDS_KEY);
       const usedWordsArray = usedWordsJson ? JSON.parse(usedWordsJson).used_words || [] : [];
       const usedWordsSet = new Set(usedWordsArray);
-      
-      // Generate today's puzzle
+
+      // Get today's date in Eastern time
       const todayET = new Date().toLocaleString('en-US', { timeZone: 'America/New_York' });
       const puzzleDate = new Date(todayET).toISOString().split('T')[0];
-      
-      const puzzle = generateDailyPuzzle(wordsByPos, usedWordsSet, puzzleDate);
+
+      // --- CHECK FOR PENDING CUSTOM PUZZLE ---
+      let puzzle;
+      const customJson = await env.PUZZLE_DATA.get(CUSTOM_PUZZLE_KEY);
+
+      if (customJson) {
+        const custom = JSON.parse(customJson);
+
+        if (custom.date === puzzleDate) {
+          // It's the right day — use the custom puzzle
+          puzzle = custom;
+          await env.PUZZLE_DATA.delete(CUSTOM_PUZZLE_KEY);
+        } else {
+          // Not today — leave it queued, generate randomly as normal
+          puzzle = generateDailyPuzzle(wordsByPos, usedWordsSet, puzzleDate);
+        }
+      } else {
+        // No custom puzzle queued — generate randomly
+        puzzle = generateDailyPuzzle(wordsByPos, usedWordsSet, puzzleDate);
+      }
+
+      // Always update used_words, whether custom or generated
+      const puzzleWords = puzzle.clues.map(c => c.word);
+      puzzleWords.forEach(w => usedWordsSet.add(w));
       
       // Save puzzle with date-specific key for historical access
       const puzzleKey = `${PUZZLE_PREFIX}${puzzleDate}`;
