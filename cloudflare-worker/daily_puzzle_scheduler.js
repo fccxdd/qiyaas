@@ -162,6 +162,14 @@ function pickWord(wordDict, lengthCat, rule, usedWords, rng) {
     }
   }
 
+  // For length_rule: exclude letters used by alphabet_rule (A-I) and number_rule (O,T,F,S,E,N)
+  if (rule === "length_rule") {
+    const forbiddenLetters = new Set(['A','B','C','D','E','F','G','H','I','N','O','S','T']);
+    availableWords = availableWords.filter(w => !forbiddenLetters.has(w[0].toUpperCase()));
+    if (availableWords.length === 0) {
+      throw new Error(`No unused ${lengthCat} words available for length_rule (excluding A-I and O/T/F/S/E/N)!`);
+    }
+  }
   // Pick random word using seeded RNG
   const index = Math.floor(rng() * availableWords.length);
   return availableWords[index];
