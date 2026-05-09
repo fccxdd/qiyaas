@@ -34,7 +34,7 @@ FORCE_REMOVE = {
                 }
 
 FORCE_ADD = {
-                    'christian', 'dhikr', 'hindu', 'islam', 'islamic', 'muslim', 'qibla', 'quran', 'sweaty', 'warden', 'trans'
+                    'christian', 'dhikr', 'hindu', 'islam', 'islamic', 'muslim', 'prince', 'qibla', 'quran', 'sweaty', 'warden', 'trans'
             }
 
 # -------------------------------------------------------------------
