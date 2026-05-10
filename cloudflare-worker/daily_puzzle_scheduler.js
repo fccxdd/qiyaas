@@ -10,6 +10,17 @@ const USED_WORDS_KEY = 'used_words';
 const CURRENT_PUZZLE_KEY = 'current_puzzle';
 const PUZZLE_PREFIX = 'puzzle_'; // Prefix for date-specific puzzle keys
 const CUSTOM_PUZZLE_KEY = 'custom_puzzle'; // Custom puzzle queue
+const HINT_MAP = {
+  "1": ["A", "O"],
+  "2": ["B", "T"],
+  "3": ["C", "T"],
+  "4": ["D", "F"],
+  "5": ["E", "F"],
+  "6": ["F", "S"],
+  "7": ["G", "S"],
+  "8": ["H", "E"],
+  "9": ["I", "N"]
+};
 
 // --- NUMBER FUNCTIONS ---
 function numberFromLength(word) {
@@ -162,14 +173,19 @@ function pickWord(wordDict, lengthCat, rule, usedWords, rng) {
     }
   }
 
-  // For length_rule: exclude letters used by alphabet_rule (A-I) and number_rule (O,T,F,S,E,N)
+  // For length_rule: exclude letters used by alphabet_rule (A-I) and number_rule (O,T,F,S,E,N) per number
   if (rule === "length_rule") {
-    const forbiddenLetters = new Set(['A','B','C','D','E','F','G','H','I','N','O','S','T']);
-    availableWords = availableWords.filter(w => !forbiddenLetters.has(w[0].toUpperCase()));
+    availableWords = availableWords.filter(w => {
+      const wordNumber = String(numberFromLength(w)); // e.g. 3-letter word → "3"
+      const forbidden = new Set(HINT_MAP[wordNumber] || []);
+      return !forbidden.has(w[0].toUpperCase());
+    });
+
     if (availableWords.length === 0) {
-      throw new Error(`No unused ${lengthCat} words available for length_rule (excluding A-I and O/T/F/S/E/N)!`);
+      throw new Error(`No unused ${lengthCat} words available for length_rule!`);
     }
   }
+  
   // Pick random word using seeded RNG
   const index = Math.floor(rng() * availableWords.length);
   return availableWords[index];
