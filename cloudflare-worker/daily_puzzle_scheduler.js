@@ -339,8 +339,10 @@ export default {
 
       // Get today's date in Eastern time
       const todayET = new Date().toLocaleString('en-US', { timeZone: 'America/New_York' });
-      const puzzleDate = new Date(todayET).toISOString().split('T')[0];
-
+      const puzzleDate = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'America/New_York'
+      }).format(new Date());
+      
       // --- CHECK FOR PENDING CUSTOM PUZZLE ---
       let puzzle;
       const customJson = await env.PUZZLE_DATA.get(CUSTOM_PUZZLE_KEY);
