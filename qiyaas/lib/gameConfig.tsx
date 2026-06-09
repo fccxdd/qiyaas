@@ -11,7 +11,7 @@ export const GameConfig = {
 							
 							// Description of Qiyaas
 							titleName: "Qiyaas - A word game based on numbers",
-							shareableDescription: "Play Qiyaas, the word game based on numbers!",
+							shareableDescription: "Play Qiyaas, the word game based on numbers! Guess the noun, verb, and adjective of the day using your starting letters. Can you solve the puzzle in 4 tries?",
 							urlName: "https://www.qiyaasgame.com",
 
 							// Image Paths
