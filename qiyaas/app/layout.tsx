@@ -19,42 +19,12 @@ const inknutAntiqua = Inknut_Antiqua({
 
 // Metadata Definition
 export const metadata = {
-  
   metadataBase: new URL(GameConfig.urlName),
   title: GameConfig.titleName,
   description: GameConfig.shareableDescription,
   icons: {
-            icon: '/favicon.ico',
-            apple: '/apple-icon.png',
-        },
-  openGraph: {
-    title: GameConfig.titleName,
-    description: GameConfig.shareableDescription,
-    url: GameConfig.urlName,
-    siteName: GameConfig.titleName,
-    images: [
-                {
-                url: 'https://www.qiyaasgame.com/qiyaas_glow_shareable.png',
-                width: 1200,
-                height: 630,
-                alt: 'Qiyaas Shareable Logo',
-                },
-                {
-                url: 'https://www.qiyaasgame.com/qiyaas_glow_shareable_square.png',
-                width: 400,
-                height: 400,
-                alt: 'Qiyaas Shareable Square Logo',
-                }
-            ],
-    locale: 'en_US',
-    type: 'website',
-},
-
-  twitter: {
-    card: 'summary_large_image',
-    title: GameConfig.titleName,
-    description: GameConfig.shareableDescription,
-    images: [`${GameConfig.urlName}/${GameConfig.imagePaths.shareable}`],
+    icon: '/favicon.ico',
+    apple: '/apple-icon.png',
   },
 };
 
@@ -72,13 +42,29 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`dark ${indieFlower.variable} ${inknutAntiqua.variable}`}>
-      
+      <head>
+        <meta property="og:title" content={GameConfig.titleName} />
+        <meta property="og:description" content={GameConfig.shareableDescription} />
+        <meta property="og:url" content={GameConfig.urlName} />
+        <meta property="og:site_name" content={GameConfig.titleName} />
+        <meta property="og:type" content="website" />
+        <meta property="og:locale" content="en_US" />
+        <meta property="og:image" content="https://www.qiyaasgame.com/qiyaas_glow_shareable.png" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content="Qiyaas Shareable Logo" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={GameConfig.titleName} />
+        <meta name="twitter:description" content={GameConfig.shareableDescription} />
+        <meta name="twitter:image" content="https://www.qiyaasgame.com/qiyaas_glow_shareable.png" />
+      </head>
       {/* ↑ Both variables added to make them available everywhere */}
       <body className={indieFlower.className}>
         <OrientationLock>
-        {/* ↑ Only Indie Flower is applied as the default body font */}
-        {children}
+          {/* ↑ Only Indie Flower is applied as the default body font */}
+          {children}
         </OrientationLock>
       </body>
-    </html>  );
+    </html>
+  );
 }
