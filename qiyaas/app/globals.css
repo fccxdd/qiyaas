@@ -128,6 +128,17 @@ h1, h2, h3, h4, h5, h6, .title-text {
 	html { font-size: 16px; }
 }
 
+/* For Other Pages (Besides GamePlay) Font Sizing */
+.page-body {
+  font-size: 1.20rem;
+  line-height: 1.7;
+}
+
+.page-heading {
+  font-size: 1.30rem;
+  font-weight: 600;
+}
+
 /* ========================================
    HINT & LAYOUT HELPERS
    ======================================== */
@@ -319,6 +330,31 @@ h1, h2, h3, h4, h5, h6, .title-text {
 
 .animate-shake {
 	animation: shake 0.5s ease-in-out;
+}
+
+/* Neon Glow Animations for Logo and About Us Page */
+@keyframes blue-neon-glow {
+  0% { filter: drop-shadow(0 0 8px #fff) drop-shadow(0 0 25px #74A8DC); opacity: 0.6; }
+  25% { filter: drop-shadow(0 0 10px #fff) drop-shadow(0 0 12px #74A8DC) drop-shadow(0 0 30px #74A8DC); opacity: 0.75; }
+  50% { filter: drop-shadow(0 0 15px #fff) drop-shadow(0 0 15px #74A8DC) drop-shadow(0 0 25px #74A8DC); opacity: 0.9; }
+  75% { filter: drop-shadow(0 0 10px #fff) drop-shadow(0 0 12px #74A8DC) drop-shadow(0 0 30px #74A8DC); opacity: 0.75; }
+  100% { filter: drop-shadow(0 0 8px #fff) drop-shadow(0 0 25px #74A8DC); opacity: 0.6; }
+}
+
+@keyframes green-neon-glow {
+  0% { filter: drop-shadow(0 0 8px #fff) drop-shadow(0 0 25px #6AA84F); opacity: 0.6; }
+  25% { filter: drop-shadow(0 0 10px #fff) drop-shadow(0 0 12px #6AA84F) drop-shadow(0 0 30px #6AA84F); opacity: 0.75; }
+  50% { filter: drop-shadow(0 0 15px #fff) drop-shadow(0 0 15px #6AA84F) drop-shadow(0 0 25px #6AA84F); opacity: 0.9; }
+  75% { filter: drop-shadow(0 0 10px #fff) drop-shadow(0 0 12px #6AA84F) drop-shadow(0 0 30px #6AA84F); opacity: 0.75; }
+  100% { filter: drop-shadow(0 0 8px #fff) drop-shadow(0 0 25px #6AA84F); opacity: 0.6; }
+}
+
+@keyframes pink-neon-glow {
+  0% { filter: drop-shadow(0 0 8px #fff) drop-shadow(0 0 25px #E06666); opacity: 0.6; }
+  25% { filter: drop-shadow(0 0 10px #fff) drop-shadow(0 0 12px #E06666) drop-shadow(0 0 30px #E06666); opacity: 0.75; }
+  50% { filter: drop-shadow(0 0 15px #fff) drop-shadow(0 0 15px #E06666) drop-shadow(0 0 25px #E06666); opacity: 0.9; }
+  75% { filter: drop-shadow(0 0 10px #fff) drop-shadow(0 0 12px #E06666) drop-shadow(0 0 30px #E06666); opacity: 0.75; }
+  100% { filter: drop-shadow(0 0 8px #fff) drop-shadow(0 0 25px #E06666); opacity: 0.6; }
 }
 
 @keyframes pulseGlow {
